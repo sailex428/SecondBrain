@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "id": "ai-player",
+  "version": "${version}",
+  "name": "AI-Player",
+  "description": "A Minecraft Player thats controlled by a LLM.",
+  "authors": [],
+  "contact": {},
+  "license": "All-Rights-Reserved",
+  "icon": "assets/ai-player/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "client": [
+      "io.sailex.aiPlayer.client.AiPlayerClient"
+    ],
+    "main": [
+      "io.sailex.aiPlayer.AiPlayer"
+    ]
+  },
+  "mixins": [
+    "ai-player.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric": "*",
+    "minecraft": "${minecraft_version}"
+  }
+}
