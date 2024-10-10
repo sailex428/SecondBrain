@@ -1,7 +1,6 @@
 package io.sailex.aiNpc.npc;
 
 import com.mojang.authlib.GameProfile;
-import io.sailex.aiNpc.config.ConfigReader;
 import io.sailex.aiNpc.model.NPC;
 import io.sailex.aiNpc.util.GameProfileBuilder;
 import java.util.HashMap;
@@ -18,8 +17,8 @@ public class NPCManager {
 	@Getter
 	private final Map<UUID, NPCEntity> npcEntities;
 
-	public NPCManager(ConfigReader configReader) {
-		this.profileBuilder = new GameProfileBuilder(configReader);
+	public NPCManager() {
+		this.profileBuilder = new GameProfileBuilder();
 		this.npcEntities = new HashMap<>();
 	}
 
