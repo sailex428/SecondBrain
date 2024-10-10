@@ -12,6 +12,7 @@ public class CommandManager {
 	}
 
 	public void register() {
-		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> createNPCCommand.register(dispatcher));
+		CommandRegistrationCallback.EVENT.register(
+				(dispatcher, registryAccess, environment) -> createNPCCommand.register(dispatcher));
 	}
 }

@@ -8,13 +8,13 @@ import net.fabricmc.api.ModInitializer;
 
 public class AiNPCServer implements ModInitializer {
 
-    @Override
+	@Override
 	public void onInitialize() {
-        ConfigReader configReader = new ConfigReader(ConfigConstants.PROPERTIES_FILE);
+		ConfigReader configReader = new ConfigReader(ConfigConstants.PROPERTIES_FILE);
 
-        NPCManager npcManager = new NPCManager(configReader);
+		NPCManager npcManager = new NPCManager(configReader);
 
-        CommandManager commandManager = new CommandManager(npcManager);
+		CommandManager commandManager = new CommandManager(npcManager);
 		commandManager.register();
 	}
 }

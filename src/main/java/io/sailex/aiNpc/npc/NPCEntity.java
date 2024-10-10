@@ -20,12 +20,7 @@ public class NPCEntity extends ServerPlayerEntity {
 	private final GameProfile profile;
 	private final NPCState state;
 
-	public NPCEntity(
-			String name,
-			MinecraftServer server,
-			ServerWorld world,
-			GameProfile profile,
-			NPCState state) {
+	public NPCEntity(String name, MinecraftServer server, ServerWorld world, GameProfile profile, NPCState state) {
 		super(server, world, profile, SyncedClientOptions.createDefault());
 		this.name = name;
 		this.profile = profile;
@@ -47,15 +42,11 @@ public class NPCEntity extends ServerPlayerEntity {
 
 	private void setupNPCState() {
 		this.teleport(
-				this.getServerWorld(),
-				state.getX(), state.getY(), state.getZ(),
-				state.getYaw(), state.getPitch()
-		);
+				this.getServerWorld(), state.getX(), state.getY(), state.getZ(), state.getYaw(), state.getPitch());
 		this.setHealth(state.getHealth());
 		this.unsetRemoved();
 		this.dataTracker.set(PLAYER_MODEL_PARTS, (byte) 0x7f);
 		this.interactionManager.changeGameMode(GameMode.byName(state.getGameMode()));
 		this.getAbilities().flying = false;
 	}
-
 }
