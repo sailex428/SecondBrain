@@ -1,6 +1,8 @@
 package io.sailex.aiNpc.service;
 
 import com.google.gson.Gson;
+import io.sailex.aiNpc.config.ConfigReader;
+import io.sailex.aiNpc.constant.ConfigConstants;
 import io.sailex.aiNpc.exception.EmptyResponseException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -12,18 +14,16 @@ import org.apache.logging.log4j.Logger;
 
 public class OllamaService implements ILLMService {
 	private static final Logger LOGGER = LogManager.getLogger(OllamaService.class);
-	private static final String OLLAMA_PATH = "/api/generate";
+	private static final Gson gson = new Gson();
 
 	private final String ollamaUrl;
 	private final HttpClient httpClient;
 	private final String ollamaModel;
-	private final Gson gson;
 
-	public OllamaService(String ollamaUrl, String ollamaModel) {
-		this.ollamaUrl = ollamaUrl;
-		this.ollamaModel = ollamaModel;
+	public OllamaService(ConfigReader configReader) {
+		this.ollamaUrl = configReader.getProperty(ConfigConstants.NPC_LLM_OLLAMA_URL);
+		this.ollamaModel = configReader.getProperty(ConfigConstants.NPC_LLM_OLLAMA_MODEL);
 		this.httpClient = HttpClient.newHttpClient();
-		this.gson = new Gson();
 	}
 
 	public String generateResponse(String prompt) throws EmptyResponseException {
@@ -32,7 +32,7 @@ public class OllamaService implements ILLMService {
 			String requestBody = gson.toJson(request);
 
 			HttpRequest httpRequest = HttpRequest.newBuilder()
-					.uri(new URI(ollamaUrl + OLLAMA_PATH))
+					.uri(new URI(ollamaUrl))
 					.header("Content-Type", "application/json")
 					.POST(HttpRequest.BodyPublishers.ofString(requestBody))
 					.build();

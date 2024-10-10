@@ -40,7 +40,7 @@ public class NPCEntity extends ServerPlayerEntity {
 		setupNPCState();
 	}
 
-	private void setupNPCState() {
+	public void setupNPCState() {
 		this.teleport(
 				this.getServerWorld(), state.getX(), state.getY(), state.getZ(), state.getYaw(), state.getPitch());
 		this.setHealth(state.getHealth());
@@ -48,5 +48,6 @@ public class NPCEntity extends ServerPlayerEntity {
 		this.dataTracker.set(PLAYER_MODEL_PARTS, (byte) 0x7f);
 		this.interactionManager.changeGameMode(GameMode.byName(state.getGameMode()));
 		this.getAbilities().flying = false;
+		this.getAbilities().allowFlying = false;
 	}
 }

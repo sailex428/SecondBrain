@@ -59,8 +59,8 @@ public class CreateNPCCommand {
 				position.y,
 				position.z,
 				null,
-				0,
-				0,
+				100,
+				10,
 				DefaultConstants.NPC_HEALTH,
 				DefaultConstants.NPC_GAMEMODE);
 	}
@@ -76,7 +76,8 @@ public class CreateNPCCommand {
 	private int createAndBuildNPC(CommandContext<ServerCommandSource> context, String name, NPCState state) {
 		state.setDimension(context.getSource().getWorld().getRegistryKey());
 		NPC npc = new NPC(name, state);
-		npcManager.buildNPC(npc, context.getSource().getServer());
+		context.getSource()
+				.sendFeedback(npcManager.buildNPC(npc, context.getSource().getServer()), false);
 		return 1;
 	}
 }
