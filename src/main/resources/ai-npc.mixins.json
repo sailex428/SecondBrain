@@ -4,6 +4,7 @@
   "package": "io.sailex.aiNpc.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
+    "ClientConnectionAccessor"
   ],
   "client": [
   ],
