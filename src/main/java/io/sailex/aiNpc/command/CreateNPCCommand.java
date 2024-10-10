@@ -11,7 +11,9 @@ import io.sailex.aiNpc.constant.DefaultConstants;
 import io.sailex.aiNpc.model.NPC;
 import io.sailex.aiNpc.model.NPCState;
 import io.sailex.aiNpc.npc.NPCManager;
+import java.util.function.Supplier;
 import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.text.Text;
 import net.minecraft.util.math.Vec3d;
 
 public class CreateNPCCommand {
@@ -76,8 +78,10 @@ public class CreateNPCCommand {
 	private int createAndBuildNPC(CommandContext<ServerCommandSource> context, String name, NPCState state) {
 		state.setDimension(context.getSource().getWorld().getRegistryKey());
 		NPC npc = new NPC(name, state);
-		context.getSource()
-				.sendFeedback(npcManager.buildNPC(npc, context.getSource().getServer()), false);
+
+		Supplier<Text> feedbackText =
+				npcManager.buildNPC(npc, context.getSource().getServer());
+		context.getSource().sendFeedback(feedbackText, false);
 		return 1;
 	}
 }
