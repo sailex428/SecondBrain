@@ -1,14 +1,11 @@
 package io.sailex.aiNpc.util;
 
 import com.mojang.authlib.GameProfile;
-
+import com.mojang.authlib.yggdrasil.ProfileResult;
 import java.util.Optional;
 import java.util.UUID;
-
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.UserCache;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Builds and manages GameProfiles for NPCs in a Minecraft server environment.
@@ -19,8 +16,6 @@ import org.slf4j.LoggerFactory;
  * @author sailex
  */
 public class GameProfileBuilder {
-
-	private static final Logger LOGGER = LoggerFactory.getLogger(GameProfileBuilder.class);
 
 	/**
 	 * Retrieves a GameProfile for an NPC based on the given name.
@@ -45,9 +40,8 @@ public class GameProfileBuilder {
 		// Try to find profile using mojang api
 		if (server.getUserCache() != null) {
 			Optional<GameProfile> cachedProfile = server.getUserCache().findByName(npcName);
-			LOGGER.info("Profiles: {}", server.getUserCache());
 			if (cachedProfile.isPresent()) {
-				return cachedProfile.get();
+				return fetchProfileWithSkin(server, cachedProfile.get());
 			}
 		}
 		return createGameProfile(npcName);
@@ -63,4 +57,18 @@ public class GameProfileBuilder {
 		return new GameProfile(UUID.randomUUID(), name);
 	}
 
+	/**
+	 * Fetches a GameProfile with skin data from Mojang's api service.
+	 *
+	 * @param server The Minecraft server instance
+	 * @param cachedProfile The cached profile to fetch the skin for
+	 * @return GameProfile with skin data
+	 */
+	private GameProfile fetchProfileWithSkin(MinecraftServer server, GameProfile cachedProfile) {
+		ProfileResult profileWithSkin = server.getSessionService().fetchProfile(cachedProfile.getId(), true);
+		if (profileWithSkin != null) {
+			return profileWithSkin.profile();
+		}
+		return cachedProfile;
+	}
 }

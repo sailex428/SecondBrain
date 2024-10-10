@@ -8,7 +8,7 @@ public class AiNPCServer implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
-//		ConfigReader configReader = new ConfigReader(ConfigConstants.PROPERTIES_FILE);
+		//		ConfigReader configReader = new ConfigReader(ConfigConstants.PROPERTIES_FILE);
 
 		NPCManager npcManager = new NPCManager();
 
