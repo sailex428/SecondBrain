@@ -14,7 +14,7 @@ public class AiNPCServer implements ModInitializer {
 		ConfigReader configReader = new ConfigReader(ConfigConstants.PROPERTIES_FILE);
 		OllamaService ollamaService = new OllamaService(configReader);
 
-		NPCManager npcManager = new NPCManager();
+		NPCManager npcManager = new NPCManager(configReader);
 
 		CommandManager commandManager = new CommandManager(npcManager);
 		commandManager.register();

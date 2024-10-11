@@ -1,6 +1,8 @@
 package io.sailex.aiNpc.npc;
 
 import com.mojang.authlib.GameProfile;
+import io.sailex.aiNpc.config.ConfigReader;
+import io.sailex.aiNpc.constant.ConfigConstants;
 import io.sailex.aiNpc.constant.DefaultConstants;
 import io.sailex.aiNpc.model.NPC;
 import io.sailex.aiNpc.util.GameProfileBuilder;
@@ -17,11 +19,13 @@ import net.minecraft.text.Text;
 public class NPCManager {
 
 	private final GameProfileBuilder profileBuilder;
+	private final ConfigReader configReader;
 
 	@Getter
 	private final Map<UUID, NPCEntity> npcEntities;
 
-	public NPCManager() {
+	public NPCManager(ConfigReader configReader) {
+		this.configReader = configReader;
 		this.profileBuilder = new GameProfileBuilder();
 		this.npcEntities = new HashMap<>();
 	}
@@ -31,6 +35,12 @@ public class NPCManager {
 		GameProfile npcProfile = profileBuilder.getGameProfile(npcName, server);
 
 		ServerWorld worldIn = server.getWorld(npc.getNpcState().getDimension());
+
+		if (npcEntities.size() >= configReader.getIntProperty(ConfigConstants.NPC_ENTITIES_MAX_COUNT)) {
+			return () -> Text.literal(
+							String.format("%s Maximum number of NPCs reached!", DefaultConstants.LOGGER_PREFIX))
+					.withColor(0xCD3543);
+		}
 
 		if (npcEntities.containsKey(npcProfile.getId())) {
 			return () -> Text.literal(String.format(

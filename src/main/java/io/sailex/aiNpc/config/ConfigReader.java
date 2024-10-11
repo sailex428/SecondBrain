@@ -1,5 +1,7 @@
 package io.sailex.aiNpc.config;
 
+import io.sailex.aiNpc.exception.InvalidPropertyValueException;
+import io.sailex.aiNpc.exception.PropertyNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
@@ -28,10 +30,25 @@ public class ConfigReader {
 	}
 
 	public String getProperty(String key) {
+		if (key == null) {
+			throw new IllegalArgumentException("Property key cannot be null");
+		}
 		String property = configProperties.getProperty(key);
 		if (property == null) {
 			LOGGER.error("Property not found for key: {}", key);
+			throw new PropertyNotFoundException(String.format("Property not found for key: %s", key));
 		}
 		return property;
+	}
+
+	public int getIntProperty(String key) {
+		String property = getProperty(key);
+		try {
+			return Integer.parseInt(property);
+		} catch (NumberFormatException e) {
+			LOGGER.error("Invalid integer value '{}' for property key: {}", property, key);
+			throw new InvalidPropertyValueException(
+					String.format("Property value %s is not a valid integer for key: %s", key, e.getMessage()));
+		}
 	}
 }
