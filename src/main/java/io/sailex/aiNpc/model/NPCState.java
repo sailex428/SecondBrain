@@ -13,8 +13,11 @@ public class NPCState {
 	private double y;
 	private double z;
 	private RegistryKey<World> dimension;
-	private float yaw;
-	private float pitch;
+
+	private float bodyYaw;
+	private float headYaw;
+	private float headPitch;
+
 	private float health;
 	private String gameMode;
 }

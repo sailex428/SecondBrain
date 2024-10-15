@@ -3,9 +3,9 @@ package io.sailex.aiNpc.command;
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 
-import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import io.sailex.aiNpc.constant.DefaultConstants;
 import io.sailex.aiNpc.model.NPC;
@@ -24,14 +24,14 @@ public class CreateNPCCommand {
 		this.npcManager = npcManager;
 	}
 
-	public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-		dispatcher.register(literal("npc")
+	public LiteralArgumentBuilder<ServerCommandSource> getCommand() {
+		return literal("add")
 				.then(argument("name", StringArgumentType.string())
 						.executes(this::createNPCAtCurrentPosition)
 						.then(argument("x", IntegerArgumentType.integer())
 								.then(argument("y", IntegerArgumentType.integer())
 										.then(argument("z", IntegerArgumentType.integer())
-												.executes(this::createNPCAtSpecifiedPosition))))));
+												.executes(this::createNPCAtSpecifiedPosition)))));
 	}
 
 	private int createNPCAtCurrentPosition(CommandContext<ServerCommandSource> context) {
@@ -61,10 +61,11 @@ public class CreateNPCCommand {
 				position.y,
 				position.z,
 				null,
-				100,
-				10,
+				DefaultConstants.NPC_BODY_YAW,
+				DefaultConstants.NPC_HEAD_YAW,
+				DefaultConstants.NPC_HEAD_PITCH,
 				DefaultConstants.NPC_HEALTH,
-				DefaultConstants.NPC_GAMEMODE);
+				DefaultConstants.NPC_GAME_MODE);
 	}
 
 	private Vec3d getPositionForNPC(ServerCommandSource source) {
@@ -81,7 +82,7 @@ public class CreateNPCCommand {
 
 		Supplier<Text> feedbackText =
 				npcManager.buildNPC(npc, context.getSource().getServer());
-		context.getSource().sendFeedback(feedbackText, false);
+		context.getSource().sendFeedback(feedbackText, true);
 		return 1;
 	}
 }

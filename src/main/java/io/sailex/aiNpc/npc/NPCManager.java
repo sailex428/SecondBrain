@@ -3,8 +3,8 @@ package io.sailex.aiNpc.npc;
 import com.mojang.authlib.GameProfile;
 import io.sailex.aiNpc.config.ConfigReader;
 import io.sailex.aiNpc.constant.ConfigConstants;
-import io.sailex.aiNpc.constant.DefaultConstants;
 import io.sailex.aiNpc.model.NPC;
+import io.sailex.aiNpc.util.FeedbackLogger;
 import io.sailex.aiNpc.util.GameProfileBuilder;
 import java.util.HashMap;
 import java.util.Map;
@@ -37,31 +37,35 @@ public class NPCManager {
 		ServerWorld worldIn = server.getWorld(npc.getNpcState().getDimension());
 
 		if (npcEntities.size() >= configReader.getIntProperty(ConfigConstants.NPC_ENTITIES_MAX_COUNT)) {
-			return () -> Text.literal(
-							String.format("%s Maximum number of NPCs reached!", DefaultConstants.LOGGER_PREFIX))
-					.withColor(0xCD3543);
+			return FeedbackLogger.logError("Maximum number of NPCs reached!");
 		}
 
 		if (npcEntities.containsKey(npcProfile.getId())) {
-			return () -> Text.literal(String.format(
-							"%s NPC with name %s already exists!", DefaultConstants.LOGGER_PREFIX, npcName))
-					.withColor(0xCD3543);
+			return FeedbackLogger.logError(String.format("NPC with name %s already exists!", npcName));
 		}
 
 		for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
 			if (player.getUuid().equals(npcProfile.getId())) {
-				return () -> Text.literal(String.format(
-								"%s Player with that name already exists on the server!",
-								DefaultConstants.LOGGER_PREFIX))
-						.withColor(0xCD3543);
+				return FeedbackLogger.logError("Player with that name already exists on the server!");
 			}
 		}
 
 		NPCEntity npcEntity = new NPCEntity(npcName, server, worldIn, npcProfile, npc.getNpcState());
-		npcEntity.spawnNPC();
+		npcEntity.connectNPC();
 		npcEntities.put(npcProfile.getId(), npcEntity);
-		return () -> Text.literal(
-						String.format("%s NPC with name %s created!", DefaultConstants.LOGGER_PREFIX, npcName))
-				.withColor(0x0079FF);
+		return FeedbackLogger.logInfo(String.format("NPC with name %s created!", npcName));
+	}
+
+	public Supplier<Text> removeNPC(String name, MinecraftServer server) {
+		UUID npcId = profileBuilder.getGameProfile(name, server).getId();
+		NPCEntity npcEntity = npcEntities.get(npcId);
+
+		if (npcEntity == null) {
+			return FeedbackLogger.logError(String.format("Cannot find NPC with name %s", name));
+		}
+
+		npcEntity.removeNPC();
+		npcEntities.remove(npcId);
+		return FeedbackLogger.logInfo(String.format("NPC with name %s removed!", name));
 	}
 }

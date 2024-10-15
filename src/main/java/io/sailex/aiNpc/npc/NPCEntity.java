@@ -9,6 +9,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ConnectedClientData;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.text.Text;
 import net.minecraft.world.GameMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,7 +28,7 @@ public class NPCEntity extends ServerPlayerEntity {
 		this.state = state;
 	}
 
-	public void spawnNPC() {
+	public void connectNPC() {
 		LOGGER.info("Try spawning NPC: {}", this.name);
 		this.server
 				.getPlayerManager()
@@ -42,12 +43,25 @@ public class NPCEntity extends ServerPlayerEntity {
 
 	public void setupNPCState() {
 		this.teleport(
-				this.getServerWorld(), state.getX(), state.getY(), state.getZ(), state.getYaw(), state.getPitch());
+				this.getServerWorld(),
+				state.getX(),
+				state.getY(),
+				state.getZ(),
+				state.getBodyYaw(),
+				state.getHeadPitch());
 		this.setHealth(state.getHealth());
 		this.unsetRemoved();
 		this.dataTracker.set(PLAYER_MODEL_PARTS, (byte) 0x7f);
 		this.interactionManager.changeGameMode(GameMode.byName(state.getGameMode()));
 		this.getAbilities().flying = false;
 		this.getAbilities().allowFlying = false;
+	}
+
+	public void removeNPC() {
+		LOGGER.info("Try removing NPC: {}", this.name);
+		this.server.getPlayerManager().remove(this);
+		this.networkHandler.disconnect(Text.of("NPC removed"));
+		this.discard();
+		LOGGER.info("NPC {} removed", this.name);
 	}
 }
