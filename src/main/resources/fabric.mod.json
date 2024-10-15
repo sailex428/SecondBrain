@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "id": "ai-player",
+  "id": "npc-player",
   "version": "${version}",
-  "name": "AI-Player",
-  "description": "A Minecraft Player thats controlled by a LLM.",
+  "name": "NPC-Player",
+  "description": "A Minecraft NPC thats controlled by a LLM.",
   "authors": [],
   "contact": {},
   "license": "All-Rights-Reserved",
@@ -11,14 +11,14 @@
   "environment": "*",
   "entrypoints": {
     "client": [
-      "io.sailex.aiPlayer.client.AiPlayerClient"
+      "io.sailex.aiNpc.client.AiNPCClient"
     ],
     "main": [
-      "io.sailex.aiPlayer.AiPlayer"
+      "io.sailex.aiNpc.AiNPCServer"
     ]
   },
   "mixins": [
-    "ai-player.mixins.json"
+    "ai-npc.mixins.json"
   ],
   "depends": {
     "fabricloader": ">=${loader_version}",
