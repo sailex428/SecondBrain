@@ -1,11 +1,11 @@
 package io.sailex.aiNpc.npc;
 
 import com.mojang.authlib.GameProfile;
-import io.sailex.aiNpc.config.ConfigReader;
 import io.sailex.aiNpc.constant.ConfigConstants;
 import io.sailex.aiNpc.model.NPC;
 import io.sailex.aiNpc.util.FeedbackLogger;
 import io.sailex.aiNpc.util.GameProfileBuilder;
+import io.sailex.aiNpc.util.config.ModConfig;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -19,13 +19,11 @@ import net.minecraft.text.Text;
 public class NPCManager {
 
 	private final GameProfileBuilder profileBuilder;
-	private final ConfigReader configReader;
 
 	@Getter
 	private final Map<UUID, NPCEntity> npcEntities;
 
-	public NPCManager(ConfigReader configReader) {
-		this.configReader = configReader;
+	public NPCManager() {
 		this.profileBuilder = new GameProfileBuilder();
 		this.npcEntities = new HashMap<>();
 	}
@@ -36,7 +34,7 @@ public class NPCManager {
 
 		ServerWorld worldIn = server.getWorld(npc.getNpcState().getDimension());
 
-		if (npcEntities.size() >= configReader.getIntProperty(ConfigConstants.NPC_ENTITIES_MAX_COUNT)) {
+		if (npcEntities.size() >= ModConfig.getIntProperty(ConfigConstants.NPC_ENTITIES_MAX_COUNT)) {
 			return FeedbackLogger.logError("Maximum number of NPCs reached!");
 		}
 

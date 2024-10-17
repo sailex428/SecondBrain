@@ -9,14 +9,21 @@ public class CommandManager {
 
 	private final CreateNPCCommand createNPCCommand;
 	private final RemoveNPCCommand removeNPCCommand;
+	private final SetConfigCommand setConfigCommand;
 
 	public CommandManager(NPCManager NPCManager) {
 		createNPCCommand = new CreateNPCCommand(NPCManager);
 		removeNPCCommand = new RemoveNPCCommand(NPCManager);
+		setConfigCommand = new SetConfigCommand();
 	}
 
 	public void register() {
-		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> dispatcher.register(
-				literal("npc").then(createNPCCommand.getCommand()).then(removeNPCCommand.getCommand())));
+		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
+			setConfigCommand.register(dispatcher);
+			dispatcher.register(literal("npc")
+					.requires(source -> source.hasPermissionLevel(2))
+					.then(createNPCCommand.getCommand())
+					.then(removeNPCCommand.getCommand()));
+		});
 	}
 }

@@ -1,9 +1,9 @@
 package io.sailex.aiNpc.service;
 
 import com.google.gson.Gson;
-import io.sailex.aiNpc.config.ConfigReader;
 import io.sailex.aiNpc.constant.ConfigConstants;
 import io.sailex.aiNpc.exception.EmptyResponseException;
+import io.sailex.aiNpc.util.config.ModConfig;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -20,9 +20,9 @@ public class OllamaService implements ILLMService {
 	private final HttpClient httpClient;
 	private final String ollamaModel;
 
-	public OllamaService(ConfigReader configReader) {
-		this.ollamaUrl = configReader.getProperty(ConfigConstants.NPC_LLM_OLLAMA_URL);
-		this.ollamaModel = configReader.getProperty(ConfigConstants.NPC_LLM_OLLAMA_MODEL);
+	public OllamaService() {
+		this.ollamaUrl = ModConfig.getProperty(ConfigConstants.NPC_LLM_OLLAMA_URL);
+		this.ollamaModel = ModConfig.getProperty(ConfigConstants.NPC_LLM_OLLAMA_MODEL);
 		this.httpClient = HttpClient.newHttpClient();
 	}
 
