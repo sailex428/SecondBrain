@@ -10,9 +10,6 @@
   "icon": "assets/ai-player/icon.png",
   "environment": "*",
   "entrypoints": {
-    "client": [
-      "io.sailex.aiNpc.client.AiNPCClient"
-    ],
     "main": [
       "io.sailex.aiNpc.AiNPCServer"
     ]
