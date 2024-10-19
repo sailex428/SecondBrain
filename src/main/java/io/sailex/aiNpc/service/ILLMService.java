@@ -1,6 +1,8 @@
 package io.sailex.aiNpc.service;
 
+import java.util.concurrent.CompletableFuture;
+
 public interface ILLMService {
 
-	String generateResponse(String message);
+	CompletableFuture<String> generateResponse(String message);
 }

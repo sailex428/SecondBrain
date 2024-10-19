@@ -41,6 +41,8 @@ public class ModConfig {
 		properties.setProperty(ConfigConstants.NPC_LLM_OPENAI_URL, "https://api.openai.com/v1/chat/completions");
 		properties.setProperty(ConfigConstants.NPC_LLM_OPENAI_MODEL, "gpt-3.5-turbo");
 
+		properties.setProperty(ConfigConstants.NPC_LLM_TYPE, "openai");
+
 		properties.setProperty(ConfigConstants.NPC_ENTITIES_MAX_COUNT, "3");
 	}
 

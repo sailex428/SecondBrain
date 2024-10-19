@@ -7,23 +7,20 @@ import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 
 public class CommandManager {
 
-	private final CreateNPCCommand createNPCCommand;
-	private final RemoveNPCCommand removeNPCCommand;
-	private final SetConfigCommand setConfigCommand;
+	private final NPCManager npcManager;
 
 	public CommandManager(NPCManager NPCManager) {
-		createNPCCommand = new CreateNPCCommand(NPCManager);
-		removeNPCCommand = new RemoveNPCCommand(NPCManager);
-		setConfigCommand = new SetConfigCommand();
+		this.npcManager = NPCManager;
 	}
 
 	public void register() {
 		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
-			setConfigCommand.register(dispatcher);
+			new SetConfigCommand().register(dispatcher);
 			dispatcher.register(literal("npc")
 					.requires(source -> source.hasPermissionLevel(2))
-					.then(createNPCCommand.getCommand())
-					.then(removeNPCCommand.getCommand()));
+					.then(new NPCCreateCommand(npcManager).getCommand())
+					.then(new NPCRemoveCommand(npcManager).getCommand())
+					.then(new NPCDoCommand(npcManager).getCommand()));
 		});
 	}
 }

@@ -11,27 +11,41 @@ import io.sailex.aiNpc.constant.DefaultConstants;
 import io.sailex.aiNpc.model.NPC;
 import io.sailex.aiNpc.model.NPCState;
 import io.sailex.aiNpc.npc.NPCManager;
+import io.sailex.aiNpc.util.FeedbackLogger;
+import java.util.Set;
 import java.util.function.Supplier;
+import lombok.AllArgsConstructor;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.Vec3d;
 
-public class CreateNPCCommand {
+@AllArgsConstructor
+public class NPCCreateCommand {
+
+	private static final String LLM_TYPE = "llm-type";
+	private static final String LLM_MODEL = "llm-model";
+
+	private static final Set<String> allowedLLMTypes = Set.of("ollama", "openai");
 
 	private final NPCManager npcManager;
-
-	public CreateNPCCommand(NPCManager npcManager) {
-		this.npcManager = npcManager;
-	}
 
 	public LiteralArgumentBuilder<ServerCommandSource> getCommand() {
 		return literal("add")
 				.then(argument("name", StringArgumentType.string())
 						.executes(this::createNPCAtCurrentPosition)
-						.then(argument("x", IntegerArgumentType.integer())
-								.then(argument("y", IntegerArgumentType.integer())
-										.then(argument("z", IntegerArgumentType.integer())
-												.executes(this::createNPCAtSpecifiedPosition)))));
+						.then(argument(LLM_TYPE, StringArgumentType.string())
+								.suggests((context, builder) -> {
+									for (String llmType : allowedLLMTypes) {
+										builder.suggest(llmType);
+									}
+									return builder.buildFuture();
+								})
+								.then(argument(LLM_MODEL, StringArgumentType.string())
+										.executes(this::createNPCAtCurrentPosition)
+										.then(argument("x", IntegerArgumentType.integer())
+												.then(argument("y", IntegerArgumentType.integer())
+														.then(argument("z", IntegerArgumentType.integer())
+																.executes(this::createNPCAtSpecifiedPosition)))))));
 	}
 
 	private int createNPCAtCurrentPosition(CommandContext<ServerCommandSource> context) {
@@ -78,11 +92,35 @@ public class CreateNPCCommand {
 
 	private int createAndBuildNPC(CommandContext<ServerCommandSource> context, String name, NPCState state) {
 		state.setDimension(context.getSource().getWorld().getRegistryKey());
+
+		String llmType = null;
+		String llmModel = null;
+
+		if (hasLLMArguments(context)) {
+			llmType = StringArgumentType.getString(context, LLM_TYPE);
+			llmModel = StringArgumentType.getString(context, LLM_MODEL);
+
+			if (!allowedLLMTypes.contains(llmType)) {
+				context.getSource().sendFeedback(FeedbackLogger.logError("Invalid llm type!"), true);
+				return 0;
+			}
+		}
+
 		NPC npc = new NPC(name, state);
 
 		Supplier<Text> feedbackText =
-				npcManager.buildNPC(npc, context.getSource().getServer());
+				npcManager.buildNPC(npc, context.getSource().getServer(), llmType, llmModel);
 		context.getSource().sendFeedback(feedbackText, true);
 		return 1;
+	}
+
+	private boolean hasLLMArguments(CommandContext<ServerCommandSource> context) {
+		try {
+			StringArgumentType.getString(context, LLM_TYPE);
+			StringArgumentType.getString(context, LLM_MODEL);
+			return true;
+		} catch (IllegalArgumentException e) {
+			return false;
+		}
 	}
 }

@@ -3,6 +3,7 @@ package io.sailex.aiNpc.npc;
 import com.mojang.authlib.GameProfile;
 import io.sailex.aiNpc.model.NPCState;
 import io.sailex.aiNpc.network.NPCClientConnection;
+import lombok.Getter;
 import net.minecraft.network.NetworkSide;
 import net.minecraft.network.packet.c2s.common.SyncedClientOptions;
 import net.minecraft.server.MinecraftServer;
@@ -17,26 +18,29 @@ import org.slf4j.LoggerFactory;
 public class NPCEntity extends ServerPlayerEntity {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(NPCEntity.class);
-	private final String name;
+
+	@Getter
+	private final String npcName;
+
 	private final GameProfile profile;
 	private final NPCState state;
 
-	public NPCEntity(String name, MinecraftServer server, ServerWorld world, GameProfile profile, NPCState state) {
+	public NPCEntity(String npcName, MinecraftServer server, ServerWorld world, GameProfile profile, NPCState state) {
 		super(server, world, profile, SyncedClientOptions.createDefault());
-		this.name = name;
+		this.npcName = npcName;
 		this.profile = profile;
 		this.state = state;
 	}
 
 	public void connectNPC() {
-		LOGGER.info("Try spawning NPC: {}", this.name);
+		LOGGER.info("Try spawning NPC: {}", this.npcName);
 		this.server
 				.getPlayerManager()
 				.onPlayerConnect(
 						new NPCClientConnection(NetworkSide.SERVERBOUND),
 						this,
 						new ConnectedClientData(profile, 0, this.getClientOptions(), false));
-		LOGGER.info("NPC {} connected", this.name);
+		LOGGER.info("NPC {} connected", this.npcName);
 
 		setupNPCState();
 	}
@@ -58,10 +62,10 @@ public class NPCEntity extends ServerPlayerEntity {
 	}
 
 	public void removeNPC() {
-		LOGGER.info("Try removing NPC: {}", this.name);
+		LOGGER.info("Try removing NPC: {}", this.npcName);
 		this.server.getPlayerManager().remove(this);
 		this.networkHandler.disconnect(Text.of("NPC removed"));
 		this.discard();
-		LOGGER.info("NPC {} removed", this.name);
+		LOGGER.info("NPC {} removed", this.npcName);
 	}
 }

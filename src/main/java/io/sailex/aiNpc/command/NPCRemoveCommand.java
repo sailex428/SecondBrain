@@ -7,15 +7,13 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import io.sailex.aiNpc.npc.NPCManager;
+import lombok.AllArgsConstructor;
 import net.minecraft.server.command.ServerCommandSource;
 
-public class RemoveNPCCommand {
+@AllArgsConstructor
+public class NPCRemoveCommand {
 
 	private final NPCManager npcManager;
-
-	public RemoveNPCCommand(NPCManager npcManager) {
-		this.npcManager = npcManager;
-	}
 
 	public LiteralArgumentBuilder<ServerCommandSource> getCommand() {
 		return literal("remove")
