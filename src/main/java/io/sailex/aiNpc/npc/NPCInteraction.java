@@ -20,10 +20,7 @@ public class NPCInteraction {
 		JsonObject request = new JsonObject();
 		request.add("data", GSON.toJsonTree(message));
 		request.add("schema", GSON.toJsonTree(schema));
-
-		if (message.getType().equals(RequestType.INSTRUCTION)) {
-			request.addProperty("instruction", Instructions.DEFAULT_INSTRUCTION);
-		}
+		request.add("instruction", GSON.toJsonTree(Instructions.STRUCTURE_INSTRUCTIONS));
 
 		LOGGER.info("Built request with content: {}", request);
 		return GSON.toJson(request);
@@ -50,4 +47,5 @@ public class NPCInteraction {
 			return null;
 		}
 	}
+
 }

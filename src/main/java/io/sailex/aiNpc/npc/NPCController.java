@@ -1,5 +1,6 @@
 package io.sailex.aiNpc.npc;
 
+import io.sailex.aiNpc.constant.Instructions;
 import io.sailex.aiNpc.constant.ResponseSchema;
 import io.sailex.aiNpc.model.event.ChatMessageEvent;
 import io.sailex.aiNpc.model.event.InstructionMessageEvent;
@@ -52,7 +53,7 @@ public class NPCController {
 
 	public void handleInitMessage() {
 		handleMessage(
-				new InstructionMessageEvent(String.format("Your NPC name is %s", npc.getNpcName())),
+				new InstructionMessageEvent(String.format("%s, Your NPC name is %s", Instructions.DEFAULT_INSTRUCTION, npc.getNpcName())),
 				ResponseSchema.CHAT_MESSAGE);
 	}
 }

@@ -3,6 +3,7 @@ package io.sailex.aiNpc.npc;
 import com.mojang.authlib.GameProfile;
 import io.sailex.aiNpc.model.command.NPCState;
 import io.sailex.aiNpc.network.NPCClientConnection;
+import io.sailex.aiNpc.util.ChatUtils;
 import lombok.Getter;
 import net.minecraft.network.NetworkSide;
 import net.minecraft.network.packet.c2s.common.SyncedClientOptions;
@@ -70,7 +71,7 @@ public class NPCEntity extends ServerPlayerEntity {
 	}
 
 	public void sendChatMessage(String message) {
-		this.sendMessage(Text.literal(message));
-		this.server.getPlayerManager().broadcast(Text.of(message), false);
+		this.server.getPlayerManager().broadcast(ChatUtils.format(message, npcName), false);
 	}
+
 }
