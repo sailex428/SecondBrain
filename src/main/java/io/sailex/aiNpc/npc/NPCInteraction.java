@@ -6,8 +6,9 @@ import com.google.gson.JsonSyntaxException;
 import io.sailex.aiNpc.constant.Instructions;
 import io.sailex.aiNpc.model.event.*;
 import io.sailex.aiNpc.model.event.ChatMessageEvent;
-import io.sailex.aiNpc.network.RequestType;
 import java.util.Map;
+
+import io.sailex.aiNpc.network.ResponseType;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -29,11 +30,11 @@ public class NPCInteraction {
 	public static NPCEvent parseResponse(String response) {
 		try {
 			JsonObject jsonResponse = GSON.fromJson(response, JsonObject.class);
-			RequestType responseType =
-					RequestType.valueOf(jsonResponse.get("type").getAsString());
+			ResponseType responseType =
+					ResponseType.valueOf(jsonResponse.get("type").getAsString());
 
 			switch (responseType) {
-				case RequestType.CHAT_MESSAGE -> {
+				case ResponseType.CHAT_MESSAGE -> {
 					return GSON.fromJson(response, ChatMessageEvent.class);
 				}
 				default -> {

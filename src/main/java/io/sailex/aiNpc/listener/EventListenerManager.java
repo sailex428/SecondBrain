@@ -1,6 +1,8 @@
 package io.sailex.aiNpc.listener;
 
 import io.sailex.aiNpc.model.NPC;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+
 import java.util.List;
 
 public class EventListenerManager {
@@ -15,6 +17,11 @@ public class EventListenerManager {
 		MessageListener messageListener = new MessageListener(npcList);
 		messageListener.register();
 
-		//		HealthListener healthListener = new HealthListener(npcs);
+		registerServerStoppingListener();
 	}
+
+	private void registerServerStoppingListener() {
+		ServerLifecycleEvents.SERVER_STOPPING.register(server -> npcList.forEach(npc -> npc.getLlmService().stopService()));
+	}
+
 }

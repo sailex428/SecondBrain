@@ -20,6 +20,7 @@ public class OllamaService implements ILLMService {
 
 	private static final Logger LOGGER = LogManager.getLogger(OllamaService.class);
 	private static final Gson GSON = new Gson();
+	private final ExecutorService service = Executors.newFixedThreadPool(3);
 
 	private final String ollamaUrl;
 	private final HttpClient httpClient;
@@ -67,6 +68,12 @@ public class OllamaService implements ILLMService {
 								new URISyntaxException("Wrong ollama url syntax: ", e.getMessage()));
 					}
 				},
-				Executors.newFixedThreadPool(3));
+				service);
 	}
+
+	@Override
+	public void stopService() {
+		service.shutdown();
+	}
+
 }

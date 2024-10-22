@@ -29,4 +29,5 @@ public class AiNPCServer implements ModInitializer {
 		CommandManager commandManager = new CommandManager(npcManager);
 		commandManager.register();
 	}
+
 }
