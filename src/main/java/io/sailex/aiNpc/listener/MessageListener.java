@@ -1,7 +1,7 @@
 package io.sailex.aiNpc.listener;
 
+import io.sailex.aiNpc.constant.ResponseSchema;
 import io.sailex.aiNpc.model.NPC;
-import io.sailex.aiNpc.model.ResponseSchema;
 import io.sailex.aiNpc.model.event.ChatMessageEvent;
 import java.util.List;
 import net.fabricmc.fabric.api.message.v1.ServerMessageEvents;

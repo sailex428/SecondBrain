@@ -1,4 +1,4 @@
-package io.sailex.aiNpc.model;
+package io.sailex.aiNpc.constant;
 
 import java.util.Map;
 

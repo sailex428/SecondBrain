@@ -1,6 +1,6 @@
 package io.sailex.aiNpc.npc;
 
-import io.sailex.aiNpc.model.ResponseSchema;
+import io.sailex.aiNpc.constant.ResponseSchema;
 import io.sailex.aiNpc.model.event.ChatMessageEvent;
 import io.sailex.aiNpc.model.event.InstructionMessageEvent;
 import io.sailex.aiNpc.model.event.NPCEvent;
