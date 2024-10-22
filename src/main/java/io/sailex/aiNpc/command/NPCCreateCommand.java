@@ -8,8 +8,8 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import io.sailex.aiNpc.constant.DefaultConstants;
-import io.sailex.aiNpc.model.NPC;
-import io.sailex.aiNpc.model.NPCState;
+import io.sailex.aiNpc.model.command.NPCCommand;
+import io.sailex.aiNpc.model.command.NPCState;
 import io.sailex.aiNpc.npc.NPCManager;
 import io.sailex.aiNpc.util.FeedbackLogger;
 import java.util.Set;
@@ -106,10 +106,10 @@ public class NPCCreateCommand {
 			}
 		}
 
-		NPC npc = new NPC(name, state);
+		NPCCommand npcCommand = new NPCCommand(name, state);
 
 		Supplier<Text> feedbackText =
-				npcManager.buildNPC(npc, context.getSource().getServer(), llmType, llmModel);
+				npcManager.buildNPC(npcCommand, context.getSource().getServer(), llmType, llmModel);
 		context.getSource().sendFeedback(feedbackText, true);
 		return 1;
 	}

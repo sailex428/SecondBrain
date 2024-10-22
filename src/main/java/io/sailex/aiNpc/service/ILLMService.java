@@ -4,5 +4,5 @@ import java.util.concurrent.CompletableFuture;
 
 public interface ILLMService {
 
-	CompletableFuture<String> generateResponse(String message);
+	CompletableFuture<String> generateResponse(String prompt);
 }

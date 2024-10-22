@@ -1,25 +1,25 @@
 package io.sailex.aiNpc.listener;
 
-import io.sailex.aiNpc.model.messageTypes.ChatMessage;
-import io.sailex.aiNpc.npc.NPCController;
-import io.sailex.aiNpc.npc.NPCEntity;
-import java.util.Map;
+import io.sailex.aiNpc.model.NPC;
+import io.sailex.aiNpc.model.ResponseSchema;
+import io.sailex.aiNpc.model.event.ChatMessageEvent;
+import java.util.List;
 import net.fabricmc.fabric.api.message.v1.ServerMessageEvents;
 
 public class MessageListener {
 
-	private final Map<NPCEntity, NPCController> npcEntityControllerMap;
+	private final List<NPC> npcList;
 
-	public MessageListener(Map<NPCEntity, NPCController> npcEntityControllerMap) {
-		this.npcEntityControllerMap = npcEntityControllerMap;
+	public MessageListener(List<NPC> npcList) {
+		this.npcList = npcList;
 	}
 
 	public void register() {
 		ServerMessageEvents.CHAT_MESSAGE.register((message, sender, params) -> {
-			ChatMessage chatMessage = new ChatMessage(
+			ChatMessageEvent chatMessageEvent = new ChatMessageEvent(
 					message.getContent().getString(), message.getTimestamp().toString());
 
-			npcEntityControllerMap.values().forEach(npcController -> npcController.handleChatMessage(chatMessage));
+			npcList.forEach(npc -> npc.getNpcController().handleMessage(chatMessageEvent, ResponseSchema.CHAT_MESSAGE));
 		});
 	}
 }

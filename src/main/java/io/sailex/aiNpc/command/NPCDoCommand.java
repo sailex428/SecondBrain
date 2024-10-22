@@ -6,11 +6,12 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import io.sailex.aiNpc.model.messageTypes.InstructionMessage;
+import io.sailex.aiNpc.model.NPC;
+import io.sailex.aiNpc.model.ResponseSchema;
+import io.sailex.aiNpc.model.event.InstructionMessageEvent;
 import io.sailex.aiNpc.npc.NPCController;
-import io.sailex.aiNpc.npc.NPCManager;
 import io.sailex.aiNpc.util.FeedbackLogger;
-import java.util.Map;
+import java.util.List;
 import java.util.Optional;
 import lombok.AllArgsConstructor;
 import net.minecraft.command.argument.MessageArgumentType;
@@ -20,7 +21,7 @@ import net.minecraft.server.command.ServerCommandSource;
 @AllArgsConstructor
 public class NPCDoCommand {
 
-	private final NPCManager npcManager;
+	private final List<NPC> npcList;
 
 	public LiteralArgumentBuilder<ServerCommandSource> getCommand() {
 		return literal("do")
@@ -32,9 +33,9 @@ public class NPCDoCommand {
 	private int doNPC(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
 		String name = StringArgumentType.getString(context, "name");
 
-		Optional<NPCController> npcController = npcManager.getNpcControllers().entrySet().stream()
-				.filter(entry -> entry.getKey().getNpcName().equals(name))
-				.map(Map.Entry::getValue)
+		Optional<NPCController> npcController = npcList.stream()
+				.filter(npc -> npc.getNpcEntity().getNpcName().equals(name))
+				.map(NPC::getNpcController)
 				.findFirst();
 
 		if (npcController.isEmpty()) {
@@ -45,7 +46,7 @@ public class NPCDoCommand {
 		}
 
 		String message = MessageArgumentType.getMessage(context, "message").getString();
-		npcController.get().handleInstruction(new InstructionMessage(message));
+		npcController.get().handleMessage(new InstructionMessageEvent(message), ResponseSchema.CHAT_MESSAGE);
 		return 1;
 	}
 }

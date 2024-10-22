@@ -1,7 +1,7 @@
 package io.sailex.aiNpc.npc;
 
 import com.mojang.authlib.GameProfile;
-import io.sailex.aiNpc.model.NPCState;
+import io.sailex.aiNpc.model.command.NPCState;
 import io.sailex.aiNpc.network.NPCClientConnection;
 import lombok.Getter;
 import net.minecraft.network.NetworkSide;
@@ -67,5 +67,10 @@ public class NPCEntity extends ServerPlayerEntity {
 		this.networkHandler.disconnect(Text.of("NPC removed"));
 		this.discard();
 		LOGGER.info("NPC {} removed", this.npcName);
+	}
+
+	public void sendChatMessage(String message) {
+		this.sendMessage(Text.literal(message));
+		this.server.getPlayerManager().broadcast(Text.of(message), false);
 	}
 }

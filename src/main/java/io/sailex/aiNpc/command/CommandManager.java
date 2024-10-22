@@ -20,7 +20,7 @@ public class CommandManager {
 					.requires(source -> source.hasPermissionLevel(2))
 					.then(new NPCCreateCommand(npcManager).getCommand())
 					.then(new NPCRemoveCommand(npcManager).getCommand())
-					.then(new NPCDoCommand(npcManager).getCommand()));
+					.then(new NPCDoCommand(npcManager.getNpcList()).getCommand()));
 		});
 	}
 }
