@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "npc-player",
   "version": "${version}",
-  "name": "NPC-Player",
+  "name": "AI-NPC",
   "description": "A Minecraft NPC thats controlled by a LLM.",
   "authors": [],
   "contact": {},

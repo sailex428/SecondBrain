@@ -46,7 +46,7 @@ public class NPCEntity extends ServerPlayerEntity {
 				.onPlayerConnect(
 						new NPCClientConnection(NetworkSide.SERVERBOUND),
 						this,
-						new ConnectedClientData(profile, 0, this.getClientOptions(), false));
+						new ConnectedClientData(profile, 0, this.getClientOptions()));
 		LOGGER.info("NPC {} connected", this.npcName);
 
 		setupNPCState();
