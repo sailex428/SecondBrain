@@ -1,6 +1,6 @@
-package io.sailex.aiNpc.model.event;
+package io.sailex.aiNpc.model;
 
-import io.sailex.aiNpc.network.RequestType;
+import io.sailex.aiNpc.model.llm.RequestType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -9,4 +9,5 @@ import lombok.Getter;
 public class NPCEvent {
 
 	private final RequestType type;
+	private final String message;
 }

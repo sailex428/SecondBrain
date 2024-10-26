@@ -6,9 +6,9 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import io.sailex.aiNpc.constant.ResponseSchema;
 import io.sailex.aiNpc.model.NPC;
-import io.sailex.aiNpc.model.event.InstructionMessageEvent;
+import io.sailex.aiNpc.model.NPCEvent;
+import io.sailex.aiNpc.model.llm.RequestType;
 import io.sailex.aiNpc.npc.NPCController;
 import io.sailex.aiNpc.util.FeedbackLogger;
 import java.util.List;
@@ -46,7 +46,7 @@ public class NPCDoCommand {
 		}
 
 		String message = MessageArgumentType.getMessage(context, "message").getString();
-		npcController.get().handleMessage(new InstructionMessageEvent(message), ResponseSchema.CHAT_MESSAGE);
+		npcController.get().handleMessage(new NPCEvent(RequestType.INSTRUCTION, message));
 		return 1;
 	}
 }

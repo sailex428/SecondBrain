@@ -23,6 +23,7 @@ dependencies {
     compileOnly("org.projectlombok:lombok:1.18.34")
     annotationProcessor("org.projectlombok:lombok:1.18.34")
     implementation("org.xerial:sqlite-jdbc:3.46.1.3")
+    implementation("org.java-websocket:Java-WebSocket:1.5.7")
 }
 
 tasks.processResources {

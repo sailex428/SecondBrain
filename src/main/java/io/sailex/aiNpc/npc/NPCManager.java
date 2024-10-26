@@ -2,11 +2,10 @@ package io.sailex.aiNpc.npc;
 
 import com.mojang.authlib.GameProfile;
 import io.sailex.aiNpc.constant.ConfigConstants;
+import io.sailex.aiNpc.llm.ILLMService;
+import io.sailex.aiNpc.llm.OllamaService;
 import io.sailex.aiNpc.model.NPC;
 import io.sailex.aiNpc.model.command.NPCCommand;
-import io.sailex.aiNpc.pathfinding.PathFinder;
-import io.sailex.aiNpc.service.ILLMService;
-import io.sailex.aiNpc.service.OllamaService;
 import io.sailex.aiNpc.util.FeedbackLogger;
 import io.sailex.aiNpc.util.GameProfileBuilder;
 import io.sailex.aiNpc.util.config.ModConfig;
@@ -52,10 +51,10 @@ public class NPCManager {
 
 		NPCEntity entity = new NPCEntity(npcName, server, worldIn, npcProfile, npcCommand.getNpcState());
 		ILLMService llmService = new OllamaService(llmModel);
-		NPCController controller = new NPCController(server, entity, llmService);
-		PathFinder pathFinder = new PathFinder(worldIn, entity);
+		NPCContextGenerator npcContextGenerator = new NPCContextGenerator(entity);
+		NPCController controller = new NPCController(entity, llmService, npcContextGenerator);
 
-		npcList.add(new NPC(npcProfile.getId(), entity, controller, llmService, pathFinder));
+		npcList.add(new NPC(npcProfile.getId(), entity, controller, llmService, npcContextGenerator));
 
 		entity.connectNPC();
 		controller.handleInitMessage();

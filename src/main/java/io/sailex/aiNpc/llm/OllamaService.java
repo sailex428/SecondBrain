@@ -1,4 +1,4 @@
-package io.sailex.aiNpc.service;
+package io.sailex.aiNpc.llm;
 
 import com.google.gson.Gson;
 import io.sailex.aiNpc.constant.ConfigConstants;
@@ -20,7 +20,7 @@ public class OllamaService implements ILLMService {
 
 	private static final Logger LOGGER = LogManager.getLogger(OllamaService.class);
 	private static final Gson GSON = new Gson();
-	private final ExecutorService service = Executors.newFixedThreadPool(3);
+	private final ExecutorService service = Executors.newFixedThreadPool(1);
 
 	private final String ollamaUrl;
 	private final HttpClient httpClient;
@@ -75,5 +75,4 @@ public class OllamaService implements ILLMService {
 	public void stopService() {
 		service.shutdown();
 	}
-
 }

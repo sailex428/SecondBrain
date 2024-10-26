@@ -1,14 +1,14 @@
 package io.sailex.aiNpc.npc;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonSyntaxException;
+import com.google.gson.*;
 import io.sailex.aiNpc.constant.Instructions;
-import io.sailex.aiNpc.model.event.*;
-import io.sailex.aiNpc.model.event.ChatMessageEvent;
-import java.util.Map;
-
-import io.sailex.aiNpc.network.ResponseType;
+import io.sailex.aiNpc.constant.ResponseSchema;
+import io.sailex.aiNpc.model.NPCEvent;
+import io.sailex.aiNpc.model.context.WorldContext;
+import io.sailex.aiNpc.model.llm.ChatMessage;
+import io.sailex.aiNpc.model.llm.LLMResponse;
+import io.sailex.aiNpc.model.llm.Move;
+import io.sailex.aiNpc.model.llm.ResponseType;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -17,36 +17,47 @@ public class NPCInteraction {
 	private static final Gson GSON = new Gson();
 	private static final Logger LOGGER = LogManager.getLogger(NPCInteraction.class);
 
-	public static String buildRequest(NPCEvent message, Map<String, Object> schema) {
+	public static String buildRequest(NPCEvent message, WorldContext context) {
 		JsonObject request = new JsonObject();
-		request.add("data", GSON.toJsonTree(message));
-		request.add("schema", GSON.toJsonTree(schema));
+
+		JsonArray dataArray = new JsonArray();
+		dataArray.add(GSON.toJsonTree(context));
+		dataArray.add(GSON.toJsonTree(message));
+
+		request.add("data", dataArray);
+		request.add("schema", GSON.toJsonTree(ResponseSchema.ALL_SCHEMAS));
 		request.add("instruction", GSON.toJsonTree(Instructions.STRUCTURE_INSTRUCTIONS));
 
 		LOGGER.info("Built request with content: {}", request);
 		return GSON.toJson(request);
 	}
 
-	public static NPCEvent parseResponse(String response) {
+	public static LLMResponse parseResponse(String response) {
 		try {
-			JsonObject jsonResponse = GSON.fromJson(response, JsonObject.class);
-			ResponseType responseType =
-					ResponseType.valueOf(jsonResponse.get("type").getAsString());
+			JsonArray jsonResponse = GSON.fromJson(response, JsonArray.class);
 
-			switch (responseType) {
-				case ResponseType.CHAT_MESSAGE -> {
-					return GSON.fromJson(response, ChatMessageEvent.class);
-				}
-				default -> {
-					LOGGER.error("Response type not recognized: {}", responseType);
-					return null;
+			for (JsonElement responseElement : jsonResponse) {
+				JsonObject jsonObject = responseElement.getAsJsonObject();
+				ResponseType responseType =
+						ResponseType.valueOf(jsonObject.get("type").getAsString());
+				switch (responseType) {
+					case ResponseType.CHAT_MESSAGE -> {
+						return GSON.fromJson(responseElement, ChatMessage.class);
+					}
+					case ResponseType.MOVE -> {
+						return GSON.fromJson(responseElement, Move.class);
+					}
+					default -> {
+						LOGGER.error("Response type not recognized: {}", responseType);
+						throw new IllegalArgumentException("Response type not recognized: " + responseType);
+					}
 				}
 			}
+			return new LLMResponse(ResponseType.EMPTY);
 
 		} catch (JsonSyntaxException e) {
 			LOGGER.error("Error parsing response: {}", e.getMessage());
-			return null;
+			throw new JsonSyntaxException("Error parsing response: " + e.getMessage());
 		}
 	}
-
 }

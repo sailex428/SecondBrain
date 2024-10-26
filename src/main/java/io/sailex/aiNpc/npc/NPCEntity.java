@@ -3,7 +3,10 @@ package io.sailex.aiNpc.npc;
 import com.mojang.authlib.GameProfile;
 import io.sailex.aiNpc.model.command.NPCState;
 import io.sailex.aiNpc.network.NPCClientConnection;
+import io.sailex.aiNpc.pathfinding.PathFinder;
+import io.sailex.aiNpc.pathfinding.PathNode;
 import io.sailex.aiNpc.util.ChatUtils;
+import java.util.List;
 import lombok.Getter;
 import net.minecraft.network.NetworkSide;
 import net.minecraft.network.packet.c2s.common.SyncedClientOptions;
@@ -12,6 +15,7 @@ import net.minecraft.server.network.ConnectedClientData;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.GameMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,12 +29,14 @@ public class NPCEntity extends ServerPlayerEntity {
 
 	private final GameProfile profile;
 	private final NPCState state;
+	private final PathFinder pathFinder;
 
 	public NPCEntity(String npcName, MinecraftServer server, ServerWorld world, GameProfile profile, NPCState state) {
 		super(server, world, profile, SyncedClientOptions.createDefault());
 		this.npcName = npcName;
 		this.profile = profile;
 		this.state = state;
+		this.pathFinder = new PathFinder(world, this);
 	}
 
 	public void connectNPC() {
@@ -74,4 +80,8 @@ public class NPCEntity extends ServerPlayerEntity {
 		this.server.getPlayerManager().broadcast(ChatUtils.format(message, npcName), false);
 	}
 
+	public void moveTo(int x, int y, int z) {
+		List<PathNode> pathNodes = pathFinder.findPath(this.getBlockPos(), new BlockPos(x, y, z));
+		pathFinder.executeMovement(pathNodes);
+	}
 }

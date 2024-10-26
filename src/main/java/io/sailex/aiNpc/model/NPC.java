@@ -1,9 +1,9 @@
 package io.sailex.aiNpc.model;
 
+import io.sailex.aiNpc.llm.ILLMService;
+import io.sailex.aiNpc.npc.NPCContextGenerator;
 import io.sailex.aiNpc.npc.NPCController;
 import io.sailex.aiNpc.npc.NPCEntity;
-import io.sailex.aiNpc.pathfinding.PathFinder;
-import io.sailex.aiNpc.service.ILLMService;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -16,5 +16,5 @@ public class NPC {
 	private NPCEntity npcEntity;
 	private NPCController npcController;
 	private ILLMService llmService;
-	private PathFinder pathFinder;
+	private NPCContextGenerator npcContextGenerator;
 }
