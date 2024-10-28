@@ -1,0 +1,65 @@
+package io.sailex.aiNpc.client.llm;
+
+import io.github.sashirestela.openai.SimpleOpenAI;
+import io.github.sashirestela.openai.common.ResponseFormat;
+import io.github.sashirestela.openai.domain.chat.ChatMessage;
+import io.github.sashirestela.openai.domain.chat.ChatRequest;
+import io.sailex.aiNpc.client.config.ModConfig;
+import io.sailex.aiNpc.client.constant.ConfigConstants;
+import io.sailex.aiNpc.client.exception.EmptyResponseException;
+import io.sailex.aiNpc.client.model.interaction.Actions;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+public class OpenAiClient implements ILLMClient {
+
+	private static final Logger LOGGER = LogManager.getLogger(OpenAiClient.class);
+	private final ExecutorService service = Executors.newFixedThreadPool(3);
+
+	private final String openAiModel;
+	private final SimpleOpenAI openAiService;
+
+	public OpenAiClient(String openAiModel) {
+		this.openAiModel = openAiModel;
+		this.openAiService = SimpleOpenAI.builder()
+				.apiKey(ModConfig.getProperty(ConfigConstants.NPC_LLM_OPENAI_API_KEY))
+				.build();
+	}
+
+	@Override
+	public CompletableFuture<String> generateResponse(String userPrompt, String systemPrompt) {
+		return CompletableFuture.supplyAsync(
+				() -> {
+					ChatRequest chatRequest = ChatRequest.builder()
+							.model(openAiModel)
+							.message(ChatMessage.SystemMessage.of(systemPrompt))
+							.message(ChatMessage.UserMessage.of(userPrompt))
+							.responseFormat(ResponseFormat.jsonSchema(ResponseFormat.JsonSchema.builder()
+									.name("Actions")
+									.schemaClass(Actions.class)
+									.build()))
+							.build();
+
+					String chatResponse = openAiService
+							.chatCompletions()
+							.create(chatRequest)
+							.join()
+							.firstContent();
+
+					LOGGER.info("Generated response from openai: {}", chatResponse);
+					if (!chatResponse.isBlank()) {
+						return chatResponse;
+					}
+					throw new EmptyResponseException("Empty response from openai");
+				},
+				service);
+	}
+
+	@Override
+	public void stopService() {
+		service.shutdown();
+	}
+}

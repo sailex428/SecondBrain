@@ -12,8 +12,16 @@ base {
 }
 
 repositories {
+
     mavenCentral()
+    flatDir {
+        dirs("libs")
+    }
+//    maven {
+//        url = uri("https://jitpack.io")
+//    }
 }
+
 
 dependencies {
     minecraft("com.mojang:minecraft:${project.extra["minecraft_version"]}")
@@ -23,7 +31,14 @@ dependencies {
     compileOnly("org.projectlombok:lombok:1.18.34")
     annotationProcessor("org.projectlombok:lombok:1.18.34")
     implementation("org.xerial:sqlite-jdbc:3.46.1.3")
-    implementation("org.java-websocket:Java-WebSocket:1.5.7")
+    implementation("net.raphimc:MinecraftAuth:4.1.1")
+    modImplementation("cabaletta:baritone-api:1.10.2")
+
+    implementation("io.github.sashirestela:simple-openai:3.9.0") {
+        exclude(group = "org.slf4j")
+    }
+
+//    modApi(fileTree("libs") { include("*.jar") })
 }
 
 tasks.processResources {
