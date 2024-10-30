@@ -5,7 +5,7 @@ import java.util.Map;
 
 public class ResponseSchema {
 
-	//old schemas for ollama
+	// old schemas for ollama
 	public static final Map<String, Object> CHAT_MESSAGE =
 			Map.of("type", "CHAT_MESSAGE", "message", "answer on the request");
 

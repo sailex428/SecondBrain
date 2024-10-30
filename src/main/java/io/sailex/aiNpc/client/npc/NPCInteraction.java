@@ -1,8 +1,6 @@
 package io.sailex.aiNpc.client.npc;
 
 import com.google.gson.*;
-import io.sailex.aiNpc.client.constant.Instructions;
-import io.sailex.aiNpc.client.constant.ResponseSchema;
 import io.sailex.aiNpc.client.model.NPCEvent;
 import io.sailex.aiNpc.client.model.context.WorldContext;
 import io.sailex.aiNpc.client.model.interaction.Actions;
@@ -17,17 +15,17 @@ public class NPCInteraction {
 	private static final Logger LOGGER = LogManager.getLogger(NPCInteraction.class);
 
 	public static String buildUserPrompt(NPCEvent message) {
-//		handling for ollama
-//		JsonObject request = new JsonObject();
-//
-//		JsonArray dataArray = new JsonArray();
-//		dataArray.add(GSON.toJsonTree(message));
-//
-//		request.add("data", dataArray);
-//		request.add("schema", GSON.toJsonTree(ResponseSchema.ALL_SCHEMAS));
-//		request.add("instruction", GSON.toJsonTree(Instructions.STRUCTURE_INSTRUCTIONS));
-//
-//		LOGGER.info("Built request with content: {}", request);
+		//		handling for ollama
+		//		JsonObject request = new JsonObject();
+		//
+		//		JsonArray dataArray = new JsonArray();
+		//		dataArray.add(GSON.toJsonTree(message));
+		//
+		//		request.add("data", dataArray);
+		//		request.add("schema", GSON.toJsonTree(ResponseSchema.ALL_SCHEMAS));
+		//		request.add("instruction", GSON.toJsonTree(Instructions.STRUCTURE_INSTRUCTIONS));
+		//
+		//		LOGGER.info("Built request with content: {}", request);
 		return GSON.toJson(message);
 	}
 
