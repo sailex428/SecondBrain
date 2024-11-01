@@ -17,9 +17,6 @@ repositories {
     flatDir {
         dirs("libs")
     }
-//    maven {
-//        url = uri("https://jitpack.io")
-//    }
 }
 
 
@@ -37,8 +34,6 @@ dependencies {
     implementation("io.github.sashirestela:simple-openai:3.9.0") {
         exclude(group = "org.slf4j")
     }
-
-//    modApi(fileTree("libs") { include("*.jar") })
 }
 
 tasks.processResources {
