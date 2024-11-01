@@ -1,5 +1,6 @@
 package io.sailex.aiNpc.client;
 
+import io.sailex.aiNpc.client.command.SetConfigCommand;
 import io.sailex.aiNpc.client.config.ModConfig;
 import io.sailex.aiNpc.client.constant.ConfigConstants;
 import io.sailex.aiNpc.client.listener.EventListenerManager;
@@ -11,6 +12,7 @@ import io.sailex.aiNpc.client.npc.NPCContextGenerator;
 import io.sailex.aiNpc.client.npc.NPCController;
 import lombok.Getter;
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.minecraft.client.MinecraftClient;
@@ -67,6 +69,7 @@ public class AiNPCClient implements ClientModInitializer {
 		}
 
 		ModConfig.init();
+		registerCommands();
 
 		ILLMClient llmService;
 		if ("openai".equals(ModConfig.getProperty(ConfigConstants.NPC_LLM_TYPE))) {
@@ -80,5 +83,10 @@ public class AiNPCClient implements ClientModInitializer {
 
 		EventListenerManager eventListenerManager = new EventListenerManager(npc);
 		eventListenerManager.register();
+	}
+
+	private void registerCommands() {
+		ClientCommandRegistrationCallback.EVENT.register(
+				(dispatcher, registryAccess) -> new SetConfigCommand().register(dispatcher));
 	}
 }
