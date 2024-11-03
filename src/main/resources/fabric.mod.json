@@ -7,7 +7,6 @@
   "authors": ["sailex428"],
   "contact": {},
   "license": "All-Rights-Reserved",
-  "icon": "assets/ai-player/icon.png",
   "environment": "client",
   "entrypoints": {
     "client": [
