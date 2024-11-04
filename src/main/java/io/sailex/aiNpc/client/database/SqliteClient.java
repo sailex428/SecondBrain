@@ -9,6 +9,7 @@ import net.fabricmc.loader.api.FabricLoader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+// needed in the future
 public class SqliteClient {
 
 	private static final Logger LOGGER = LogManager.getLogger(SqliteClient.class);

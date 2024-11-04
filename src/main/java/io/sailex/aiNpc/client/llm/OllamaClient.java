@@ -2,8 +2,6 @@ package io.sailex.aiNpc.client.llm;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import io.sailex.aiNpc.client.config.ModConfig;
-import io.sailex.aiNpc.client.constant.ConfigConstants;
 import io.sailex.aiNpc.client.exception.EmptyResponseException;
 import java.io.IOException;
 import java.net.ConnectException;
@@ -27,8 +25,8 @@ public class OllamaClient implements ILLMClient {
 	private final HttpClient httpClient;
 	private final String ollamaModel;
 
-	public OllamaClient(String ollamaModel) {
-		this.ollamaUrl = ModConfig.getProperty(ConfigConstants.NPC_LLM_OLLAMA_URL);
+	public OllamaClient(String ollamaModel, String ollamaUrl) {
+		this.ollamaUrl = ollamaUrl;
 		this.ollamaModel = ollamaModel;
 		this.httpClient = HttpClient.newHttpClient();
 	}

@@ -4,8 +4,6 @@ import io.github.sashirestela.openai.SimpleOpenAI;
 import io.github.sashirestela.openai.common.ResponseFormat;
 import io.github.sashirestela.openai.domain.chat.ChatMessage;
 import io.github.sashirestela.openai.domain.chat.ChatRequest;
-import io.sailex.aiNpc.client.config.ModConfig;
-import io.sailex.aiNpc.client.constant.ConfigConstants;
 import io.sailex.aiNpc.client.exception.EmptyResponseException;
 import io.sailex.aiNpc.client.model.interaction.Actions;
 import java.util.concurrent.CompletableFuture;
@@ -22,11 +20,9 @@ public class OpenAiClient implements ILLMClient {
 	private final String openAiModel;
 	private final SimpleOpenAI openAiService;
 
-	public OpenAiClient(String openAiModel) {
+	public OpenAiClient(String openAiModel, String apiKey) {
 		this.openAiModel = openAiModel;
-		this.openAiService = SimpleOpenAI.builder()
-				.apiKey(ModConfig.getProperty(ConfigConstants.NPC_LLM_OPENAI_API_KEY))
-				.build();
+		this.openAiService = SimpleOpenAI.builder().apiKey(apiKey).build();
 	}
 
 	@Override
