@@ -14,8 +14,8 @@
     ]
   },
   "depends": {
-    "fabricloader": ">=0.15.11",
+    "fabricloader": ">=${loader_version}",
     "fabric": "*",
-    "minecraft": "1.20.4"
+    "minecraft": "${minecraft_version}"
   }
 }

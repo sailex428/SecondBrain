@@ -28,7 +28,6 @@ dependencies {
     compileOnly("org.projectlombok:lombok:1.18.34")
     annotationProcessor("org.projectlombok:lombok:1.18.34")
     implementation("org.xerial:sqlite-jdbc:3.46.1.3")
-    implementation("net.raphimc:MinecraftAuth:4.1.1")
     modImplementation("cabaletta:baritone-api:1.10.2")
 
     implementation("io.github.sashirestela:simple-openai:3.9.0") {
@@ -76,6 +75,7 @@ tasks.jar {
     from("LICENSE") {
         rename { "${it}_${archivesBaseName}" }
     }
+    from(fileTree("libs") { include("baritone-api-*.jar") })
 }
 
 publishing {
