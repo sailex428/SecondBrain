@@ -8,8 +8,6 @@ import io.sailex.aiNpc.client.llm.OpenAiClient;
 import io.sailex.aiNpc.client.model.NPC;
 import io.sailex.aiNpc.client.npc.NPCContextGenerator;
 import io.sailex.aiNpc.client.npc.NPCController;
-import java.net.InetSocketAddress;
-import java.util.Optional;
 import java.util.Properties;
 import lombok.Getter;
 import lombok.Setter;
@@ -18,9 +16,6 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.multiplayer.ConnectScreen;
 import net.minecraft.client.network.*;
-import net.minecraft.network.ClientConnection;
-import net.minecraft.network.NetworkSide;
-import net.minecraft.network.packet.c2s.login.LoginHelloC2SPacket;
 import net.minecraft.text.Text;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -33,6 +28,7 @@ public class AiNPCClient implements ClientModInitializer {
 	public static final MinecraftClient client = MinecraftClient.getInstance();
 	private boolean npcInitialized = false;
 	private Properties properties;
+	private boolean connected = false;
 
 	@Setter
 	private Text status = Text.of("connecting");
@@ -45,8 +41,9 @@ public class AiNPCClient implements ClientModInitializer {
 
 	private void waitForClientToLoad() {
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
-			if (client.isFinishedLoading()) {
+			if (client.isFinishedLoading() && !connected) {
 				connectToServer();
+				connected = true;
 			}
 		});
 		ClientTickEvents.END_WORLD_TICK.register(client -> {
@@ -62,29 +59,13 @@ public class AiNPCClient implements ClientModInitializer {
 		String serverName = properties.getOrDefault("server.name", "localhost").toString();
 		int port =
 				Integer.parseInt(properties.getOrDefault("server.port", 25565).toString());
-		LOGGER.info("Connecting to server {}:{}", serverName, port);
 
-		Optional<InetSocketAddress> optional = AllowedAddressResolver.DEFAULT
-				.resolve(new ServerAddress(serverName, port))
-				.map(Address::getInetSocketAddress);
-		if (optional.isEmpty()) {
-			LOGGER.error("Failed to resolve server address");
-			return;
-		}
-		InetSocketAddress inetSocketAddress = optional.get();
-		ClientConnection clientConnection = new ClientConnection(NetworkSide.CLIENTBOUND);
-		clientConnection.connect(
-				inetSocketAddress.getHostName(),
-				inetSocketAddress.getPort(),
-				new ClientLoginNetworkHandler(clientConnection, client, null, null, false, null, this::setStatus));
-		clientConnection.send(new LoginHelloC2SPacket(
-				client.getSession().getUsername(), client.getSession().getUuidOrNull()));
 		ConnectScreen.connect(
 				client.currentScreen,
 				client,
 				new ServerAddress(serverName, port),
 				new ServerInfo("server", serverName, ServerInfo.ServerType.OTHER),
-				true);
+				false);
 	}
 
 	private void initializeNPC() {
