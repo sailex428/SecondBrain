@@ -1,3 +1,3 @@
 ## License
 
-This project is licensed with a custom license, see LICENSE.md
+This project is licensed with the [LGPL-3.0](LICENSE.md).
