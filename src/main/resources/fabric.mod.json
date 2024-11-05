@@ -6,7 +6,7 @@
   "description": "A Minecraft NPC thats controlled by a LLM.",
   "authors": ["sailex428"],
   "contact": {},
-  "license": "All-Rights-Reserved",
+  "license": "LGPL-3.0",
   "environment": "client",
   "entrypoints": {
     "client": [

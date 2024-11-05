@@ -24,15 +24,15 @@ dependencies {
     minecraft("com.mojang:minecraft:${project.extra["minecraft_version"]}")
     mappings("net.fabricmc:yarn:${project.extra["yarn_mappings"]}:v2")
     modImplementation("net.fabricmc:fabric-loader:${project.extra["loader_version"]}")
-    modImplementation("net.fabricmc.fabric-api:fabric-api:${project.extra["fabric_version"]}")
+    include(modImplementation("net.fabricmc.fabric-api:fabric-api:${project.extra["fabric_version"]}")!!)
     compileOnly("org.projectlombok:lombok:1.18.34")
     annotationProcessor("org.projectlombok:lombok:1.18.34")
-    implementation("org.xerial:sqlite-jdbc:3.46.1.3")
-    modImplementation("cabaletta:baritone-api:1.10.2")
+    include(implementation("org.xerial:sqlite-jdbc:3.46.1.3")!!)
+    include(modImplementation("cabaletta:baritone-api:1.10.2")!!)
 
-    implementation("io.github.sashirestela:simple-openai:3.9.0") {
+    include(implementation("io.github.sashirestela:simple-openai:3.9.0") {
         exclude(group = "org.slf4j")
-    }
+    })
 }
 
 tasks.processResources {
@@ -71,13 +71,6 @@ java {
 
 val archivesBaseName: String by project
 
-tasks.jar {
-    from("LICENSE") {
-        rename { "${it}_${archivesBaseName}" }
-    }
-    from(fileTree("libs") { include("baritone-api-*.jar") })
-}
-
 publishing {
     publications {
         create<MavenPublication>("mavenJava") {
@@ -96,5 +89,11 @@ spotless {
         removeUnusedImports()
         trimTrailingWhitespace()
         endWithNewline()
+    }
+}
+
+tasks.jar {
+    from("LICENSE") {
+        rename { "${it}_${archivesBaseName}" }
     }
 }
