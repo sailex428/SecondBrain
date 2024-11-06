@@ -12,7 +12,6 @@ base {
 }
 
 repositories {
-
     mavenCentral()
     flatDir {
         dirs("libs")
@@ -27,10 +26,11 @@ dependencies {
     include(modImplementation("net.fabricmc.fabric-api:fabric-api:${project.extra["fabric_version"]}")!!)
     compileOnly("org.projectlombok:lombok:1.18.34")
     annotationProcessor("org.projectlombok:lombok:1.18.34")
-    include(implementation("org.xerial:sqlite-jdbc:3.46.1.3")!!)
-    include(modImplementation("cabaletta:baritone-api:1.10.2")!!)
+    include(modImplementation("org.xerial:sqlite-jdbc:3.46.1.3")!!)
+    include(modImplementation("cabaletta:baritone-api-fabric:1.10.2")!!)
+    include(modRuntimeOnly("dev_babbaj:nether-pathfinder-1.4.1")!!)
 
-    include(implementation("io.github.sashirestela:simple-openai:3.9.0") {
+    include(modImplementation("io.github.sashirestela:simple-openai:3.9.0") {
         exclude(group = "org.slf4j")
     })
 }
