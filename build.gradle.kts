@@ -13,16 +13,26 @@ base {
 
 repositories {
     mavenCentral()
+    flatDir {
+        dirs("libs")
+    }
 }
+
 
 dependencies {
     minecraft("com.mojang:minecraft:${project.extra["minecraft_version"]}")
     mappings("net.fabricmc:yarn:${project.extra["yarn_mappings"]}:v2")
     modImplementation("net.fabricmc:fabric-loader:${project.extra["loader_version"]}")
-    modImplementation("net.fabricmc.fabric-api:fabric-api:${project.extra["fabric_version"]}")
+    include(modImplementation("net.fabricmc.fabric-api:fabric-api:${project.extra["fabric_version"]}")!!)
     compileOnly("org.projectlombok:lombok:1.18.34")
     annotationProcessor("org.projectlombok:lombok:1.18.34")
-    implementation("org.java-websocket:Java-WebSocket:1.5.7")
+    include(modImplementation("org.xerial:sqlite-jdbc:3.46.1.3")!!)
+    include(modImplementation("cabaletta:baritone-api-fabric:1.10.2")!!)
+    include(modRuntimeOnly("dev_babbaj:nether-pathfinder-1.4.1")!!)
+
+    include(modImplementation("io.github.sashirestela:simple-openai:3.9.0") {
+        exclude(group = "org.slf4j")
+    })
 }
 
 tasks.processResources {
@@ -61,12 +71,6 @@ java {
 
 val archivesBaseName: String by project
 
-tasks.jar {
-    from("LICENSE") {
-        rename { "${it}_${archivesBaseName}" }
-    }
-}
-
 publishing {
     publications {
         create<MavenPublication>("mavenJava") {
@@ -85,5 +89,11 @@ spotless {
         removeUnusedImports()
         trimTrailingWhitespace()
         endWithNewline()
+    }
+}
+
+tasks.jar {
+    from("LICENSE") {
+        rename { "${it}_${archivesBaseName}" }
     }
 }

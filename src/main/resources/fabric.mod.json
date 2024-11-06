@@ -1,25 +1,18 @@
 {
   "schemaVersion": 1,
-  "id": "npc-player",
+  "id": "ai-npc",
   "version": "${version}",
-  "name": "NPC-Player",
+  "name": "AI-NPC",
   "description": "A Minecraft NPC thats controlled by a LLM.",
-  "authors": [],
+  "authors": ["sailex428"],
   "contact": {},
-  "license": "All-Rights-Reserved",
-  "icon": "assets/ai-player/icon.png",
-  "environment": "*",
+  "license": "LGPL-3.0",
+  "environment": "client",
   "entrypoints": {
     "client": [
       "io.sailex.aiNpc.client.AiNPCClient"
-    ],
-    "main": [
-      "io.sailex.aiNpc.AiNPCServer"
     ]
   },
-  "mixins": [
-    "ai-npc.mixins.json"
-  ],
   "depends": {
     "fabricloader": ">=${loader_version}",
     "fabric": "*",
