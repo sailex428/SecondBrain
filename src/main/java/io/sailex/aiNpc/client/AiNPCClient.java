@@ -97,6 +97,7 @@ public class AiNPCClient implements ClientModInitializer {
 	}
 
 	private String validateProperty(String property) {
+		LOGGER.info("Property: {}", property);
 		if (property == null) {
 			LOGGER.error("Property is null");
 			client.stop();
