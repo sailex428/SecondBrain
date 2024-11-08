@@ -30,6 +30,15 @@ dependencies {
     include(modImplementation("cabaletta:baritone-api-fabric:1.10.2")!!)
     include(modRuntimeOnly("dev_babbaj:nether-pathfinder-1.4.1")!!)
 
+    //needed deps for openai communication
+    include(modRuntimeOnly("com.fasterxml.jackson.core:jackson-core:2.18.1")!!)
+    include(modRuntimeOnly("com.fasterxml.jackson.core:jackson-annotations:2.18.1")!!)
+    include(modRuntimeOnly("com.fasterxml.jackson.core:jackson-databind:2.18.1")!!)
+    include(modRuntimeOnly("com.fasterxml:classmate:1.7.0")!!)
+    include(modRuntimeOnly("com.github.victools:jsonschema-generator:4.36.0")!!)
+    include(modRuntimeOnly("com.github.victools:jsonschema-module-jackson:4.36.0")!!)
+    include(modRuntimeOnly("io.github.sashirestela:slimvalidator:1.2.2")!!)
+    include(modRuntimeOnly("io.github.sashirestela:cleverclient:1.4.4")!!)
     include(modImplementation("io.github.sashirestela:simple-openai:3.9.0") {
         exclude(group = "org.slf4j")
     })
