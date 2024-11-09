@@ -56,9 +56,11 @@ public class AiNPCClient implements ClientModInitializer {
 	}
 
 	private void connectToServer() {
-		String serverName = properties.getOrDefault("server.name", "localhost").toString();
-		int port =
-				Integer.parseInt(properties.getOrDefault("server.port", 25565).toString());
+		String serverName = properties
+				.getOrDefault(ConfigConstants.NPC_SERVER_IP, "localhost")
+				.toString();
+		int port = Integer.parseInt(
+				properties.getOrDefault(ConfigConstants.NPC_SERVER_PORT, 25565).toString());
 
 		ConnectScreen.connect(
 				client.currentScreen,
