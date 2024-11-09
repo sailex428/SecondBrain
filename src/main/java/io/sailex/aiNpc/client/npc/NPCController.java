@@ -88,7 +88,7 @@ public class NPCController {
 	}
 
 	private void chat(String message) {
-		npc.sendMessage(formatChatMessage(message), false);
+		npc.networkHandler.sendChatMessage(message);
 	}
 
 	private void move(WorldContext.Position targetPosition) {
@@ -98,9 +98,5 @@ public class NPCController {
 
 	private void mine(String blockToMine) {
 		baritone.getMineProcess().mineByName(blockToMine);
-	}
-
-	private Text formatChatMessage(String message) {
-		return Text.literal(String.format("[§5AI-NPC§f] [%s] %s", npc.getName().getString(), message));
 	}
 }
