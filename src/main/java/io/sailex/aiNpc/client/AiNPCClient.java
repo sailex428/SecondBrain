@@ -1,5 +1,6 @@
 package io.sailex.aiNpc.client;
 
+import io.sailex.aiNpc.client.config.Config;
 import io.sailex.aiNpc.client.constant.ConfigConstants;
 import io.sailex.aiNpc.client.listener.EventListenerManager;
 import io.sailex.aiNpc.client.llm.ILLMClient;
@@ -8,15 +9,12 @@ import io.sailex.aiNpc.client.llm.OpenAiClient;
 import io.sailex.aiNpc.client.model.NPC;
 import io.sailex.aiNpc.client.npc.NPCContextGenerator;
 import io.sailex.aiNpc.client.npc.NPCController;
-import java.util.Properties;
 import lombok.Getter;
-import lombok.Setter;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.multiplayer.ConnectScreen;
 import net.minecraft.client.network.*;
-import net.minecraft.text.Text;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -26,16 +24,12 @@ public class AiNPCClient implements ClientModInitializer {
 	private static final Logger LOGGER = LogManager.getLogger(AiNPCClient.class);
 	public static final String MOD_ID = "ai_npc";
 	public static final MinecraftClient client = MinecraftClient.getInstance();
-	private boolean npcInitialized = false;
-	private Properties properties;
-	private boolean connected = false;
 
-	@Setter
-	private Text status = Text.of("connecting");
+	private boolean npcInitialized = false;
+	private boolean connected = false;
 
 	@Override
 	public void onInitializeClient() {
-		properties = System.getProperties();
 		waitForClientToLoad();
 	}
 
@@ -49,45 +43,44 @@ public class AiNPCClient implements ClientModInitializer {
 		ClientTickEvents.END_WORLD_TICK.register(client -> {
 			if (!npcInitialized) {
 				LOGGER.info("Initialize NPC");
-				initializeNPC();
+				initializeNpc();
 				npcInitialized = true;
 			}
 		});
 	}
 
 	private void connectToServer() {
-		String serverName = properties
-				.getOrDefault(ConfigConstants.NPC_SERVER_IP, "localhost")
-				.toString();
-		int port = Integer.parseInt(
-				properties.getOrDefault(ConfigConstants.NPC_SERVER_PORT, 25565).toString());
+		String serverName = Config.getProperty(ConfigConstants.NPC_SERVER_IP);
+		String port = Config.getProperty(ConfigConstants.NPC_SERVER_PORT);
 
 		ConnectScreen.connect(
 				client.currentScreen,
 				client,
-				new ServerAddress(serverName, port),
+				new ServerAddress(serverName, Integer.parseInt(port)),
 				new ServerInfo("server", serverName, ServerInfo.ServerType.OTHER),
 				false);
 	}
 
-	private void initializeNPC() {
+	private void initializeNpc() {
 		ClientPlayerEntity npcEntity = client.player;
 		if (npcEntity == null) {
 			LOGGER.error("NPC entity is null");
-			client.stop();
 			return;
 		}
 
 		ILLMClient llmService;
-		String npcType = validateProperty(properties.getProperty(ConfigConstants.NPC_LLM_TYPE));
+		String npcType = Config.getProperty(ConfigConstants.NPC_LLM_TYPE);
 		if ("ollama".equals(npcType)) {
-			String ollamaModel = validateProperty(properties.getProperty(ConfigConstants.NPC_LLM_OLLAMA_MODEL));
-			String ollamaUrl = validateProperty(properties.getProperty(ConfigConstants.NPC_LLM_OLLAMA_URL));
+			String ollamaModel = Config.getProperty(ConfigConstants.NPC_LLM_OLLAMA_MODEL);
+			String ollamaUrl = Config.getProperty(ConfigConstants.NPC_LLM_OLLAMA_URL);
 			llmService = new OllamaClient(ollamaModel, ollamaUrl);
-		} else {
-			String apiKey = validateProperty(properties.getProperty(ConfigConstants.NPC_LLM_OPENAI_API_KEY));
-			String openAiModel = validateProperty(properties.getProperty(ConfigConstants.NPC_LLM_OPENAI_MODEL));
+		} else if ("openai".equals(npcType)) {
+			String apiKey = Config.getProperty(ConfigConstants.NPC_LLM_OPENAI_API_KEY);
+			String openAiModel = Config.getProperty(ConfigConstants.NPC_LLM_OPENAI_MODEL);
 			llmService = new OpenAiClient(openAiModel, apiKey);
+		} else {
+			LOGGER.error("Invalid LLM type: {}", npcType);
+			return;
 		}
 
 		NPCContextGenerator npcContextGenerator = new NPCContextGenerator(npcEntity);
@@ -96,15 +89,5 @@ public class AiNPCClient implements ClientModInitializer {
 
 		EventListenerManager eventListenerManager = new EventListenerManager(npc);
 		eventListenerManager.register();
-	}
-
-	private String validateProperty(String property) {
-		LOGGER.info("Property: {}", property);
-		if (property == null) {
-			LOGGER.error("Property is null");
-			client.stop();
-			return null;
-		}
-		return property;
 	}
 }
