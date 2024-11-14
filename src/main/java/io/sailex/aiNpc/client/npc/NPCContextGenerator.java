@@ -104,9 +104,8 @@ public class NPCContextGenerator {
 
 	private boolean isCloser(BlockPos pos, WorldContext.Position otherPos) {
 		double currentDistance = npcEntity.getBlockPos().getSquaredDistance(pos);
-		double otherDistance = npcEntity
-				.getBlockPos()
-				.getSquaredDistance(new BlockPos((int) otherPos.x(), (int) otherPos.y(), (int) otherPos.y()));
+		double otherDistance =
+				npcEntity.getBlockPos().getSquaredDistance(new BlockPos(otherPos.x(), otherPos.y(), otherPos.y()));
 		return currentDistance < otherDistance;
 	}
 
@@ -131,7 +130,6 @@ public class NPCContextGenerator {
 				// Main inventory
 				getInventoryItemsInRange(inventory, 9, 36),
 				getArmorItems(inventory),
-				// Hand item
 				getInventoryItemsInHand(inventory));
 	}
 
@@ -139,10 +137,7 @@ public class NPCContextGenerator {
 		List<WorldContext.ItemData> items = new ArrayList<>();
 		ItemStack stack = inventory.getMainHandStack();
 
-		if (!stack.isEmpty()) {
-			items.add(new WorldContext.ItemData(
-					stack.getItem().getTranslationKey(), stack.getCount(), stack.getDamage(), -1));
-		}
+		addItemData(stack, items, -1);
 		return items;
 	}
 
@@ -151,11 +146,7 @@ public class NPCContextGenerator {
 
 		for (int i = start; i < end; i++) {
 			ItemStack stack = inventory.getStack(i);
-
-			if (!stack.isEmpty()) {
-				items.add(new WorldContext.ItemData(
-						stack.getItem().getTranslationKey(), stack.getCount(), stack.getDamage(), i));
-			}
+			addItemData(stack, items, i);
 		}
 		return items;
 	}
@@ -164,13 +155,16 @@ public class NPCContextGenerator {
 		List<WorldContext.ItemData> items = new ArrayList<>();
 
 		for (ItemStack stack : inventory.armor) {
-
-			if (!stack.isEmpty()) {
-				items.add(new WorldContext.ItemData(
-						stack.getItem().getTranslationKey(), stack.getCount(), stack.getDamage(), -1));
-			}
+			addItemData(stack, items, -1);
 		}
 		return items;
+	}
+
+	private void addItemData(ItemStack stack, List<WorldContext.ItemData> items, int slot) {
+		if (!stack.isEmpty()) {
+			items.add(new WorldContext.ItemData(
+					stack.getItem().getTranslationKey(), stack.getCount(), stack.getDamage(), slot));
+		}
 	}
 
 	public void stopService() {
