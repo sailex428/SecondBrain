@@ -67,7 +67,7 @@ public class NPCController {
 					.thenAccept(this::handleActions)
 					.exceptionally(throwable -> {
 						LOGGER.error("Error generating response: {}", throwable.getMessage());
-						npc.sendMessage(Text.of("Error generating response" + throwable.getMessage()));
+						npc.sendMessage(Text.of(throwable.getMessage()));
 						return null;
 					});
 		});
