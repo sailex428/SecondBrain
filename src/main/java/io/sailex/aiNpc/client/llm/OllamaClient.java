@@ -6,6 +6,7 @@ import io.github.ollama4j.models.chat.OllamaChatMessageRole;
 import io.github.ollama4j.models.chat.OllamaChatRequest;
 import io.github.ollama4j.models.chat.OllamaChatRequestBuilder;
 import io.sailex.aiNpc.client.constant.Instructions;
+import io.sailex.aiNpc.client.util.LogUtil;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.util.concurrent.*;
@@ -21,7 +22,7 @@ public class OllamaClient implements ILLMClient {
 	private final OllamaChatRequestBuilder builder;
 
 	public OllamaClient(String ollamaModel, String ollamaUrl) {
-		LOGGER.info("Connecting to ollama at {}", ollamaUrl);
+		LogUtil.info("Connecting to ollama at " + ollamaUrl);
 		this.ollamaAPI = new OllamaAPI(ollamaUrl);
 		checkOllamaIsReachable();
 		this.builder = OllamaChatRequestBuilder.getInstance(ollamaModel);
@@ -31,7 +32,7 @@ public class OllamaClient implements ILLMClient {
 	private void checkOllamaIsReachable() {
 		boolean isOllamaServerReachable = ollamaAPI.ping();
 		if (!isOllamaServerReachable) {
-			LOGGER.error("Ollama server is not reachable");
+			LogUtil.error("Ollama server is not reachable");
 			throw new CompletionException(new ConnectException("Ollama server is not reachable"));
 		}
 	}
