@@ -9,11 +9,11 @@ import io.sailex.aiNpc.client.model.NPCEvent;
 import io.sailex.aiNpc.client.model.context.WorldContext;
 import io.sailex.aiNpc.client.model.interaction.ActionType;
 import io.sailex.aiNpc.client.model.interaction.Actions;
+import io.sailex.aiNpc.client.util.LogUtil;
 import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.text.Text;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -66,8 +66,7 @@ public class NPCController {
 					.generateResponse(userPrompt, systemPrompt)
 					.thenAccept(this::handleActions)
 					.exceptionally(throwable -> {
-						LOGGER.error("Error generating response: {}", throwable.getMessage());
-						npc.sendMessage(Text.of(throwable.getMessage()));
+						LogUtil.error(throwable.getMessage());
 						return null;
 					});
 		});
