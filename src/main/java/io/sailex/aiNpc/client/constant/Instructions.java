@@ -16,23 +16,52 @@ public class Instructions {
 	// structure instructions for ollama requests
 	public static final String STRUCTURE_INSTRUCTIONS =
 			"""
-				I provide in the context JSON object in the data JSON object in my request a lot of data from the npc environment in the minecraft server world.
-				You can use this data to e.g. take x, y, z coordinates to build a response of the type MOVE.
+			I provide in the context JSON object in the data JSON object in my request a lot of data from the NPC environment in the Minecraft server world.
+			You can use this data to, e.g., take x, y, z coordinates to build a response of the type MOVE.
 
-				The schema for your response is provided in the incoming request data. You should focus on the following:
+			The schema for your response is provided in the incoming request data. You should focus on the following:
 
-				- YOUR RESPONSE MUST BE A VALID JSON ARRAY OF VALID JSON objects.
-				- YOUR CAN ANSWER WITH E.G. A CHAT_MESSAGE AND A MOVE AS JSON OBJECTS IN THE JSON ARRAY.
-				- Answer in multiple Json objects in the JSON array in types of CHAT_MESSAGE and MOVE.
-				- You can answer e.g. with two CHAT_MESSAGE objects and one MOVE objects.
-				- You can choose one or multiple of the provided schemas in the JSON array to structure your response and put your JSON object in a JSON array.
-				- The response should adhere strictly to on of the provided schema in the JSON array, which specifies the fields you need to populate.
-				- The response should have EXACT the structure of one JSON schemas in the schemas JSON array.
-				- YOUR RESPONSE SHOULD NOT INCLUDE ANY ADDITIONAL FIELDS EXCEPT THE ONES SPECIFIED IN THE CHOSEN SCHEMA.
-				- THE RESPONSE SHOULD ONLY INCLUDE THE FIELDS THAT ARE MANDATORY AS PER THE SCHEMA.
-				- PLEASE ADD NO SCHEMA OR DATA OR INSTRUCTION FIELD TO THE RESPONSE OBJECT.
-				- The "type" field in one your response object can only be set to "CHAT_MESSAGE" or "MOVE".
-				- Your final output must be a JSON object without any string escaping, meaning it should not include backslashes or additional quotes around the keys or values.
-				- Do not wrap the JSON object in code blocks or any other formatting—just provide the raw JSON as the output.
+			- YOUR RESPONSE MUST BE A VALID JSON ARRAY CONTAINING ONE OR MORE ACTION OBJECTS.
+			- Each object in the array must include the following fields:
+				- "action": one of ["CHAT", "MOVE", "MINE"] (required)
+				- "message": a string representing a chat message or instruction (optional (in type CHAT required))
+				- "targetType": the type of the target, e.g., "entity", "block" (optional)
+				- "targetId": the unique identifier of the target, e.g spruce_log (optional)
+				- "targetPosition": an object with fields "x", "y", "z" (optional)
+				- "parameters": a map of additional key-value pairs (optional)
+			- If you are going to do something, tell the players what you will do.
+			- Example valid JSON output (ARRAY of objects):
+					{
+							"actions": [
+								{
+										"action": "CHAT_MESSAGE",
+											"message": "Hello, player!",
+											"targetType": null,
+											"targetId": null,
+											"targetPosition": null,
+											"parameters": {}
+									},
+									{
+										"action": "MOVE",
+											"message": null,
+											"targetType": "entity",
+											"targetId": "player1",
+											"targetPosition": { "x": 100, "y": 64, "z": 200 },
+										"parameters": { "speed": 1.0 }
+									},
+									{
+										"action": "MINE",
+											"message": null,
+											"targetType": "block",
+											"targetId": "stone",
+											"targetPosition": null,
+										"parameters": { "speed": 1.0 }
+									}
+							]
+						}
+			- YOUR RESPONSE SHOULD STRICTLY ADHERE TO THIS FORMAT, AND THE RESULT MUST BE A JSON ARRAY.
+			- IF YOU WANT TO PERFORM ONLY ONE ACTION, YOU MUST STILL RETURN A JSON ARRAY WITH A SINGLE OBJECT.
+			- Do not include any additional fields not specified in the schema.
+			- Ensure the response is valid JSON without any escaping or additional formatting.
 			""";
 }

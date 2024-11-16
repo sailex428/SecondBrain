@@ -3,11 +3,13 @@ package io.sailex.aiNpc.client.listener;
 import io.sailex.aiNpc.client.model.NPC;
 import io.sailex.aiNpc.client.model.NPCEvent;
 import io.sailex.aiNpc.client.model.interaction.ActionType;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.ActionResult;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -24,15 +26,8 @@ public class EventListenerManager {
 	public void register() {
 		registerBlockInteractionListener();
 		registerChatMessageListener();
-		registerServerStoppingListener();
+		registerStoppingListener();
 		//		registerEntityLoadListener();
-	}
-
-	private void registerServerStoppingListener() {
-		ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
-			npc.getLlmService().stopService();
-			npc.getNpcContextGenerator().stopService();
-		});
 	}
 
 	private void registerChatMessageListener() {
@@ -91,5 +86,18 @@ public class EventListenerManager {
 
 	private void handleMessage(ActionType type, String message) {
 		npc.getNpcController().handleEvent(new NPCEvent(type, message));
+	}
+
+	private void registerStoppingListener() {
+		ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
+			stopServices();
+			MinecraftClient.getInstance().close();
+		});
+		ClientLifecycleEvents.CLIENT_STOPPING.register(client -> stopServices());
+	}
+
+	private void stopServices() {
+		npc.getLlmService().stopService();
+		npc.getNpcContextGenerator().stopService();
 	}
 }
