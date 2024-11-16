@@ -31,12 +31,12 @@ dependencies {
     include(modRuntimeOnly("dev_babbaj:nether-pathfinder-1.4.1")!!)
 
     include(modImplementation("io.github.ollama4j:ollama4j:1.0.89")!!)
+    include(modImplementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.18.1")!!)
 
     //needed deps for openai communication
     include(modRuntimeOnly("com.fasterxml.jackson.core:jackson-core:2.18.1")!!)
     include(modRuntimeOnly("com.fasterxml.jackson.core:jackson-annotations:2.18.1")!!)
     include(modRuntimeOnly("com.fasterxml.jackson.core:jackson-databind:2.18.1")!!)
-    include(modRuntimeOnly("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.18.1")!!)
     include(modRuntimeOnly("com.fasterxml:classmate:1.7.0")!!)
     include(modRuntimeOnly("com.github.victools:jsonschema-generator:4.36.0")!!)
     include(modRuntimeOnly("com.github.victools:jsonschema-module-jackson:4.36.0")!!)
