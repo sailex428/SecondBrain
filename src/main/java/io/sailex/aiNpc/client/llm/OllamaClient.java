@@ -1,16 +1,13 @@
 package io.sailex.aiNpc.client.llm;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-import io.sailex.aiNpc.client.exception.EmptyResponseException;
+import io.github.ollama4j.OllamaAPI;
+import io.github.ollama4j.exceptions.OllamaBaseException;
+import io.github.ollama4j.models.chat.OllamaChatMessageRole;
+import io.github.ollama4j.models.chat.OllamaChatRequest;
+import io.github.ollama4j.models.chat.OllamaChatRequestBuilder;
+import io.sailex.aiNpc.client.constant.Instructions;
 import java.io.IOException;
 import java.net.ConnectException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.util.Map;
 import java.util.concurrent.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -18,57 +15,44 @@ import org.apache.logging.log4j.Logger;
 public class OllamaClient implements ILLMClient {
 
 	private static final Logger LOGGER = LogManager.getLogger(OllamaClient.class);
-	private static final Gson GSON = new Gson();
-	private final ExecutorService service = Executors.newFixedThreadPool(1);
 
-	private final String ollamaUrl;
-	private final HttpClient httpClient;
-	private final String ollamaModel;
+	private final ExecutorService service;
+	private final OllamaAPI ollamaAPI;
+	private final OllamaChatRequestBuilder builder;
 
 	public OllamaClient(String ollamaModel, String ollamaUrl) {
-		this.ollamaUrl = ollamaUrl;
-		this.ollamaModel = ollamaModel;
-		this.httpClient = HttpClient.newHttpClient();
+		LOGGER.info("Connecting to ollama at {}", ollamaUrl);
+		this.ollamaAPI = new OllamaAPI(ollamaUrl);
+		checkOllamaIsReachable();
+		this.builder = OllamaChatRequestBuilder.getInstance(ollamaModel);
+		this.service = Executors.newFixedThreadPool(2);
+	}
+
+	private void checkOllamaIsReachable() {
+		boolean isOllamaServerReachable = ollamaAPI.ping();
+		if (!isOllamaServerReachable) {
+			LOGGER.error("Ollama server is not reachable");
+			throw new CompletionException(new ConnectException("Ollama server is not reachable"));
+		}
 	}
 
 	public CompletableFuture<String> generateResponse(String userPrompt, String systemPrompt) {
 		return CompletableFuture.supplyAsync(
 				() -> {
 					try {
-						JsonObject prompt = new JsonObject();
-						prompt.addProperty("user", userPrompt);
-						prompt.addProperty("system", systemPrompt);
-
-						Map<String, Object> request = Map.of(
-								"model", ollamaModel,
-								"prompt", prompt,
-								"stream", false);
-						String requestBody = GSON.toJson(request);
-
-						HttpRequest httpRequest = HttpRequest.newBuilder()
-								.uri(new URI(ollamaUrl))
-								.header("Content-Type", "application/json")
-								.POST(HttpRequest.BodyPublishers.ofString(requestBody))
+						OllamaChatRequest requestModel = builder.withMessage(
+										OllamaChatMessageRole.SYSTEM,
+										systemPrompt + Instructions.STRUCTURE_INSTRUCTIONS)
+								.withMessage(OllamaChatMessageRole.USER, userPrompt)
 								.build();
+						requestModel.setReturnFormatJson(true);
+						ollamaAPI.setRequestTimeoutSeconds(30);
 
-						HttpResponse<String> response =
-								httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
-
-						LOGGER.info("Generated response from ollama: {}", response.body());
-
-						if (response.body() != null) {
-							Map responseBody = GSON.fromJson(response.body(), Map.class);
-							return (String) responseBody.get("response");
-						}
-						throw new EmptyResponseException("Empty response from ollama");
-					} catch (IOException | InterruptedException e) {
+						return ollamaAPI.chat(requestModel).getResponse();
+					} catch (IOException | InterruptedException | OllamaBaseException e) {
 						LOGGER.error("Error generating response from ollama", e);
 						throw new CompletionException(
 								new ConnectException("Failed to connect to ollama: " + e.getMessage()));
-					} catch (URISyntaxException e) {
-						LOGGER.error("Error generating response from ollama", e);
-						throw new CompletionException(
-								new URISyntaxException("Wrong ollama url syntax: ", e.getMessage()));
 					}
 				},
 				service);

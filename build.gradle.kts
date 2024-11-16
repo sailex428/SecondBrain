@@ -30,6 +30,8 @@ dependencies {
     include(modImplementation("cabaletta:baritone-api-fabric:1.10.2")!!)
     include(modRuntimeOnly("dev_babbaj:nether-pathfinder-1.4.1")!!)
 
+    include(modImplementation("io.github.ollama4j:ollama4j:1.0.89")!!)
+
     //needed deps for openai communication
     include(modRuntimeOnly("com.fasterxml.jackson.core:jackson-core:2.18.1")!!)
     include(modRuntimeOnly("com.fasterxml.jackson.core:jackson-annotations:2.18.1")!!)
