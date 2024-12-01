@@ -1,3 +1,12 @@
+/.idea/
+
+# Project exclude paths
+/.gradle/
+/build/
+
+.DS_Store
+.git
+
 # User-specific stuff
 .idea/
 
@@ -49,7 +58,6 @@ hs_err_pid*
 .nfs*
 
 # General
-.DS_Store
 .AppleDouble
 .LSOverride
 
