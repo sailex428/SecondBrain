@@ -26,6 +26,7 @@ public class LogUtil {
 	public static void error(String message) {
 		String formattedMessage = PREFIX + "§c" + message;
 		log(formattedMessage);
+		LOGGER.error(formattedMessage);
 	}
 
 	private static void log(String formattedMessage) {

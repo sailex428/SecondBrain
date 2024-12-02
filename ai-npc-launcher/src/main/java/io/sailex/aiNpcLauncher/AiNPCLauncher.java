@@ -15,8 +15,6 @@ public class AiNPCLauncher implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
-		ServerLifecycleEvents.SERVER_STARTING.register((minecraftServer) -> server = minecraftServer);
-
 		ModConfig.init();
 
 		ClientProcessManager npcClientProcessManager = new ClientProcessManager();
@@ -25,5 +23,10 @@ public class AiNPCLauncher implements ModInitializer {
 
 		CommandManager commandManager = new CommandManager(clientLauncher, npcClientProcessManager);
 		commandManager.register();
+
+		ServerLifecycleEvents.SERVER_STARTED.register((minecraftServer) -> {
+			server = minecraftServer;
+			clientLauncher.initLauncherAsync();
+		});
 	}
 }

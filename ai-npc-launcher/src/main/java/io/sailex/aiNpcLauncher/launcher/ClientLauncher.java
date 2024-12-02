@@ -34,6 +34,9 @@ import net.raphimc.minecraftauth.MinecraftAuth;
 import net.raphimc.minecraftauth.step.java.session.StepFullJavaSession;
 import net.raphimc.minecraftauth.step.msa.StepMsaDeviceCode;
 
+/**
+ * Launcher for the AI-NPC client.
+ */
 public class ClientLauncher {
 
 	private final ClientProcessManager npcClientProcesses;
@@ -43,16 +46,26 @@ public class ClientLauncher {
 
 	public ClientLauncher(ClientProcessManager npcClientProcesses) {
 		this.npcClientProcesses = npcClientProcesses;
-		CompletableFuture.runAsync(this::initLauncher);
 	}
 
+	/**
+	 * Launches the AI-NPC client asynchronously.
+	 *
+	 * @param npcName   the name of the NPC
+	 * @param llmType   the type of the LLM
+	 * @param llmModel  the model of the LLM
+	 * @param isOffline whether to login offline
+	 */
 	public void launchAsync(String npcName, String llmType, String llmModel, boolean isOffline) {
 		LaunchAccount account = getAccount(npcName, isOffline);
 		if (account == null) {
 			LogUtil.error("Failed to login.");
 			return;
 		}
-		CompletableFuture.runAsync(() -> launch(account, npcName, llmType, llmModel));
+		CompletableFuture.runAsync(() -> launch(account, npcName, llmType, llmModel)).exceptionally(e -> {
+			LogUtil.error(e.getMessage());
+			return null;
+		});
 	}
 
 	private void launch(LaunchAccount account, String npcName, String llmType, String llmModel) {
@@ -82,6 +95,20 @@ public class ClientLauncher {
 		}
 	}
 
+	/**
+	 * Initializes the launcher asynchronously.
+	 */
+	public void initLauncherAsync() {
+		CompletableFuture.runAsync(this::initLauncher).exceptionally(e -> {
+			LogUtil.error(e.getMessage());
+			return null;
+		});
+	}
+
+	/**
+	 * Initializes the launcher.
+	 * Downloads and installs the Fabric client and the AI-NPC mod.
+	 */
 	private void initLauncher() {
 		try {
 			LauncherBuilder builder = new LauncherBuilder();
@@ -122,7 +149,7 @@ public class ClientLauncher {
 		if (version != null) {
 			return version;
 		}
-		LogUtil.info("Downloading Fabric client.");
+		LogUtil.info("No Fabric client found for version '" + versionName + "'. Initiating download of the Fabric client...");
 		Version neededVersion = VersionImpl.builder().name(versionName).build();
 
 		DownloadCommand downloadCommand = new DownloadCommand(launcher);

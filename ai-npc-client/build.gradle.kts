@@ -48,7 +48,7 @@ dependencies {
 loom {
     runConfigs.all {
         ideConfigGenerated(true)
-        runDir = "../../run"
+        runDir = "../../../client"
     }
 }
 
