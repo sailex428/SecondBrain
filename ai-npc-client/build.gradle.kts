@@ -1,3 +1,5 @@
+import net.fabricmc.loom.task.RemapJarTask
+
 plugins {
     id("fabric-loom") version "1.8-SNAPSHOT"
     id("maven-publish")
@@ -99,8 +101,16 @@ publishing {
 }
 
 publishMods {
+    file.set(tasks.named<RemapJarTask>("remapJar").get().archiveFile)
+    changelog = providers.environmentVariable("CHANGELOG")
+    type = BETA
+    displayName = "[$mcVersion] AI-NPC-Client $version"
+    modLoaders.add("fabric")
+
     github {
         accessToken = providers.environmentVariable("GITHUB_TOKEN")
-        parent(project(":").tasks.named("publishGithub"))
+        repository = providers.environmentVariable("GITHUB_REPOSITORY")
+        commitish = "main"
+        tagName = "v$version"
     }
 }

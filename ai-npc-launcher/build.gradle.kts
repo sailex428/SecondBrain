@@ -92,9 +92,16 @@ publishing {
 
 publishMods {
     file.set(tasks.named<RemapJarTask>("remapJar").get().archiveFile)
+    changelog = providers.environmentVariable("CHANGELOG")
+    type = BETA
+    displayName = "[$mcVersion] AI-NPC-Launcher $version"
+    modLoaders.add("fabric")
+
     github {
-        accessToken = providers.gradleProperty("GITHUB_TOKEN")
-        parent(project(":").tasks.named("publishGithub"))
+        accessToken = providers.environmentVariable("GITHUB_TOKEN")
+        repository = providers.environmentVariable("GITHUB_REPOSITORY")
+        commitish = "main"
+        tagName = "v$version"
     }
     modrinth {
         accessToken = providers.environmentVariable("MODRINTH_TOKEN")
