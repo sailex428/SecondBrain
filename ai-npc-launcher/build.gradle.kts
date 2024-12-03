@@ -1,5 +1,9 @@
+import net.fabricmc.loom.task.RemapJarTask
+
 plugins {
     id("fabric-loom") version "1.8-SNAPSHOT"
+    id("maven-publish")
+    id("me.modmuss50.mod-publish-plugin") version "0.8.1"
 }
 
 group = rootProject.extra["mod.group"] as String
@@ -69,4 +73,36 @@ tasks.register<Jar>("repackageHeadlessmc") {
     }
     destinationDirectory.set(file("libs"))
     archiveFileName.set("headlessmc-launcher-repackaged-2.3.0.jar")
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("maven") {
+            groupId = rootProject.property("mod.group").toString()
+            artifactId = property("archives_base_name").toString()
+            version = "$version+$mcVersion"
+
+            artifact(tasks.remapJar.get().archiveFile)
+            artifact(tasks.remapSourcesJar.get().archiveFile) {
+                classifier = "sources"
+            }
+        }
+    }
+}
+
+publishMods {
+    file.set(tasks.named<RemapJarTask>("remapJar").get().archiveFile)
+    github {
+        accessToken = providers.gradleProperty("GITHUB_TOKEN")
+        parent(project(":").tasks.named("publishGithub"))
+    }
+    modrinth {
+        accessToken = providers.environmentVariable("MODRINTH_TOKEN")
+        projectId = property("publish.modrinth").toString()
+        minecraftVersions.add(mcVersion)
+        requires("fabric-api")
+    }
+    discord {
+        webhookUrl = providers.gradleProperty("DISCORD_WEBHOOK")
+    }
 }

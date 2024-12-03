@@ -1,5 +1,7 @@
 plugins {
     id("fabric-loom") version "1.8-SNAPSHOT"
+    id("maven-publish")
+    id("me.modmuss50.mod-publish-plugin") version "0.8.1"
 }
 
 group = rootProject.extra["mod.group"] as String
@@ -52,7 +54,6 @@ loom {
     }
 }
 
-
 java {
     withSourcesJar()
     val java = if (stonecutter.eval(mcVersion, ">=1.20.6")) JavaVersion.VERSION_21 else JavaVersion.VERSION_17
@@ -80,4 +81,26 @@ tasks.register<Copy>("buildAndCollect") {
     from(tasks.remapJar.get().archiveFile)
     into(rootProject.layout.buildDirectory.file("libs/$version"))
     dependsOn("build")
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("maven") {
+            groupId = rootProject.property("mod.group").toString()
+            artifactId = property("archives_base_name").toString()
+            version = "$version+$mcVersion"
+
+            artifact(tasks.remapJar.get().archiveFile)
+            artifact(tasks.remapSourcesJar.get().archiveFile) {
+                classifier = "sources"
+            }
+        }
+    }
+}
+
+publishMods {
+    github {
+        accessToken = providers.environmentVariable("GITHUB_TOKEN")
+        parent(project(":").tasks.named("publishGithub"))
+    }
 }
