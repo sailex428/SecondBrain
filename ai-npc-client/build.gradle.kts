@@ -1,10 +1,14 @@
+import me.modmuss50.mpp.ReleaseType
+import net.fabricmc.loom.task.RemapJarTask
+
 plugins {
     id("fabric-loom") version "1.8-SNAPSHOT"
+    id("maven-publish")
+    id("me.modmuss50.mod-publish-plugin") version "0.8.1"
 }
 
-group = rootProject.extra["mod.group"] as String
 version = rootProject.extra["mod.version"] as String
-
+var modVersion = rootProject.property("mod.version").toString()
 var mcVersion = property("mc.version").toString()
 var fabricLoaderVersion = property("deps.fabric_loader").toString()
 
@@ -48,10 +52,9 @@ dependencies {
 loom {
     runConfigs.all {
         ideConfigGenerated(true)
-        runDir = "../../run"
+        runDir = "../../../client"
     }
 }
-
 
 java {
     withSourcesJar()
@@ -61,23 +64,46 @@ java {
 }
 
 tasks.processResources {
-    inputs.property("version", version)
+    inputs.property("version", modVersion)
     inputs.property("mcDep", mcVersion)
     inputs.property("loader_version", fabricLoaderVersion)
     filteringCharset = "UTF-8"
 
     filesMatching("fabric.mod.json") {
         expand(
-            "version" to version,
+            "version" to modVersion,
             "mcDep" to mcVersion,
             "loader_version" to fabricLoaderVersion
         )
     }
 }
 
-tasks.register<Copy>("buildAndCollect") {
-    group = "build"
-    from(tasks.remapJar.get().archiveFile)
-    into(rootProject.layout.buildDirectory.file("libs/$version"))
-    dependsOn("build")
+publishing {
+    publications {
+        create<MavenPublication>("maven") {
+            groupId = rootProject.property("mod.group").toString()
+            artifactId = property("archives_base_name").toString()
+            version = "$modVersion+$mcVersion"
+
+            artifact(tasks.remapJar.get().archiveFile)
+            artifact(tasks.remapSourcesJar.get().archiveFile) {
+                classifier = "sources"
+            }
+        }
+    }
+}
+
+publishMods {
+    file.set(tasks.named<RemapJarTask>("remapJar").get().archiveFile)
+    changelog.set(providers.environmentVariable("CHANGELOG"))
+    type.set(ReleaseType.STABLE)
+    displayName.set("$modVersion - [$mcVersion] AI-NPC-Client")
+    modLoaders.add("fabric")
+
+    github {
+        accessToken.set(providers.environmentVariable("GITHUB_TOKEN"))
+        repository.set(providers.environmentVariable("GITHUB_REPOSITORY"))
+        commitish.set("main")
+        tagName.set("v$modVersion-$mcVersion")
+    }
 }
