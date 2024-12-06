@@ -40,32 +40,28 @@ public class OpenAiClient extends ALLMClient implements ILLMClient {
 	 * @return the llm response
 	 */
 	@Override
-	public CompletableFuture<String> generateResponse(String userPrompt, String systemPrompt) {
-		return CompletableFuture.supplyAsync(
-				() -> {
-					ChatRequest chatRequest = ChatRequest.builder()
-							.model(openAiModel)
-							.message(ChatMessage.SystemMessage.of(systemPrompt))
-							.message(ChatMessage.UserMessage.of(userPrompt))
-							.responseFormat(ResponseFormat.jsonSchema(ResponseFormat.JsonSchema.builder()
-									.name("Actions")
-									.schemaClass(Actions.class)
-									.build()))
-							.build();
+	public String generateResponse(String userPrompt, String systemPrompt) {
+		ChatRequest chatRequest = ChatRequest.builder()
+				.model(openAiModel)
+				.message(ChatMessage.SystemMessage.of(systemPrompt))
+				.message(ChatMessage.UserMessage.of(userPrompt))
+				.responseFormat(ResponseFormat.jsonSchema(ResponseFormat.JsonSchema.builder()
+						.name("Actions")
+						.schemaClass(Actions.class)
+						.build()))
+				.build();
 
-					String chatResponse = openAiService
-							.chatCompletions()
-							.create(chatRequest)
-							.join()
-							.firstContent();
+		String chatResponse = openAiService
+				.chatCompletions()
+				.create(chatRequest)
+				.join()
+				.firstContent();
 
-					LOGGER.info("Generated response from openai: {}", chatResponse);
-					if (!chatResponse.isBlank()) {
-						return chatResponse;
-					}
-					throw new EmptyResponseException("Empty response from openai");
-				},
-				service);
+		LOGGER.info("Generated response from openai: {}", chatResponse);
+		if (!chatResponse.isBlank()) {
+			return chatResponse;
+		}
+		throw new EmptyResponseException("Empty response from openai");
 	}
 
 	@Override

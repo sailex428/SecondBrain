@@ -15,7 +15,7 @@ public interface ILLMClient {
 	 * @param systemPrompt the prompt from the system/game
 	 * @return a CompletableFuture with the llm response
 	 */
-	CompletableFuture<String> generateResponse(String userPrompt, String systemPrompt);
+	String generateResponse(String userPrompt, String systemPrompt);
 
 	/**
      * Generate an embedding for a given prompt

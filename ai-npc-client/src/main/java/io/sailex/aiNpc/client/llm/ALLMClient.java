@@ -5,7 +5,6 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -19,7 +18,7 @@ public abstract class ALLMClient implements ILLMClient {
     }
 
     @Override
-    public abstract CompletableFuture<String> generateResponse(String userPrompt, String systemPrompt);
+    public abstract String generateResponse(String userPrompt, String systemPrompt);
 
     @Override
     public abstract Float[] generateEmbedding(List<String> prompt);

@@ -8,6 +8,7 @@ import io.github.ollama4j.models.chat.OllamaChatRequestBuilder;
 import io.github.ollama4j.types.OllamaModelType;
 import io.sailex.aiNpc.client.constant.Instructions;
 import io.sailex.aiNpc.client.util.LogUtil;
+
 import java.io.IOException;
 import java.net.ConnectException;
 import java.util.List;
@@ -38,7 +39,6 @@ public class OllamaClient extends ALLMClient implements ILLMClient {
 		boolean isOllamaServerReachable = ollamaAPI.ping();
 		if (!isOllamaServerReachable) {
 			LogUtil.error("Ollama server is not reachable");
-			throw new CompletionException(new ConnectException("Ollama server is not reachable"));
 		}
 	}
 
@@ -50,7 +50,7 @@ public class OllamaClient extends ALLMClient implements ILLMClient {
 	 * @return the llm response
 	 */
 	@Override
-	public CompletableFuture<String> generateResponse(String userPrompt, String systemPrompt) {
+	public String generateResponse(String userPrompt, String systemPrompt) {
 		return CompletableFuture.supplyAsync(
 				() -> {
 					try {
@@ -69,7 +69,10 @@ public class OllamaClient extends ALLMClient implements ILLMClient {
 								new ConnectException("Failed to connect to ollama: " + e.getMessage()));
 					}
 				},
-				service);
+				service).exceptionally(exception -> {
+					LogUtil.error(exception.getMessage());
+					return null;
+		}).join();
 	}
 
 	@Override
