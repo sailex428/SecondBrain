@@ -31,7 +31,6 @@ public class OllamaClient implements ILLMClient {
 	 * @param ollamaUrl   the ollama url
 	 */
 	public OllamaClient(String ollamaModel, String ollamaUrl) {
-		LogUtil.info("Connecting to ollama at " + ollamaUrl);
 		this.ollamaAPI = new OllamaAPI(ollamaUrl);
 		checkOllamaIsReachable();
 		this.builder = OllamaChatRequestBuilder.getInstance(ollamaModel);
