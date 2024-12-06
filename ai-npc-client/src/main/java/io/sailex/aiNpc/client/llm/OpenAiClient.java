@@ -4,21 +4,18 @@ import io.github.sashirestela.openai.SimpleOpenAI;
 import io.github.sashirestela.openai.common.ResponseFormat;
 import io.github.sashirestela.openai.domain.chat.ChatMessage;
 import io.github.sashirestela.openai.domain.chat.ChatRequest;
+import io.github.sashirestela.openai.domain.embedding.EmbeddingFloat;
+import io.github.sashirestela.openai.domain.embedding.EmbeddingRequest;
 import io.sailex.aiNpc.client.exception.EmptyResponseException;
 import io.sailex.aiNpc.client.model.interaction.Actions;
+
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 /**
  * OpenAI client for generating responses.
  */
-public class OpenAiClient implements ILLMClient {
-
-	private static final Logger LOGGER = LogManager.getLogger(OpenAiClient.class);
-	private final ExecutorService service = Executors.newFixedThreadPool(3);
+public class OpenAiClient extends ALLMClient implements ILLMClient {
 
 	private final String openAiModel;
 	private final SimpleOpenAI openAiService;
@@ -30,6 +27,7 @@ public class OpenAiClient implements ILLMClient {
 	 * @param apiKey      the api key
 	 */
 	public OpenAiClient(String openAiModel, String apiKey) {
+		super();
 		this.openAiModel = openAiModel;
 		this.openAiService = SimpleOpenAI.builder().apiKey(apiKey).build();
 	}
@@ -71,7 +69,15 @@ public class OpenAiClient implements ILLMClient {
 	}
 
 	@Override
-	public void stopService() {
-		service.shutdown();
+	public Float[] generateEmbedding(List<String> prompt) {
+		List<List<Double>> embedding = openAiService
+				.embeddings()
+				.create(EmbeddingRequest.builder().input(prompt).build()).
+				join()
+				.getData()
+				.stream()
+				.map(EmbeddingFloat::getEmbedding)
+				.toList();
+		return convertEmbedding(embedding);
 	}
 }

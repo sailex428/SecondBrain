@@ -5,22 +5,19 @@ import io.github.ollama4j.exceptions.OllamaBaseException;
 import io.github.ollama4j.models.chat.OllamaChatMessageRole;
 import io.github.ollama4j.models.chat.OllamaChatRequest;
 import io.github.ollama4j.models.chat.OllamaChatRequestBuilder;
+import io.github.ollama4j.types.OllamaModelType;
 import io.sailex.aiNpc.client.constant.Instructions;
 import io.sailex.aiNpc.client.util.LogUtil;
 import java.io.IOException;
 import java.net.ConnectException;
+import java.util.List;
 import java.util.concurrent.*;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 /**
  * Ollama client for generating responses.
  */
-public class OllamaClient implements ILLMClient {
+public class OllamaClient extends ALLMClient implements ILLMClient {
 
-	private static final Logger LOGGER = LogManager.getLogger(OllamaClient.class);
-
-	private final ExecutorService service;
 	private final OllamaAPI ollamaAPI;
 	private final OllamaChatRequestBuilder builder;
 
@@ -31,10 +28,10 @@ public class OllamaClient implements ILLMClient {
 	 * @param ollamaUrl   the ollama url
 	 */
 	public OllamaClient(String ollamaModel, String ollamaUrl) {
+		super();
 		this.ollamaAPI = new OllamaAPI(ollamaUrl);
 		checkOllamaIsReachable();
 		this.builder = OllamaChatRequestBuilder.getInstance(ollamaModel);
-		this.service = Executors.newFixedThreadPool(2);
 	}
 
 	private void checkOllamaIsReachable() {
@@ -76,7 +73,14 @@ public class OllamaClient implements ILLMClient {
 	}
 
 	@Override
-	public void stopService() {
-		service.shutdown();
-	}
+	public Float[] generateEmbedding(List<String> prompt) {
+		return CompletableFuture.supplyAsync(() -> {
+            try {
+				List<List<Double>> embeddings = ollamaAPI.embed(OllamaModelType.NOMIC_EMBED_TEXT, prompt).getEmbeddings();
+            	return convertEmbedding(embeddings);
+            } catch (IOException | InterruptedException | OllamaBaseException e) {
+                throw new CompletionException("Error generating embedding for prompt: " + prompt.getFirst(), e);
+            }
+		}).join();
+    }
 }
