@@ -6,19 +6,22 @@ import baritone.api.pathing.goals.GoalBlock;
 import baritone.api.utils.BetterBlockPos;
 import io.sailex.aiNpc.client.constant.Instructions;
 import io.sailex.aiNpc.client.llm.ILLMClient;
+import io.sailex.aiNpc.client.mixin.InventoryAccessor;
 import io.sailex.aiNpc.client.model.NPCEvent;
 import io.sailex.aiNpc.client.model.context.WorldContext;
 import io.sailex.aiNpc.client.model.interaction.Action;
 import io.sailex.aiNpc.client.model.interaction.ActionType;
 import io.sailex.aiNpc.client.model.interaction.Actions;
-import io.sailex.aiNpc.client.util.LogUtil;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.collection.DefaultedList;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -79,13 +82,9 @@ public class NPCController {
 
 			String userPrompt = NPCInteraction.buildUserPrompt(prompt);
 			String systemPrompt = NPCInteraction.buildSystemPrompt(context);
-			llmService
-					.generateResponse(userPrompt, systemPrompt)
-					.thenAccept(this::offerAction)
-					.exceptionally(throwable -> {
-						LogUtil.error(throwable.getMessage());
-						return null;
-					});
+
+			String generatedResponse = llmService.generateResponse(userPrompt, systemPrompt);
+			offerAction(generatedResponse);
 		});
 	}
 
@@ -97,6 +96,7 @@ public class NPCController {
 	private void pollAction() {
 		Action nextAction = actionQueue.poll();
 		if (nextAction == null) {
+			LOGGER.error("Action is null");
 			return;
 		}
 		executeAction(nextAction);
@@ -108,12 +108,10 @@ public class NPCController {
 			case CHAT -> chat(action.getMessage());
 			case MOVE -> move(action.getTargetPosition());
 			case MINE -> mine(action.getTargetPosition());
-			default -> LOGGER.error("Action type not recognized in: {}", actionType);
+			case DROP -> dropItem(action.getTargetType());
+			case CANCEL -> cancelActions();
+			default -> LOGGER.warn("Action type not recognized in: {}", actionType);
 		}
-	}
-
-	private void cancelAction() {
-		baritone.getCommandManager().execute("cancel");
 	}
 
 	private void handleInitMessage() {
@@ -136,6 +134,24 @@ public class NPCController {
 		BetterBlockPos blockPos = new BetterBlockPos(targetPosition.x(), targetPosition.y(), targetPosition.z());
 		baritone.getSelectionManager().addSelection(blockPos, blockPos);
 		baritone.getBuilderProcess().clearArea(blockPos, blockPos);
+	}
+
+	private void dropItem(String targetType) {
+		List<DefaultedList<ItemStack>> inventoryItems = ((InventoryAccessor) npc.getInventory()).getCombinedInventory();
+
+		inventoryItems.forEach(itemStacks ->
+			itemStacks.forEach(itemStack -> {
+				if (itemStack.getName().getString().toLowerCase().contains(targetType)) {
+					npc.dropItem(itemStack, true);
+					return;
+				}
+			})
+		);
+	}
+
+	private void cancelActions() {
+		actionQueue.clear();
+		baritone.getCommandManager().execute("cancel");
 	}
 
 	private void registerActionFinishedListener() {

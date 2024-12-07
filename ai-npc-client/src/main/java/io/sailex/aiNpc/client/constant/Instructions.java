@@ -58,8 +58,21 @@ public class Instructions {
 											"message": null,
 											"targetType": "block",
 											"targetId": "stone",
-											"targetPosition": null,
-										"parameters": { "speed": 1.0 }
+											"targetPosition": { "x": 100, "y": 64, "z": 200 }
+									},
+									{
+										"action": "DROP",
+											"message": null,
+											"targetType": null,
+											"targetId": "dirt",
+											"targetPosition": null
+									},
+									{
+										"action": "CANCEL",
+											"message": null,
+											"targetType": null,
+											"targetId": null,
+											"targetPosition": null
 									}
 							]
 						}
