@@ -45,6 +45,7 @@ public class AiNPCClient implements ClientModInitializer {
 	private void waitForClientToLoad() {
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
 			if (client.isFinishedLoading() && !connected) {
+				client.getSoundManager().close();
 				connectToServer();
 				connected = true;
 			}
@@ -68,7 +69,7 @@ public class AiNPCClient implements ClientModInitializer {
 				new ServerAddress(serverName, Integer.parseInt(port)),
 				new ServerInfo("server", serverName, ServerInfo.ServerType.OTHER),
 				false
-				/*? if >=1.21.1 {*/, null/*?}*/
+				/*? if >=1.21.1 {*//*, null*//*?}*/
 		);
 	}
 
