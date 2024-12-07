@@ -11,6 +11,7 @@ version = rootProject.extra["mod.version"] as String
 var modVersion = rootProject.property("mod.version").toString()
 var mcVersion = property("mc.version").toString()
 var fabricLoaderVersion = property("deps.fabric_loader").toString()
+var jarName = ("ai-npc-$mcVersion-v$modVersion-fabric-beta").toString()
 
 repositories {
     flatDir {
@@ -70,6 +71,14 @@ java {
     val java = if (stonecutter.eval(mcVersion, ">=1.20.6")) JavaVersion.VERSION_21 else JavaVersion.VERSION_17
     targetCompatibility = java
     sourceCompatibility = java
+}
+
+tasks.remapJar {
+    archiveBaseName.set(jarName)
+}
+
+tasks.remapSourcesJar {
+    archiveBaseName.set(jarName)
 }
 
 tasks.processResources {
