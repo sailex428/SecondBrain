@@ -84,19 +84,26 @@ public class NPCController {
 			String systemPrompt = NPCInteraction.buildSystemPrompt(context);
 
 			String generatedResponse = llmService.generateResponse(userPrompt, systemPrompt);
-			offerAction(generatedResponse);
+			Actions actions = NPCInteraction.parseResponse(generatedResponse);
+			offerActions(actions);
 		});
 	}
 
-	private void offerAction(String response) {
-		Actions actions = NPCInteraction.parseResponse(response);
-		actions.getActions().forEach(actionQueue::offer);
+	private void offerActions(Actions actions) {
+		actions.getActions().forEach(action -> {
+			if (action.getAction().equals(ActionType.CANCEL) ||
+					action.getAction().equals(ActionType.CHAT)) {
+				executeAction(action);
+				return;
+			}
+			actionQueue.offer(action);
+		});
 	}
 
 	private void pollAction() {
 		Action nextAction = actionQueue.poll();
 		if (nextAction == null) {
-			LOGGER.error("Action is null");
+			LOGGER.error("Action is null or the queue is empty.");
 			return;
 		}
 		executeAction(nextAction);
@@ -156,15 +163,19 @@ public class NPCController {
 
 	private void registerActionFinishedListener() {
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
-			if (baritone.getPathingBehavior().isPathing()
-					|| baritone.getCustomGoalProcess().isActive()
-					|| baritone.getMineProcess().isActive()
-					|| baritone.getExploreProcess().isActive()
-					|| baritone.getFollowProcess().isActive()
-					|| baritone.getFarmProcess().isActive()) {
-				return;
+			if (!baritoneIsActive()) {
+				pollAction();
 			}
-			pollAction();
 		});
 	}
+
+	private boolean baritoneIsActive() {
+		return baritone.getPathingBehavior().isPathing()
+				|| baritone.getCustomGoalProcess().isActive()
+				|| baritone.getMineProcess().isActive()
+				|| baritone.getExploreProcess().isActive()
+				|| baritone.getFollowProcess().isActive()
+				|| baritone.getFarmProcess().isActive();
+	}
+
 }
