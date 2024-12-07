@@ -19,6 +19,13 @@ repositories {
     }
 }
 
+configurations.all {
+    resolutionStrategy {
+        force("org.slf4j:slf4j-api:2.0.16")
+        force("org.apache.logging.log4j:log4j-core:2.19.0")
+    }
+}
+
 dependencies {
     minecraft("com.mojang:minecraft:$mcVersion")
     mappings("net.fabricmc:yarn:$mcVersion+build.${property("deps.yarn_build")}:v2")
@@ -40,13 +47,12 @@ dependencies {
     include(modRuntimeOnly("com.fasterxml.jackson.core:jackson-databind:2.18.1")!!)
     include(modRuntimeOnly("com.fasterxml:classmate:1.7.0")!!)
     include(modRuntimeOnly("com.github.victools:jsonschema-generator:4.36.0")!!)
+
     include(modRuntimeOnly("com.github.victools:jsonschema-module-jackson:4.36.0")!!)
     include(modRuntimeOnly("io.github.sashirestela:slimvalidator:1.2.2")!!)
     include(modRuntimeOnly("io.github.sashirestela:cleverclient:1.4.4")!!)
 
-    include(modImplementation("io.github.sashirestela:simple-openai:3.9.0") {
-        exclude(group = "org.slf4j")
-    })
+    include(modImplementation("io.github.sashirestela:simple-openai:3.9.0")!!)
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.11.3")
     testImplementation("org.mockito:mockito-core:5.14.2")
