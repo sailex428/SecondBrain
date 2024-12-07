@@ -47,6 +47,9 @@ dependencies {
     include(modImplementation("io.github.sashirestela:simple-openai:3.9.0") {
         exclude(group = "org.slf4j")
     })
+
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.11.3")
+    testImplementation("org.mockito:mockito-core:5.14.2")
 }
 
 loom {
