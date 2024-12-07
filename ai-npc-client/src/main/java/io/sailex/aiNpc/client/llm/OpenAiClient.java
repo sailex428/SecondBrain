@@ -8,17 +8,18 @@ import io.github.sashirestela.openai.domain.embedding.EmbeddingFloat;
 import io.github.sashirestela.openai.domain.embedding.EmbeddingRequest;
 import io.sailex.aiNpc.client.exception.EmptyResponseException;
 import io.sailex.aiNpc.client.model.interaction.Actions;
+import lombok.Setter;
 
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 /**
  * OpenAI client for generating responses.
  */
 public class OpenAiClient extends ALLMClient implements ILLMClient {
 
+	@Setter
+	private SimpleOpenAI openAiService;
 	private final String openAiModel;
-	private final SimpleOpenAI openAiService;
 
 	/**
 	 * Constructor for OpenAiClient.

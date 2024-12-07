@@ -68,7 +68,7 @@ public class AiNPCClient implements ClientModInitializer {
 				new ServerAddress(serverName, Integer.parseInt(port)),
 				new ServerInfo("server", serverName, ServerInfo.ServerType.OTHER),
 				false
-				/*? if >=1.21.1 {*//*, null*//*?}*/
+				/*? if >=1.21.1 {*/, null/*?}*/
 		);
 	}
 
@@ -85,6 +85,7 @@ public class AiNPCClient implements ClientModInitializer {
 			String ollamaModel = Config.getProperty(ConfigConstants.NPC_LLM_OLLAMA_MODEL);
 			String ollamaUrl = Config.getProperty(ConfigConstants.NPC_LLM_OLLAMA_URL);
 			llmService = new OllamaClient(ollamaModel, ollamaUrl);
+			llmService.checkServiceIsReachable();
 		} else if ("openai".equals(npcType)) {
 			String apiKey = Config.getProperty(ConfigConstants.NPC_LLM_OPENAI_API_KEY);
 			String openAiModel = Config.getProperty(ConfigConstants.NPC_LLM_OPENAI_MODEL);

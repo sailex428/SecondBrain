@@ -1,7 +1,6 @@
 package io.sailex.aiNpc.client.llm;
 
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 /**
  * Interface for the LLM client
@@ -29,4 +28,9 @@ public interface ILLMClient {
 	 * Stop the execution of the service
 	 */
 	void stopService();
+
+	/**
+	 * Check if the service is reachable
+	 */
+	void checkServiceIsReachable();
 }

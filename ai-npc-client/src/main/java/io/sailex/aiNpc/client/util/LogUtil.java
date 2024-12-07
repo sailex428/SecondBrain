@@ -1,7 +1,6 @@
 package io.sailex.aiNpc.client.util;
 
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayNetworkHandler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -34,11 +33,10 @@ public class LogUtil {
 	}
 
 	private static void logInChat(String message) {
-		ClientPlayNetworkHandler networkHandler = client.getNetworkHandler();
-		if (networkHandler == null) {
+		if (client == null || client.getNetworkHandler() == null) {
 			LOGGER.error("Network handler is null");
 			return;
 		}
-		networkHandler.sendChatMessage(message);
+		client.getNetworkHandler().sendChatMessage(message);
 	}
 }

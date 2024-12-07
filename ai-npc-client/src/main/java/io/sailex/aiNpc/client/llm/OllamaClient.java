@@ -8,6 +8,7 @@ import io.github.ollama4j.models.chat.OllamaChatRequestBuilder;
 import io.github.ollama4j.types.OllamaModelType;
 import io.sailex.aiNpc.client.constant.Instructions;
 import io.sailex.aiNpc.client.util.LogUtil;
+import lombok.Setter;
 
 import java.io.IOException;
 import java.net.ConnectException;
@@ -19,7 +20,8 @@ import java.util.concurrent.*;
  */
 public class OllamaClient extends ALLMClient implements ILLMClient {
 
-	private final OllamaAPI ollamaAPI;
+	@Setter
+	private OllamaAPI ollamaAPI;
 	private final OllamaChatRequestBuilder builder;
 
 	/**
@@ -31,11 +33,11 @@ public class OllamaClient extends ALLMClient implements ILLMClient {
 	public OllamaClient(String ollamaModel, String ollamaUrl) {
 		super();
 		this.ollamaAPI = new OllamaAPI(ollamaUrl);
-		checkOllamaIsReachable();
 		this.builder = OllamaChatRequestBuilder.getInstance(ollamaModel);
 	}
 
-	private void checkOllamaIsReachable() {
+	@Override
+	public void checkServiceIsReachable() {
 		boolean isOllamaServerReachable = ollamaAPI.ping();
 		if (!isOllamaServerReachable) {
 			LogUtil.error("Ollama server is not reachable");
@@ -45,7 +47,7 @@ public class OllamaClient extends ALLMClient implements ILLMClient {
 	/**
 	 * Generate response from Ollama.
 	 *
-	 * @param userPrompt   the user prompt
+	 * @param userPrompt the user prompt
 	 * @param systemPrompt the system prompt
 	 * @return the llm response
 	 */
@@ -66,7 +68,7 @@ public class OllamaClient extends ALLMClient implements ILLMClient {
 					} catch (IOException | InterruptedException | OllamaBaseException e) {
 						LOGGER.error("Error generating response from ollama", e);
 						throw new CompletionException(
-								new ConnectException("Failed to connect to ollama: " + e.getMessage()));
+								new ConnectException("Error generating response from ollama: " + e.getMessage()));
 					}
 				},
 				service).exceptionally(exception -> {
@@ -78,12 +80,16 @@ public class OllamaClient extends ALLMClient implements ILLMClient {
 	@Override
 	public Float[] generateEmbedding(List<String> prompt) {
 		return CompletableFuture.supplyAsync(() -> {
-            try {
+			try {
 				List<List<Double>> embeddings = ollamaAPI.embed(OllamaModelType.NOMIC_EMBED_TEXT, prompt).getEmbeddings();
-            	return convertEmbedding(embeddings);
-            } catch (IOException | InterruptedException | OllamaBaseException e) {
-                throw new CompletionException("Error generating embedding for prompt: " + prompt.getFirst(), e);
-            }
-		}).join();
+				return convertEmbedding(embeddings);
+			} catch (IOException | InterruptedException | OllamaBaseException e) {
+				throw new CompletionException("Error generating embedding for prompt: " + prompt.getFirst(), e);
+			}
+		}, service).exceptionally(exception -> {
+				LogUtil.error(exception.getMessage());
+				return null;
+			})
+		.join();
     }
 }
