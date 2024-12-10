@@ -7,7 +7,6 @@ plugins {
     id("me.modmuss50.mod-publish-plugin") version "0.8.1"
 }
 
-version = rootProject.extra["mod.version"] as String
 var modVersion = rootProject.property("mod.version").toString()
 var mcVersion = property("mc.version").toString()
 var fabricLoaderVersion = property("deps.fabric_loader").toString()
