@@ -27,10 +27,10 @@ public class Instructions {
 
 			- YOUR RESPONSE MUST BE A VALID JSON ARRAY CONTAINING ONE OR MORE ACTION OBJECTS.
 			- Each object in the array must include the following fields:
-				- "action": one of ["CHAT", "MOVE", "MINE"] (required)
+				- "action": one of ["CHAT", "MOVE", "MINE", "DROP", "STOP"] (required)
 				- "message": a string representing a chat message or instruction (optional (in type CHAT required))
 				- "targetType": the type of the target, e.g., "entity", "block" (optional)
-				- "targetId": the unique identifier of the target, e.g spruce_log (optional)
+				- "targetId": the unique identifier of the target, e.g spruce_log  (write ONLY the type 'spruce_log' NOT this: 'block.spruce_log') (optional)
 				- "targetPosition": an object with fields "x", "y", "z" (optional)
 				- "parameters": a map of additional key-value pairs (optional)
 			- If you are going to do something, tell the players what you will do.
@@ -63,9 +63,10 @@ public class Instructions {
 									{
 										"action": "DROP",
 											"message": null,
-											"targetType": null,
-											"targetId": "dirt",
+											"targetType": "spruce_wood",
+											"targetId": null,
 											"targetPosition": null
+											"parameters": { "amount": 2 }
 									},
 									{
 										"action": "CANCEL",

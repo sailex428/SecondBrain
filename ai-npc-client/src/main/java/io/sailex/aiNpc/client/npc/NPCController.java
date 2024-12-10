@@ -14,12 +14,14 @@ import io.sailex.aiNpc.client.model.interaction.ActionType;
 import io.sailex.aiNpc.client.model.interaction.Actions;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Queue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.*;
+
+import io.sailex.aiNpc.client.util.ClientWorldUtil;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.command.argument.EntityAnchorArgumentType;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.collection.DefaultedList;
 import org.apache.logging.log4j.LogManager;
@@ -33,7 +35,7 @@ public class NPCController {
 
 	private static final Logger LOGGER = LogManager.getLogger(NPCController.class);
 	private final ExecutorService executorService;
-	private final Queue<Action> actionQueue = new LinkedBlockingQueue<>();
+	private final BlockingQueue<Action> actionQueue = new LinkedBlockingQueue<>();
 
 	private final ClientPlayerEntity npc;
 	private final ILLMClient llmService;
@@ -54,7 +56,7 @@ public class NPCController {
 		this.executorService = Executors.newFixedThreadPool(3);
 		this.baritone = setupPathFinding();
 		handleInitMessage();
-		registerActionFinishedListener();
+		onClientTick();
 	}
 
 	private IBaritone setupPathFinding() {
@@ -83,6 +85,8 @@ public class NPCController {
 			String userPrompt = NPCInteraction.buildUserPrompt(prompt);
 			String systemPrompt = NPCInteraction.buildSystemPrompt(context);
 
+			LOGGER.info("User prompt: {}, System prompt: {}", userPrompt, systemPrompt);
+
 			String generatedResponse = llmService.generateResponse(userPrompt, systemPrompt);
 			Actions actions = NPCInteraction.parseResponse(generatedResponse);
 			offerActions(actions);
@@ -91,19 +95,18 @@ public class NPCController {
 
 	private void offerActions(Actions actions) {
 		actions.getActions().forEach(action -> {
-			if (action.getAction().equals(ActionType.CANCEL) ||
+			if (action.getAction().equals(ActionType.STOP) ||
 					action.getAction().equals(ActionType.CHAT)) {
 				executeAction(action);
 				return;
 			}
-			actionQueue.offer(action);
+			actionQueue.add(action);
 		});
 	}
 
 	private void pollAction() {
-		Action nextAction = actionQueue.poll();
+		Action nextAction = actionQueue.poll(); //TODO: use take
 		if (nextAction == null) {
-			LOGGER.error("Action is null or the queue is empty.");
 			return;
 		}
 		executeAction(nextAction);
@@ -116,7 +119,7 @@ public class NPCController {
 			case MOVE -> move(action.getTargetPosition());
 			case MINE -> mine(action.getTargetPosition());
 			case DROP -> dropItem(action.getTargetType());
-			case CANCEL -> cancelActions();
+			case STOP -> cancelActions();
 			default -> LOGGER.warn("Action type not recognized in: {}", actionType);
 		}
 	}
@@ -143,17 +146,29 @@ public class NPCController {
 		baritone.getBuilderProcess().clearArea(blockPos, blockPos);
 	}
 
-	private void dropItem(String targetType) {
-		List<DefaultedList<ItemStack>> inventoryItems = ((InventoryAccessor) npc.getInventory()).getCombinedInventory();
+	private void dropItem(String targetItem) {
+		if (targetItem == null) return;
+		PlayerInventory npcInventory = npc.getInventory();
+		List<DefaultedList<ItemStack>> inventoryItems = ((InventoryAccessor) npcInventory).getCombinedInventory();
 
-		inventoryItems.forEach(itemStacks ->
-			itemStacks.forEach(itemStack -> {
-				if (itemStack.getName().getString().toLowerCase().contains(targetType)) {
-					npc.dropItem(itemStack, true);
-					return;
+		inventoryItems.forEach(itemStacks -> {
+			for (int i = 0; i < itemStacks.size(); i++) {
+				ItemStack itemStack = itemStacks.get(i);
+				if (itemStack.getItem().getTranslationKey().contains(targetItem)) {
+					npcInventory.selectedSlot = i;
+					npc.dropSelectedItem(true);
+					break;
 				}
-			})
-		);
+			}
+		});
+	}
+
+	private void lookAtPlayer() {
+		if (!actionQueue.isEmpty()) return;
+		PlayerEntity closestPlayer = ClientWorldUtil.getClosestPlayer(npc);
+		if (closestPlayer != null) {
+			npc.lookAt(EntityAnchorArgumentType.EntityAnchor.EYES, closestPlayer.getEyePos());
+		}
 	}
 
 	private void cancelActions() {
@@ -161,8 +176,16 @@ public class NPCController {
 		baritone.getCommandManager().execute("cancel");
 	}
 
-	private void registerActionFinishedListener() {
+	private void autoRespawn() {
+		if (npc.isDead()) {
+			npc.requestRespawn();
+		}
+	}
+
+	private void onClientTick() {
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
+			lookAtPlayer();
+			autoRespawn();
 			if (!baritoneIsActive()) {
 				pollAction();
 			}
@@ -173,7 +196,6 @@ public class NPCController {
 		return baritone.getPathingBehavior().isPathing()
 				|| baritone.getCustomGoalProcess().isActive()
 				|| baritone.getMineProcess().isActive()
-				|| baritone.getExploreProcess().isActive()
 				|| baritone.getFollowProcess().isActive()
 				|| baritone.getFarmProcess().isActive();
 	}

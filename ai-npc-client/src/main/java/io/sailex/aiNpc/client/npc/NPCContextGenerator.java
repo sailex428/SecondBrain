@@ -176,8 +176,14 @@ public class NPCContextGenerator {
 	private void addItemData(ItemStack stack, List<WorldContext.ItemData> items, int slot) {
 		if (!stack.isEmpty()) {
 			items.add(new WorldContext.ItemData(
-					stack.getItem().getTranslationKey(), stack.getCount(), stack.getDamage(), slot));
+					getBlockName(stack), stack.getCount(), stack.getDamage(), slot));
 		}
+	}
+
+	private String getBlockName(ItemStack stack) {
+		String translationKey = stack.getItem().getTranslationKey();
+		return translationKey.substring(translationKey.lastIndexOf(".") + 1);
+
 	}
 
 	public void stopService() {

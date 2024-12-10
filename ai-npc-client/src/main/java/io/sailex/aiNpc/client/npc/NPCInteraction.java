@@ -66,18 +66,22 @@ public class NPCInteraction {
 			Current State:
 			- NPC state: %s
 			- Inventory: %s
+			
+			Nearest Entities:
+			%s
 
 			You should:
 			1. Check if the action is possible (correct tools, resources in range)
-			2. Move to nearest appropriate resource if needed
+			2. Move to nearest appropriate resource if the player request for that
 			3. Inform player of your actions/intentions
 			""",
 				formatResources(context.nearbyBlocks()),
 				formatNPCState(context.npcState()),
-				formatInventory(context.inventory()));
+				formatInventory(context.inventory()),
+				formatEntities(context.nearbyEntities()));
 	}
 
-	public static String formatInventory(WorldContext.InventoryState inventory) {
+	private static String formatInventory(WorldContext.InventoryState inventory) {
 		return String.format(
 				"""
 				- main hand: %s
@@ -88,7 +92,7 @@ public class NPCInteraction {
 				inventory.mainHandItem(), inventory.armor(), inventory.mainInventory(), inventory.hotbar());
 	}
 
-	public static String formatNPCState(WorldContext.NPCState state) {
+	private static String formatNPCState(WorldContext.NPCState state) {
 		WorldContext.Position position = state.position();
 		return String.format(
 				"""
@@ -98,16 +102,30 @@ public class NPCInteraction {
 			- on Ground: %s
 			- touching water: %s
 			""",
-				String.format("x: %s y: %s, z: %s", position.x(), position.y(), position.z()),
+				formatPosition(position),
 				state.health(),
 				state.food(),
 				state.onGround(),
 				state.inWater());
 	}
 
-	public static String formatResources(List<WorldContext.BlockData> blocks) {
+	private static String formatResources(List<WorldContext.BlockData> blocks) {
 		return blocks.stream()
-				.map(block -> String.format("- Block %s is at %s", block.type(), block.position()))
+				.map(block -> String.format("- Block %s is at %s", block.type(), formatPosition(block.position())))
 				.collect(Collectors.joining("\n"));
+	}
+
+	private static String formatEntities(List<WorldContext.EntityData> entities) {
+		return entities.stream()
+				.map(entity -> String.format("- Entity of type: %s %s, %s %s",
+						entity.type(),
+						entity.isPlayer() ? "is a Player" : "",
+						entity.canHit() ? "this entity can hit you" : "",
+						formatPosition(entity.position())))
+				.collect(Collectors.joining("\n"));
+	}
+
+	public static String formatPosition(WorldContext.Position position) {
+		return String.format("Coordinates: x: %s y: %s, z: %s", position.x(), position.y(), position.z());
 	}
 }

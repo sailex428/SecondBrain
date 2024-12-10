@@ -19,5 +19,5 @@ public enum ActionType {
 	BUILD, // Construction actions
 	REPAIR, // Fixing items
 	INTERACT, // General interactions
-	CANCEL // Cancelling actions
+	STOP // Cancelling actions
 }

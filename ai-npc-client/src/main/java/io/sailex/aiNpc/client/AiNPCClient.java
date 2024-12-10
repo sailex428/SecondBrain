@@ -10,11 +10,11 @@ import io.sailex.aiNpc.client.llm.OpenAiClient;
 import io.sailex.aiNpc.client.model.NPC;
 import io.sailex.aiNpc.client.npc.NPCContextGenerator;
 import io.sailex.aiNpc.client.npc.NPCController;
+import io.sailex.aiNpc.client.util.ConnectionUtil;
 import lombok.Getter;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.multiplayer.ConnectScreen;
 import net.minecraft.client.network.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -46,7 +46,7 @@ public class AiNPCClient implements ClientModInitializer {
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
 			if (client.isFinishedLoading() && !connected) {
 				client.getSoundManager().close();
-				connectToServer();
+				ConnectionUtil.connectToServer();
 				connected = true;
 			}
 		});
@@ -57,20 +57,6 @@ public class AiNPCClient implements ClientModInitializer {
 				npcInitialized = true;
 			}
 		});
-	}
-
-	private void connectToServer() {
-		String serverName = Config.getProperty(ConfigConstants.NPC_SERVER_IP);
-		String port = Config.getProperty(ConfigConstants.NPC_SERVER_PORT);
-
-		ConnectScreen.connect(
-				client.currentScreen,
-				client,
-				new ServerAddress(serverName, Integer.parseInt(port)),
-				new ServerInfo("server", serverName, ServerInfo.ServerType.OTHER),
-				false
-				/*? if >=1.21.1 {*//*, null*//*?}*/
-		);
 	}
 
 	private void initializeNpc() {
