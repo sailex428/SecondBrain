@@ -109,7 +109,7 @@ publishMods {
         accessToken.set(providers.environmentVariable("GITHUB_TOKEN"))
         repository.set(providers.environmentVariable("GITHUB_REPOSITORY"))
         commitish.set("main")
-        tagName.set("v$modVersion-$mcVersion")
+        tagName.set("v$modVersion-$mcVersion-launcher")
     }
     modrinth {
         accessToken.set(providers.environmentVariable("MODRINTH_TOKEN"))
