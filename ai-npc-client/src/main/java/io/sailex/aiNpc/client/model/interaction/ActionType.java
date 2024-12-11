@@ -8,6 +8,7 @@ public enum ActionType {
 	MOVE, // Moving to a location
 	MINE, // Gathering resources
 	CRAFT, // Creating items
+	DROP, // Dropping items
 	USE, // Using items
 	STORE, // Putting items away
 	RETRIEVE, // Getting items e.g. kill entities
@@ -17,5 +18,6 @@ public enum ActionType {
 	TRADE, // Trading with Villagers
 	BUILD, // Construction actions
 	REPAIR, // Fixing items
-	INTERACT // General interactions
+	INTERACT, // General interactions
+	STOP // Cancelling actions
 }

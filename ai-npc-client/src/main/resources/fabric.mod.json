@@ -13,6 +13,9 @@
       "io.sailex.aiNpc.client.AiNPCClient"
     ]
   },
+  "mixins": [
+    "io.sailex.aiNpc.client.mixins.json"
+  ],
   "depends": {
     "fabricloader": ">=${loader_version}",
     "fabric": "*",

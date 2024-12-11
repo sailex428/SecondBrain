@@ -7,10 +7,10 @@ plugins {
     id("me.modmuss50.mod-publish-plugin") version "0.8.1"
 }
 
-version = rootProject.extra["mod.version"] as String
 var modVersion = rootProject.property("mod.version").toString()
 var mcVersion = property("mc.version").toString()
 var fabricLoaderVersion = property("deps.fabric_loader").toString()
+var jarName = "ai-npc-launcher-$mcVersion-v$modVersion-fabric-beta"
 
 repositories {
     flatDir {
@@ -42,6 +42,14 @@ java {
     val java = if (stonecutter.eval(mcVersion, ">=1.20.6")) JavaVersion.VERSION_21 else JavaVersion.VERSION_17
     targetCompatibility = java
     sourceCompatibility = java
+}
+
+tasks.remapJar {
+    archiveBaseName.set(jarName)
+}
+
+tasks.remapSourcesJar {
+    archiveBaseName.set(jarName)
 }
 
 tasks.processResources {

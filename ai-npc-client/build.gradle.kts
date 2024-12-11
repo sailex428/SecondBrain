@@ -7,15 +7,22 @@ plugins {
     id("me.modmuss50.mod-publish-plugin") version "0.8.1"
 }
 
-version = rootProject.extra["mod.version"] as String
 var modVersion = rootProject.property("mod.version").toString()
 var mcVersion = property("mc.version").toString()
 var fabricLoaderVersion = property("deps.fabric_loader").toString()
+var jarName = ("ai-npc-$mcVersion-v$modVersion-fabric-beta").toString()
 
 repositories {
     flatDir {
         dirs("libs")
         dirs("../../libs")
+    }
+}
+
+configurations.all {
+    resolutionStrategy {
+        force("org.slf4j:slf4j-api:2.0.16")
+        force("org.apache.logging.log4j:log4j-core:2.19.0")
     }
 }
 
@@ -40,13 +47,15 @@ dependencies {
     include(modRuntimeOnly("com.fasterxml.jackson.core:jackson-databind:2.18.1")!!)
     include(modRuntimeOnly("com.fasterxml:classmate:1.7.0")!!)
     include(modRuntimeOnly("com.github.victools:jsonschema-generator:4.36.0")!!)
+
     include(modRuntimeOnly("com.github.victools:jsonschema-module-jackson:4.36.0")!!)
     include(modRuntimeOnly("io.github.sashirestela:slimvalidator:1.2.2")!!)
     include(modRuntimeOnly("io.github.sashirestela:cleverclient:1.4.4")!!)
 
-    include(modImplementation("io.github.sashirestela:simple-openai:3.9.0") {
-        exclude(group = "org.slf4j")
-    })
+    include(modImplementation("io.github.sashirestela:simple-openai:3.9.0")!!)
+
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.11.3")
+    testImplementation("org.mockito:mockito-core:5.14.2")
 }
 
 loom {
@@ -61,6 +70,14 @@ java {
     val java = if (stonecutter.eval(mcVersion, ">=1.20.6")) JavaVersion.VERSION_21 else JavaVersion.VERSION_17
     targetCompatibility = java
     sourceCompatibility = java
+}
+
+tasks.remapJar {
+    archiveBaseName.set(jarName)
+}
+
+tasks.remapSourcesJar {
+    archiveBaseName.set(jarName)
 }
 
 tasks.processResources {

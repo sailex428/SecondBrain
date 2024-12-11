@@ -115,18 +115,18 @@ public class ClientLauncher {
 			builder.exitManager(new ExitManager());
 			launcher = builder.buildDefault();
 
+			if (launcher == null) {
+				LogUtil.error("Failed to initialize the FileManager.");
+			}
+
+			setMcDir();
+			this.files =
+					launcher.getFileManager().createRelative(UUID.randomUUID().toString());
+
 			String versionName = SharedConstants.getGameVersion().getName();
 			version = findOrDownloadFabric(versionName);
 
 			installAiNpcClientMod(version);
-
-			if (launcher == null) {
-				LogUtil.error("Failed to initialize the FileManager.");
-				return;
-			}
-			setMcDir();
-			this.files =
-					launcher.getFileManager().createRelative(UUID.randomUUID().toString());
 		} catch (AuthException e) {
 			LogUtil.error("Failed to authenticate.");
 		} catch (CommandException e) {
