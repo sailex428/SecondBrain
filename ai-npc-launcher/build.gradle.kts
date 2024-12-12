@@ -23,7 +23,7 @@ dependencies {
     minecraft("com.mojang:minecraft:$mcVersion")
     mappings("net.fabricmc:yarn:${mcVersion}+build.${property("deps.yarn_build")}:v2")
     modImplementation("net.fabricmc:fabric-loader:$fabricLoaderVersion")
-    include(modImplementation("net.fabricmc.fabric-api:fabric-api:${property("deps.fapi")}+$mcVersion")!!)
+    modImplementation("net.fabricmc.fabric-api:fabric-api:${property("deps.fapi")}+$mcVersion")
 
     compileOnly("org.projectlombok:lombok:1.18.34")
     annotationProcessor("org.projectlombok:lombok:1.18.34")
