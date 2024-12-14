@@ -1,36 +1,34 @@
 package io.sailex.aiNpc.client.database;
 
 import io.sailex.aiNpc.client.AiNPCClient;
-import io.sailex.aiNpc.client.model.db.Skill;
+
 import java.io.File;
-import java.nio.ByteBuffer;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
+
 import net.fabricmc.loader.api.FabricLoader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 /**
- * SQLite client for managing the database of minecraft skills.
+ * SQLite client for managing the database.
  */
 public class SqliteClient {
+
 	private static final Logger LOGGER = LogManager.getLogger(SqliteClient.class);
 	private Connection connection;
 
 	/**
 	 * Create the database and tables.
 	 */
-	public void initDatabase() {
+	public void initDatabase(String databaseName) {
 		String databasePath = initDataBaseDir();
 		try {
-			String jdbcUrl = "jdbc:sqlite:" + databasePath + "/skills.db";
+			String jdbcUrl = String.format("jdbc:sqlite:%s/%s.db", databasePath, databaseName);
 			connection = DriverManager.getConnection(jdbcUrl);
 			if (connection == null) {
 				return;
 			}
-			if (connection.isValid(15)) {
-				createRulesTable();
+			if (connection.isValid(3)) {
 				LOGGER.info("Database created or opened at: {}", databasePath);
 			}
 		} catch (SQLException e) {
@@ -47,70 +45,41 @@ public class SqliteClient {
 		return sqlDbDir.getAbsolutePath();
 	}
 
-	private void createRulesTable() {
-		try (Statement statement = connection.createStatement()) {
-			statement.execute(
-					"""
-				CREATE TABLE IF NOT EXISTS skills (
-					id INTEGER PRIMARY KEY AUTOINCREMENT,
-					name TEXT NOT NULL,
-					description TEXT,
-					example TEXT,
-					embedding BLOB,
-					created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-				)
-			""");
-			LOGGER.info("Database tables created successfully");
-		} catch (SQLException e) {
-			LOGGER.error("Error creating tables: {}", e.getMessage());
-		}
+	/**
+	 * Create the tables in the database.
+	 */
+	public void create(String sql) {
+		executeQuery(sql);
 	}
 
 	/**
-	 * Add a minecraft skill to the database.
-	 *
-	 * @param name        the name of the rule
-	 * @param description the description of the rule
-	 * @param embedding   the embedding of the rule
+	 * Insert a data into the database.
 	 */
-	public void addSkill(String name, String description, String example, float[] embedding) {
-		String sql = "INSERT INTO skills (name, description, example, embedding) VALUES (?, ?, ?, ?)";
-		try (PreparedStatement statement = connection.prepareStatement(sql)) {
-			statement.setString(1, name);
-			statement.setString(2, description);
-			statement.setString(3, example);
-			statement.setBytes(3, convertToBytes(embedding));
-			statement.executeUpdate();
-			LOGGER.info("Rule added successfully: {}", name);
-		} catch (SQLException e) {
-			LOGGER.error("Error adding rule: {}", e.getMessage());
-		}
+	public void insert(String sql) {
+		executeQuery(sql);
 	}
 
 	/**
-	 * Select all minecraft skills from the database.
-	 *
-	 * @return a list of skills
+	 * Select data from the database.
 	 */
-	public List<Skill> selectSkills() {
-		List<Skill> skills = new ArrayList<>();
-		String sql = "SELECT * FROM skills";
+	public ResultSet select(String sql) {
 		try (Statement statement = connection.createStatement();
-				ResultSet resultSet = statement.executeQuery(sql)) {
-			while (resultSet.next()) {
-				Skill skill = new Skill(
-						resultSet.getInt("id"),
-						resultSet.getString("name"),
-						resultSet.getString("description"),
-						resultSet.getString("example"),
-						convertToFloats(resultSet.getBytes("embedding")));
-				skills.add(skill);
-				LOGGER.info(skill);
-			}
+			 ResultSet resultSet = statement.executeQuery(sql)) {
+			LOGGER.info("Selected successfully: {} : {}", sql, resultSet);
+			return resultSet;
 		} catch (SQLException e) {
 			LOGGER.error("Error selecting rule: {}", e.getMessage());
+			return null;
 		}
-		return skills;
+	}
+
+	private void executeQuery(String sql) {
+		try (Statement statement = connection.createStatement()) {
+			statement.execute(sql);
+			LOGGER.info("Executed {} successfully", sql);
+		} catch (SQLException e) {
+			LOGGER.error("Error executing query {} : {}", sql, e.getMessage());
+		}
 	}
 
 	/**
@@ -125,18 +94,5 @@ public class SqliteClient {
 		} catch (SQLException e) {
 			LOGGER.error("Error closing database connection: {}", e.getMessage());
 		}
-	}
-
-	private float[] convertToFloats(byte[] bytes) {
-		ByteBuffer buffer = ByteBuffer.wrap(bytes);
-		float[] embedding = new float[bytes.length / 4];
-		buffer.asFloatBuffer().get(embedding);
-		return embedding;
-	}
-
-	private byte[] convertToBytes(float[] embedding) {
-		ByteBuffer buffer = ByteBuffer.allocate(embedding.length * 4);
-		buffer.asFloatBuffer().put(embedding);
-		return buffer.array();
 	}
 }

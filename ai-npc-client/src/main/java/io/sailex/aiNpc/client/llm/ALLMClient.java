@@ -3,7 +3,6 @@ package io.sailex.aiNpc.client.llm;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -21,13 +20,7 @@ public abstract class ALLMClient implements ILLMClient {
     public abstract String generateResponse(String userPrompt, String systemPrompt);
 
     @Override
-    public abstract Float[] generateEmbedding(List<String> prompt);
-
-    protected Float[] convertEmbedding(List<List<Double>> embedding) {
-        return embedding.stream().flatMap(Collection::stream)
-                .map(Double::floatValue)
-                .toArray(Float[]::new);
-    }
+    public abstract List<List<Double>> generateEmbedding(List<String> prompt);
 
     @Override
     public void stopService() {

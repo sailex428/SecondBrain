@@ -22,7 +22,7 @@ public interface ILLMClient {
      * @param prompt the text prompt
      * @return the embedding as float array
      */
-	Float[] generateEmbedding(List<String> prompt);
+	List<List<Double>> generateEmbedding(List<String> prompt);
 
 	/**
 	 * Stop the execution of the service
