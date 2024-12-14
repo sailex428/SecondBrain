@@ -66,8 +66,8 @@ public class OpenAiClient extends ALLMClient implements ILLMClient {
 	}
 
 	@Override
-	public Float[] generateEmbedding(List<String> prompt) {
-		List<List<Double>> embedding = openAiService
+	public List<List<Double>> generateEmbedding(List<String> prompt) {
+		return openAiService
 				.embeddings()
 				.create(EmbeddingRequest.builder().input(prompt).build()).
 				join()
@@ -75,6 +75,5 @@ public class OpenAiClient extends ALLMClient implements ILLMClient {
 				.stream()
 				.map(EmbeddingFloat::getEmbedding)
 				.toList();
-		return convertEmbedding(embedding);
 	}
 }

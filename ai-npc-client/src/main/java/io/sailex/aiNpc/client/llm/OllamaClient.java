@@ -78,11 +78,10 @@ public class OllamaClient extends ALLMClient implements ILLMClient {
 	}
 
 	@Override
-	public Float[] generateEmbedding(List<String> prompt) {
+	public List<List<Double>> generateEmbedding(List<String> prompt) {
 		return CompletableFuture.supplyAsync(() -> {
 			try {
-				List<List<Double>> embeddings = ollamaAPI.embed(OllamaModelType.NOMIC_EMBED_TEXT, prompt).getEmbeddings();
-				return convertEmbedding(embeddings);
+				return ollamaAPI.embed(OllamaModelType.NOMIC_EMBED_TEXT, prompt).getEmbeddings();
 			} catch (IOException | InterruptedException | OllamaBaseException e) {
 				throw new CompletionException("Error generating embedding for prompt: " + prompt.getFirst(), e);
 			}
