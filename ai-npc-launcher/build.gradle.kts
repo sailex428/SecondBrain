@@ -2,9 +2,9 @@ import me.modmuss50.mpp.ReleaseType
 import net.fabricmc.loom.task.RemapJarTask
 
 plugins {
-    id("fabric-loom") version "1.8-SNAPSHOT"
+    id("fabric-loom")
     id("maven-publish")
-    id("me.modmuss50.mod-publish-plugin") version "0.8.1"
+    id("me.modmuss50.mod-publish-plugin")
 }
 
 version =  rootProject.extra["mod.version"] as String

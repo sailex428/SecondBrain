@@ -1,11 +1,12 @@
 import me.modmuss50.mpp.ReleaseType
 import net.fabricmc.loom.task.RemapJarTask
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
-    id("fabric-loom") version "1.8-SNAPSHOT"
+    id("fabric-loom")
     id("maven-publish")
-    id("me.modmuss50.mod-publish-plugin") version "0.8.1"
-    kotlin("jvm") version "2.1.0"
+    kotlin("jvm")
+    id("me.modmuss50.mod-publish-plugin")
 }
 
 version =  rootProject.extra["mod.version"] as String
@@ -14,7 +15,7 @@ var mcVersion = property("mc.version").toString()
 var fabricLoaderVersion = property("deps.fabric_loader").toString()
 var jarName = ("ai-npc-$mcVersion-v$modVersion-fabric-beta").toString()
 
-val jvmVersion = if (stonecutter.eval(mcVersion, ">=1.20.6")) JavaVersion.VERSION_21 else JavaVersion.VERSION_17
+val javaVersion = if (stonecutter.eval(mcVersion, ">=1.20.6")) JavaVersion.VERSION_21 else JavaVersion.VERSION_17
 
 repositories {
     flatDir {
@@ -35,6 +36,7 @@ dependencies {
     mappings("net.fabricmc:yarn:$mcVersion+build.${property("deps.yarn_build")}:v2")
     modImplementation("net.fabricmc:fabric-loader:$fabricLoaderVersion")
     include(modImplementation("net.fabricmc.fabric-api:fabric-api:${property("deps.fapi")}+$mcVersion")!!)
+    modImplementation("net.fabricmc:fabric-language-kotlin:1.10.8+kotlin.1.9.0")
 
     compileOnly("org.projectlombok:lombok:1.18.34")
     annotationProcessor("org.projectlombok:lombok:1.18.34")
@@ -71,8 +73,15 @@ loom {
 
 java {
     withSourcesJar()
-    targetCompatibility = jvmVersion
-    sourceCompatibility = jvmVersion
+    targetCompatibility = javaVersion
+    sourceCompatibility = javaVersion
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget = if (stonecutter.eval(mcVersion, ">=1.20.6")) JvmTarget.JVM_21 else JvmTarget.JVM_17
+    }
+    jvmToolchain(21)
 }
 
 tasks.jar {
