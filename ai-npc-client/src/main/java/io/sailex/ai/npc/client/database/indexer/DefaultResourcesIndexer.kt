@@ -1,30 +1,47 @@
 package io.sailex.ai.npc.client.database.indexer
 
 import io.sailex.ai.npc.client.AiNPCClient.client
+import io.sailex.ai.npc.client.config.ResourceLoader
 import io.sailex.ai.npc.client.database.repository.RequirementsRepository
+import io.sailex.ai.npc.client.database.repository.TemplatesRepository
 import io.sailex.ai.npc.client.llm.ILLMClient
 import io.sailex.ai.npc.client.util.LogUtil
 import net.minecraft.inventory.CraftingInventory
 import net.minecraft.recipe.Recipe
 import net.minecraft.recipe.RecipeEntry
+import org.apache.commons.io.FilenameUtils
+import java.nio.file.Files
+import java.nio.file.Paths
 import kotlin.collections.forEach
+import kotlin.io.path.name
 
-class RequirementsIndexer(
+class DefaultResourcesIndexer(
     val requirementsRepository: RequirementsRepository,
+    val templatesRepository: TemplatesRepository,
     val llmClient: ILLMClient
 ) {
+
+    fun indexTemplates() {
+        Files.list(Paths.get(ResourceLoader.getResourcePath("template"))).forEach {
+            val jsonTemplate = ResourceLoader.getResourceJsonContent(it.name)
+            templatesRepository.insert(FilenameUtils.getBaseName(it.name),
+                jsonTemplate,
+                llmClient.generateEmbedding(listOf(jsonTemplate))
+            )
+        }
+    }
 
     /**
      * Indexes the requirements in db for all recipes in the game
      */
     //? if <1.21.2 {
-    fun index() {
+    fun indexRequirements() {
         val world = client.world
         if (world == null) {
             LogUtil.error("Could not get 'recipes', cause the client world is null")
             return
         }
-        val recipes: Collection<RecipeEntry<*>> = world.recipeManager.values();
+        val recipes: Collection<RecipeEntry<*>> = world.recipeManager.values()
         recipes.forEach { recipe ->
             {
                 val recipeValue = recipe.value

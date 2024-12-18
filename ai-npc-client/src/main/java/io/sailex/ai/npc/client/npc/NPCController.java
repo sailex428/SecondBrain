@@ -10,7 +10,6 @@ import io.sailex.ai.npc.client.llm.ILLMClient;
 import io.sailex.ai.npc.client.mixin.InventoryAccessor;
 import io.sailex.ai.npc.client.model.NPCEvent;
 import io.sailex.ai.npc.client.model.context.WorldContext;
-import io.sailex.ai.npc.client.model.database.Resource;
 import io.sailex.ai.npc.client.model.interaction.Action;
 import io.sailex.ai.npc.client.model.interaction.ActionType;
 import io.sailex.ai.npc.client.model.interaction.Actions;
@@ -18,6 +17,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.*;
 
+import io.sailex.ai.npc.client.model.interaction.Resources;
 import io.sailex.ai.npc.client.util.ClientWorldUtil;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.network.ClientPlayerEntity;
@@ -97,14 +97,13 @@ public class NPCController {
 				return;
 			}
 
-			List<List<Resource>> resources =  repositoryFactory.getRepositories().stream()
-					.map(repo -> repo.getMostRelevantResources(prompt.message()))
-					.toList();
-			String relevantResources = NPCInteraction.formatResources(resources);
+            Resources resources = repositoryFactory.getRelevantResources(prompt.message());
+			String relevantResources = NPCInteraction.formatResources(resources.getActions(), resources.getRequirements(),
+                    resources.getTemplates(), resources.getConversations());
 			String context = NPCInteraction.formatContext(npcContextGenerator.getContext());
 
 			String userPrompt = NPCInteraction.buildUserPrompt(prompt);
-			String systemPrompt = NPCInteraction.buildSystemPrompt(relevantResources + context);
+			String systemPrompt = NPCInteraction.buildSystemPrompt(context, relevantResources);
 
 			LOGGER.info("User prompt: {}, System prompt: {}", userPrompt, systemPrompt);
 

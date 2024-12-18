@@ -3,12 +3,13 @@ package io.sailex.ai.npc.client.npc;
 import com.google.gson.*;
 import io.sailex.ai.npc.client.model.NPCEvent;
 import io.sailex.ai.npc.client.model.context.WorldContext;
-import io.sailex.ai.npc.client.model.database.Action;
-import io.sailex.ai.npc.client.model.database.Conversation;
-import io.sailex.ai.npc.client.model.database.Resource;
-import io.sailex.ai.npc.client.model.database.Template;
+import io.sailex.ai.npc.client.model.database.*;
 import io.sailex.ai.npc.client.model.interaction.Actions;
+
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -37,12 +38,14 @@ public class NPCInteraction {
 	 * Builds a JSON system prompt from the context of the Minecraft world.
 	 *
 	 * @param context the context of the Minecraft world
+	 * @param relevantResources resources matching the user prompt
 	 * @return the system prompt
 	 */
-	public static String buildSystemPrompt(String context) {
+	public static String buildSystemPrompt(String context, String relevantResources) {
 		return String.format("""
-			context from the minecraft world: %s,
-			""", context);
+			Context from the minecraft world: %s,
+			relevant Resources: %s
+			""", context, relevantResources);
 	}
 
 	/**
@@ -61,33 +64,60 @@ public class NPCInteraction {
 		}
 	}
 
-	public static String formatResources(List<List<Resource>> relevantResources) {
+	/**
+	 * Formats resources to string so it can be sent to a llm
+	 *
+	 * @return to string formatted resources
+	 */
+	public static String formatResources(
+			List<Action> actions, List<Requirement> requirements,
+			List<Template> templates, List<Conversation> conversations) {
 		return String.format(
 				"""
+				Templates: predefined formats for performing actions:
+				%s,
+				Actions: (example) actions that you have done before with requirements that are needed:
+				%s,
+				Recipes/Requirements: recipes for items that the player request to craft:
+				%s,
+				Conversations: previous dialogues between you and the players:
 				%s
-				%s
-				%s
-				%s
-				%s
-			""",
-				"", "", "", "", ""
+				""",
+				formatTemplates(templates),
+				formatActions(actions),
+				formatRequirements(requirements),
+				formatConversation(conversations)
 		);
 	}
 
 	private static String formatConversation(List<Conversation> conversations) {
-		return "";
+		return formatList(conversations, conversation ->
+				String.format("- Messages: %s at %s", conversation.getMessage(), conversation.getTimeStamp()));
 	}
 
 	private static String formatActions(List<Action> actions) {
-		return "";
+		return formatList(actions, action ->
+				String.format("- Action name: %s : %s, example Json format/content for that action: %s, requirements: %s",
+						action.getName(), action.getDescription(), action.getExample(), action.getRequirements()));
 	}
 
 	private static String formatTemplates(List<Template> templates) {
-		return "";
+		return formatList(templates, template ->
+				String.format("- Action name: %s, json format of the action: %s",
+						template.getName(), template.getAction()));
 	}
 
-	private static String formatConversation() {
-		return "";
+	private static String formatRequirements(List<Requirement> requirements) {
+		return formatList(requirements, requirement ->
+				String.format("- Requirement name: %s, %s, needed items: %s",
+						requirement.getBlocksNeeded(),
+						requirement.getCraftingTableNeeded() ? "needs crafting table to create this item" : "can be crafted in your inventory",
+						formatBlocksNeeded(requirement.getBlocksNeeded())));
+	}
+
+	private static String formatBlocksNeeded(Map<String, Integer> blocksNeeded) {
+		return formatList(new ArrayList<>(blocksNeeded.entrySet()), entry ->
+				String.format("Block: %s, needed amount: %s", entry.getKey(), entry.getValue()));
 	}
 
 	/**
@@ -151,22 +181,23 @@ public class NPCInteraction {
 	}
 
 	private static String formatBlocks(List<WorldContext.BlockData> blocks) {
-		return blocks.stream()
-				.map(block -> String.format("- Block %s is at %s", block.type(), formatPosition(block.position())))
-				.collect(Collectors.joining("\n"));
+		return formatList(blocks, block ->
+				String.format("- Block %s is at %s", block.type(), formatPosition(block.position())));
 	}
 
 	private static String formatEntities(List<WorldContext.EntityData> entities) {
-		return entities.stream()
-				.map(entity -> String.format("- Entity of type: %s %s, %s %s",
+		return formatList(entities, entity ->
+				String.format("- Entity of type: %s %s, %s %s",
 						entity.type(),
 						entity.isPlayer() ? "is a Player" : "",
 						entity.canHit() ? "this entity can hit you" : "",
-						formatPosition(entity.position())))
-				.collect(Collectors.joining("\n"));
+						formatPosition(entity.position())));
 	}
-
 	private static String formatPosition(WorldContext.Position position) {
 		return String.format("Coordinates: x: %s y: %s, z: %s", position.x(), position.y(), position.z());
+	}
+
+	private static <T> String formatList(List<T> list, Function<T, String> formatter) {
+		return list.stream().map(formatter).collect(Collectors.joining("\n"));
 	}
 }

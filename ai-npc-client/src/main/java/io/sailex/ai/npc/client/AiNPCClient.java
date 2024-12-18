@@ -2,7 +2,7 @@ package io.sailex.ai.npc.client;
 
 import io.sailex.ai.npc.client.config.Config;
 import io.sailex.ai.npc.client.constant.ConfigConstants;
-import io.sailex.ai.npc.client.database.indexer.RequirementsIndexer;
+import io.sailex.ai.npc.client.database.indexer.DefaultResourcesIndexer;
 import io.sailex.ai.npc.client.database.repository.RepositoryFactory;
 import io.sailex.ai.npc.client.listener.EventListenerRegisterer;
 import io.sailex.ai.npc.client.llm.ILLMClient;
@@ -73,8 +73,7 @@ public class AiNPCClient implements ClientModInitializer {
 		RepositoryFactory repositoryFactory = new RepositoryFactory(llmClient);
 		repositoryFactory.initRepositories();
 		//? if <1.21.2 {
-		RequirementsIndexer requirementsIndexer = new RequirementsIndexer(repositoryFactory.getRequirementsRepository(), llmClient);
-		requirementsIndexer.index();
+		indexDefaultResources(llmClient, repositoryFactory);
 		//?}
 
 		NPCContextGenerator npcContextGenerator = new NPCContextGenerator(npcEntity);
@@ -101,6 +100,14 @@ public class AiNPCClient implements ClientModInitializer {
 			throw new IllegalArgumentException("Invalid LLM type: " + npcType);
 		}
 		return llmService;
+	}
+
+	private void indexDefaultResources(ILLMClient llmClient, RepositoryFactory repositoryFactory) {
+		DefaultResourcesIndexer defaultResourcesIndexer = new DefaultResourcesIndexer(
+				repositoryFactory.getRequirementsRepository(),
+				repositoryFactory.getTemplatesRepository(), llmClient);
+		defaultResourcesIndexer.indexRequirements();
+		defaultResourcesIndexer.indexTemplates();
 	}
 
 }

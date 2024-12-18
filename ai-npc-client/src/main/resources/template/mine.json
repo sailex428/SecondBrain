@@ -1,0 +1,12 @@
+{
+  "action": "mine",
+  "message": null,
+  "targetId": null,
+  "targetType": null,
+  "targetPosition": {
+    "x": 0,
+    "y": 0,
+    "z": 0
+  },
+  "parameters": {}
+}

@@ -1,0 +1,8 @@
+{
+  "action": "CANCEL",
+  "message": null,
+  "targetId": null,
+  "targetType": null,
+  "targetPosition": null,
+  "parameters": {}
+}

@@ -14,16 +14,17 @@ class TemplatesRepository(
         val query = """
            CREATE TABLE IF NOT EXISTS templates (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                action TEXT
-                action_embedded
+                name TEXT NOT NULL,
+                action TEXT NOT NULL,
+                action_embedded BLOB
            );
         """
         sqliteClient.executeQuery(query)
     }
 
-    fun insert(action: String, actionEmbedded: DoubleArray) {
-        val query = "INSERT INTO templates (action, action_embedded) VALUES (%S, %S)"
-        sqliteClient.executeQuery(String.format(query, action, VectorUtil.convertToBytes(actionEmbedded)))
+    fun insert(name: String, action: String, actionEmbedded: DoubleArray) {
+        val query = "INSERT INTO templates (name, action, action_embedded) VALUES (%S, %S)"
+        sqliteClient.executeQuery(String.format(query, name, action, VectorUtil.convertToBytes(actionEmbedded)))
     }
 
     override fun selectAll(): List<Template> {
@@ -34,6 +35,7 @@ class TemplatesRepository(
         while(result.next()) {
             val template = Template(
                 result.getInt("id"),
+                result.getString("name"),
                 result.getString("action"),
                 VectorUtil.convertToDoubles(result.getBytes("action_embedded"))
             )
