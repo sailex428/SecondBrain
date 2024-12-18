@@ -18,6 +18,7 @@ public class NPCCreateCommand {
 
 	private static final String LLM_TYPE = "llm-type";
 	private static final String LLM_MODEL = "llm-model";
+	private static final String IS_ONLINE_COMMAND = "isOnline";
 
 	private static final Set<String> allowedLLMTypes = Set.of("ollama", "openai");
 
@@ -31,7 +32,7 @@ public class NPCCreateCommand {
 		return literal("add")
 				.requires(source -> source.hasPermissionLevel(2))
 				.then(argument("name", StringArgumentType.string())
-						.then(argument("isOffline", BoolArgumentType.bool())
+						.then(argument(IS_ONLINE_COMMAND, BoolArgumentType.bool())
 								.executes(this::createNPC)
 								.then(argument(LLM_TYPE, StringArgumentType.string())
 										.suggests((context, builder) -> {
@@ -46,7 +47,7 @@ public class NPCCreateCommand {
 
 	private int createNPC(CommandContext<ServerCommandSource> context) {
 		String name = StringArgumentType.getString(context, "name");
-		boolean isOffline = BoolArgumentType.getBool(context, "isOffline");
+		boolean isOffline = BoolArgumentType.getBool(context, IS_ONLINE_COMMAND);
 
 		LogUtil.info("Creating NPC with name: " + name);
 
@@ -58,7 +59,7 @@ public class NPCCreateCommand {
 
 	private int createNPCWithLLM(CommandContext<ServerCommandSource> context) {
 		String name = StringArgumentType.getString(context, "name");
-		boolean isOffline = BoolArgumentType.getBool(context, "isOffline");
+		boolean isOffline = BoolArgumentType.getBool(context, IS_ONLINE_COMMAND);
 		String llmType = StringArgumentType.getString(context, LLM_TYPE);
 		String llmModel = StringArgumentType.getString(context, LLM_MODEL);
 

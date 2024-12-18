@@ -183,8 +183,11 @@ public class NPCController {
 			LOGGER.info("Could not craft item {} cause client world is null", recipeId);
 			return;
 		}
+
+		//? if <1.21.2 {
 		Optional<RecipeEntry<?>> recipe = client.world.getRecipeManager().get(new Identifier(recipeId));
 		//TODO: craft item from recipe
+		//?
 	}
 
 	private void lookAtPlayer() {
