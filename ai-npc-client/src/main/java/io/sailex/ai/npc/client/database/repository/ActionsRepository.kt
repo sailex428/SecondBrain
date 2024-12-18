@@ -22,7 +22,7 @@ class ActionsRepository(
                     description_embedding BLOB,
                     example TEXT NOT NULL,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    requirements TEXT,
+                    requirements TEXT
             );
         """
         sqliteClient.executeQuery(sql)
