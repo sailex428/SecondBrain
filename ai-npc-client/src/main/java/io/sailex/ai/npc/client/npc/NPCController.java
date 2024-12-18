@@ -202,7 +202,7 @@ public class NPCController {
 		} else {
 			LOGGER.warn("Could not find recipe with id: {}", recipeId);
 		}
-		//}?
+		//?}
 	}
 
 	private void lookAtPlayer() {

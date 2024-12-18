@@ -102,6 +102,7 @@ public class AiNPCClient implements ClientModInitializer {
 		return llmService;
 	}
 
+	//? if <1.21.2 {
 	private void indexDefaultResources(ILLMClient llmClient, RepositoryFactory repositoryFactory) {
 		DefaultResourcesIndexer defaultResourcesIndexer = new DefaultResourcesIndexer(
 				repositoryFactory.getRequirementsRepository(),
@@ -109,5 +110,6 @@ public class AiNPCClient implements ClientModInitializer {
 		defaultResourcesIndexer.indexRequirements();
 		defaultResourcesIndexer.indexTemplates();
 	}
+	//?}
 
 }
