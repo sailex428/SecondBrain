@@ -2,7 +2,7 @@ pluginManagement {
     repositories {
         mavenCentral()
         gradlePluginPortal()
-        maven("https://maven.kikugie.dev/snapshots")
+        maven("https://maven.kikugie.dev/releases")
         maven {
             name = "Fabric"
             url = uri("https://maven.fabricmc.net/")
@@ -11,7 +11,7 @@ pluginManagement {
 }
 
 plugins {
-    id("dev.kikugie.stonecutter") version "0.5-beta.5"
+    id("dev.kikugie.stonecutter") version "0.5"
 }
 
 stonecutter {
