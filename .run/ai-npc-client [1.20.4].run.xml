@@ -1,0 +1,12 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="ai-npc-client [1.20.4]" type="Application" factoryName="Application">
+    <option name="MAIN_CLASS_NAME" value="net.fabricmc.devlaunchinjector.Main" />
+    <module name="ai-npc.ai-npc-client.1.20.4.main" />
+    <shortenClasspath name="ARGS_FILE" />
+    <option name="VM_PARAMETERS" value="-Dnpc.llm.ollama.url=http://localhost:11434 -Dnpc.server.ip=localhost -Dnpc.server.port=25565 -Dnpc.llm.ollama.model=gemma2 -Dnpc.llm.type=ollama -Dnpc.llm.openai.model=gpt-4o-mini -Dnpc.llm.openai.api_key= -Dfabric.dli.config=$PROJECT_DIR$/ai-npc-client/versions/1.20.4/.gradle/loom-cache/launch.cfg -Dfabric.dli.env=client -XstartOnFirstThread -XstartOnFirstThread -XstartOnFirstThread -XstartOnFirstThread -Dfabric.dli.main=net.fabricmc.loader.impl.launch.knot.KnotClient" />
+    <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/client/1.20.4" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
