@@ -13,6 +13,8 @@ var mcVersion = property("mc.version").toString()
 var fabricLoaderVersion = property("deps.fabric_loader").toString()
 var jarName = "ai-npc-launcher-$mcVersion-v$modVersion-fabric-beta"
 
+val lombokVersion = "1.18.34"
+
 repositories {
     flatDir {
         dirs("../../libs")
@@ -25,8 +27,8 @@ dependencies {
     modImplementation("net.fabricmc:fabric-loader:$fabricLoaderVersion")
     modImplementation("net.fabricmc.fabric-api:fabric-api:${property("deps.fapi")}+$mcVersion")
 
-    compileOnly("org.projectlombok:lombok:1.18.34")
-    annotationProcessor("org.projectlombok:lombok:1.18.34")
+    compileOnly("org.projectlombok:lombok:$lombokVersion")
+    annotationProcessor("org.projectlombok:lombok:$lombokVersion")
 
     include(modImplementation("me.earth.headlessmc:headlessmc-launcher-repackaged:2.3.0")!!)
 }
@@ -75,6 +77,7 @@ tasks.processResources {
 }
 
 tasks.register<Jar>("repackageHeadlessmc") {
+    description = "removes asm from headlessmc-launcher jar"
     group = "project"
     from(zipTree("../../libs/headlessmc-launcher-2.3.0.jar")) {
         exclude("org/objectweb/asm/**")
