@@ -16,12 +16,12 @@ import io.sailex.ai.npc.client.model.interaction.ActionType;
 import io.sailex.ai.npc.client.model.interaction.Actions;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.*;
 
 import io.sailex.ai.npc.client.util.ClientWorldUtil;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.client.network.ClientPlayerInteractionManager;
 import net.minecraft.command.argument.EntityAnchorArgumentType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
@@ -59,7 +59,12 @@ public class NPCController {
 	 * @param llmService          the LLM client
 	 * @param npcContextGenerator the NPC context generator
 	 */
-	public NPCController(ClientPlayerEntity npc, ILLMClient llmService, NPCContextGenerator npcContextGenerator, RepositoryFactory repositoryFactory) {
+	public NPCController(
+			ClientPlayerEntity npc,
+			ILLMClient llmService,
+			NPCContextGenerator npcContextGenerator,
+			RepositoryFactory repositoryFactory
+	) {
 		this.npc = npc;
 		this.llmService = llmService;
 		this.npcContextGenerator = npcContextGenerator;
@@ -180,14 +185,25 @@ public class NPCController {
 
 	private void craftItem(String recipeId) {
 		if (client.world == null) {
-			LOGGER.info("Could not craft item {} cause client world is null", recipeId);
+			LOGGER.warn("Could not craft item {} cause client world is null", recipeId);
 			return;
 		}
+		//? if <=1.21.1 {
 
-		//? if <1.21.2 {
-		Optional<RecipeEntry<?>> recipe = client.world.getRecipeManager().get(new Identifier(recipeId));
-		//TODO: craft item from recipe
-		//?
+		//? if <=1.20.4 {
+		Identifier identifier = new Identifier(recipeId);
+		//?} else {
+		/*Identifier identifier = Identifier.of(recipeId);
+		*///?}
+
+		RecipeEntry<?> recipe = client.world.getRecipeManager().get(identifier).orElse(null);
+		ClientPlayerInteractionManager interactionManager = client.interactionManager;
+		if (recipe != null && interactionManager != null) {
+			interactionManager.clickRecipe(npc.currentScreenHandler.syncId, recipe, false);
+		} else {
+			LOGGER.warn("Could not find recipe with id: {}", recipeId);
+		}
+		//}?
 	}
 
 	private void lookAtPlayer() {
@@ -226,5 +242,4 @@ public class NPCController {
 				|| baritone.getFollowProcess().isActive()
 				|| baritone.getFarmProcess().isActive();
 	}
-
 }
