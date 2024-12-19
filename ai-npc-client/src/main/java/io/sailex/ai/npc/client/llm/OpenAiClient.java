@@ -69,8 +69,8 @@ public class OpenAiClient extends ALLMClient implements ILLMClient {
 	public double[] generateEmbedding(List<String> prompt) {
 		return convertEmbedding(openAiService
 				.embeddings()
-				.create(EmbeddingRequest.builder().input(prompt).build()).
-				join()
+				.create(EmbeddingRequest.builder().model("text-embedding-3-small").input(prompt).build())
+				.join()
 				.getData()
 				.stream()
 				.map(EmbeddingFloat::getEmbedding)
