@@ -10,8 +10,8 @@ import io.sailex.ai.npc.client.model.NPC;
 import io.sailex.ai.npc.client.npc.NPCContextGenerator;
 import io.sailex.ai.npc.client.npc.NPCController;
 import io.sailex.ai.npc.client.util.ConnectionUtil;
-import io.sailex.ai.npc.client.database.indexer.DefaultResourcesIndexer;
-import io.sailex.ai.npc.client.database.repository.RepositoryFactory;
+import io.sailex.ai.npc.client.database.index.DefaultResourcesIndexer;
+import io.sailex.ai.npc.client.database.repositories.RepositoryFactory;
 
 import lombok.Getter;
 
@@ -22,6 +22,8 @@ import net.minecraft.client.network.*;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Main class for the AI NPC client mod.
@@ -108,8 +110,10 @@ public class AiNPCClient implements ClientModInitializer {
 		DefaultResourcesIndexer defaultResourcesIndexer = new DefaultResourcesIndexer(
 				repositoryFactory.getRequirementsRepository(),
 				repositoryFactory.getTemplatesRepository(), llmClient);
-		defaultResourcesIndexer.indexRequirements();
-		defaultResourcesIndexer.indexTemplates();
+		CompletableFuture.runAsync(() -> {
+			defaultResourcesIndexer.indexRequirements();
+			defaultResourcesIndexer.indexTemplates();
+		});
 	}
 	//?}
 

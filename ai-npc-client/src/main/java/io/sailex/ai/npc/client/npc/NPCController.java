@@ -5,7 +5,7 @@ import baritone.api.IBaritone;
 import baritone.api.pathing.goals.GoalBlock;
 import baritone.api.utils.BetterBlockPos;
 import io.sailex.ai.npc.client.constant.Instructions;
-import io.sailex.ai.npc.client.database.repository.RepositoryFactory;
+import io.sailex.ai.npc.client.database.repositories.RepositoryFactory;
 import io.sailex.ai.npc.client.llm.ILLMClient;
 import io.sailex.ai.npc.client.mixin.InventoryAccessor;
 import io.sailex.ai.npc.client.model.NPCEvent;

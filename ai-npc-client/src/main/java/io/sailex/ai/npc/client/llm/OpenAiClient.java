@@ -42,38 +42,48 @@ public class OpenAiClient extends ALLMClient implements ILLMClient {
 	 */
 	@Override
 	public String generateResponse(String userPrompt, String systemPrompt) {
-		ChatRequest chatRequest = ChatRequest.builder()
-				.model(openAiModel)
-				.message(ChatMessage.SystemMessage.of(systemPrompt))
-				.message(ChatMessage.UserMessage.of(userPrompt))
-				.responseFormat(ResponseFormat.jsonSchema(ResponseFormat.JsonSchema.builder()
-						.name("Actions")
-						.schemaClass(Actions.class)
-						.build()))
-				.build();
+		try {
+			ChatRequest chatRequest = ChatRequest.builder()
+					.model(openAiModel)
+					.message(ChatMessage.SystemMessage.of(systemPrompt))
+					.message(ChatMessage.UserMessage.of(userPrompt))
+					.responseFormat(ResponseFormat.jsonSchema(ResponseFormat.JsonSchema.builder()
+							.name("Actions")
+							.schemaClass(Actions.class)
+							.build()))
+					.build();
 
-		String chatResponse = openAiService
-				.chatCompletions()
-				.create(chatRequest)
-				.join()
-				.firstContent();
+			String chatResponse = openAiService
+					.chatCompletions()
+					.create(chatRequest)
+					.join()
+					.firstContent();
 
-		LOGGER.info("Generated response from openai: {}", chatResponse);
-		if (!chatResponse.isBlank()) {
-			return chatResponse;
+			LOGGER.info("Generated response from openai: {}", chatResponse);
+			if (!chatResponse.isBlank()) {
+				return chatResponse;
+			}
+			throw new EmptyResponseException("Empty response from openai");
+		} catch (Exception e) {
+			LOGGER.error("Could not generate response for prompt: {}", userPrompt, e);
+			return null;
 		}
-		throw new EmptyResponseException("Empty response from openai");
 	}
 
 	@Override
 	public double[] generateEmbedding(List<String> prompt) {
-		return convertEmbedding(openAiService
-				.embeddings()
-				.create(EmbeddingRequest.builder().model("text-embedding-3-small").input(prompt).build())
-				.join()
-				.getData()
-				.stream()
-				.map(EmbeddingFloat::getEmbedding)
-				.toList());
+		try {
+			return convertEmbedding(openAiService
+					.embeddings()
+					.create(EmbeddingRequest.builder().model("text-embedding-3-small").input(prompt).build())
+					.join()
+					.getData()
+					.stream()
+					.map(EmbeddingFloat::getEmbedding)
+					.toList());
+		} catch (Exception e) {
+			LOGGER.error("Could not generate embedding for prompt: {}", prompt.getFirst(), e);
+			return new double[]{};
+		}
 	}
 }

@@ -49,7 +49,6 @@ public class SqliteClient {
 	public ResultSet select(String sql) {
 		try (Statement statement = connection.createStatement();
 			 ResultSet resultSet = statement.executeQuery(sql)) {
-			LOGGER.info("Selected successfully: {} : {}", sql, resultSet);
 			return resultSet;
 		} catch (SQLException e) {
 			LOGGER.error("Error selecting rule: {}", e.getMessage());
@@ -64,7 +63,6 @@ public class SqliteClient {
 	public void insert(PreparedStatement statement) {
 		try {
 			statement.executeUpdate();
-			LOGGER.info("Inserted {} successfully", statement);
 		} catch (SQLException e) {
 			LOGGER.error("Error inserting statement: {} : {}", statement, e.getMessage());
 		}
@@ -86,7 +84,6 @@ public class SqliteClient {
 	public void create(String sql) {
 		try (Statement statement = connection.createStatement()) {
 			statement.execute(sql);
-			LOGGER.info("Created {} successfully", sql);
 		} catch (SQLException e) {
 			LOGGER.error("Error executing query {} : {}", sql, e.getMessage());
 		}

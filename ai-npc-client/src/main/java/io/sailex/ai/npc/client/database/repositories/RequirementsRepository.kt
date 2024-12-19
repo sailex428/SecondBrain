@@ -1,4 +1,4 @@
-package io.sailex.ai.npc.client.database.repository
+package io.sailex.ai.npc.client.database.repositories
 
 import io.sailex.ai.npc.client.database.SqliteClient
 import io.sailex.ai.npc.client.llm.ILLMClient
@@ -19,7 +19,7 @@ class RequirementsRepository(
                     name TEXT UNIQUE NOT NULL,
                     name_embedding BLOB,
                     crafting_table_needed BOOLEAN NOT NULL,
-                    blocks_needed TEXT NOT NULL
+                    blocks_needed TEXT
             );
         """
         sqliteClient.create(sql)
@@ -27,7 +27,8 @@ class RequirementsRepository(
 
     fun insert(type: String, name: String, nameEmbedding: DoubleArray, craftingTableNeeded: Boolean, blocksNeeded: String) {
         val statement =
-            sqliteClient.buildPreparedStatement("INSERT INTO requirements (type, name, name_embedding, crafting_table_needed, blocks_needed) VALUES (?, ?, ?, ?, ?)")
+            sqliteClient.buildPreparedStatement("INSERT INTO requirements (type, name, name_embedding, crafting_table_needed, blocks_needed) VALUES (?, ?, ?, ?, ?)" +
+                    " ON CONFLICT(name) DO UPDATE SET blocks_needed = excluded.blocks_needed")
         statement.setString(1, type)
         statement.setString(2, name)
         statement.setBytes(3, VectorUtil.convertToBytes(nameEmbedding))

@@ -1,4 +1,4 @@
-package io.sailex.ai.npc.client.database.repository
+package io.sailex.ai.npc.client.database.repositories
 
 import io.sailex.ai.npc.client.database.SqliteClient
 import io.sailex.ai.npc.client.llm.ILLMClient
