@@ -25,17 +25,22 @@ class ActionsRepository(
                     requirements TEXT
             );
         """
-        sqliteClient.executeQuery(sql)
+        sqliteClient.create(sql)
     }
 
     fun insert(name: String, description: String, descriptionEmbedding: DoubleArray, example: String, requirements: List<Int>) {
-        val sql = "INSERT INTO actions (name, description, description_embedding, example, requirements) VALUES (%S, %S, %S, %S)"
-        sqliteClient.executeQuery(String.format(sql, name, description, VectorUtil.convertToBytes(descriptionEmbedding), example, requirements))
+        val statement = sqliteClient.buildPreparedStatement("INSERT INTO actions (name, description, description_embedding, example, requirements) VALUES (?, ?, ?, ?, ?)")
+        statement.setString(1, name)
+        statement.setString(2, description)
+        statement.setBytes(3, VectorUtil.convertToBytes(descriptionEmbedding))
+        statement.setString(4, example)
+        statement.setString(5, requirements.joinToString(","))
+        sqliteClient.insert(statement)
     }
 
     override fun selectAll(): List<Resource> {
         val sql = "SELECT * FROM actions"
-        val result = sqliteClient.query(sql)
+        val result = sqliteClient.select(sql)
         val actions = arrayListOf<Action>()
 
         while(result.next()) {

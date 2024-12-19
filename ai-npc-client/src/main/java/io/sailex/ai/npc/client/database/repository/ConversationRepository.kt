@@ -21,17 +21,20 @@ class ConversationRepository(
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         """
-        sqliteClient.executeQuery(sql)
+        sqliteClient.create(sql)
     }
 
     fun insert(npcName: String, conversation: String, conversationEmbedding: DoubleArray) {
-        val sql = "INSERT INTO conversations (npc_name, conversation, conversation_embedding) VALUES (%S, %S, %S)"
-        sqliteClient.executeQuery(String.format(sql, npcName, conversation, VectorUtil.convertToBytes(conversationEmbedding)))
+        val statement = sqliteClient.buildPreparedStatement("INSERT INTO conversations (npc_name, conversation, conversation_embedding) VALUES (?, ?, ?)")
+        statement.setString(1, npcName)
+        statement.setString(2, conversation)
+        statement.setBytes(3, VectorUtil.convertToBytes(conversationEmbedding))
+        sqliteClient.insert(statement)
     }
 
     override fun selectAll(): List<Resource> {
         val sql = "SELECT * FROM conversations"
-        val result = sqliteClient.query(sql)
+        val result = sqliteClient.select(sql)
         val conversations = arrayListOf<Conversation>()
 
         while(result.next()) {

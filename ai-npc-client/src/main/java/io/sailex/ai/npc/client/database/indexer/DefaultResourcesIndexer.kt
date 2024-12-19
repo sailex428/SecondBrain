@@ -9,11 +9,6 @@ import io.sailex.ai.npc.client.util.LogUtil
 import net.minecraft.inventory.CraftingInventory
 import net.minecraft.recipe.Recipe
 import net.minecraft.recipe.RecipeEntry
-import org.apache.commons.io.FilenameUtils
-import java.nio.file.Files
-import java.nio.file.Paths
-import kotlin.collections.forEach
-import kotlin.io.path.name
 
 class DefaultResourcesIndexer(
     val requirementsRepository: RequirementsRepository,
@@ -22,11 +17,11 @@ class DefaultResourcesIndexer(
 ) {
 
     fun indexTemplates() {
-        Files.list(Paths.get(ResourceLoader.getResourcePath("template"))).forEach {
-            val jsonTemplate = ResourceLoader.getResourceJsonContent(it.name)
-            templatesRepository.insert(FilenameUtils.getBaseName(it.name),
-                jsonTemplate,
-                llmClient.generateEmbedding(listOf(jsonTemplate))
+        ResourceLoader.getAllResourcesContent("template").forEach {
+            templatesRepository.insert(
+                it.key,
+                it.value,
+                llmClient.generateEmbedding(listOf(it.value))
             )
         }
     }

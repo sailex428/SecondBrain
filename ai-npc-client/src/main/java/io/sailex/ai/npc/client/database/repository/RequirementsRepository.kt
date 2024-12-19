@@ -22,23 +22,28 @@ class RequirementsRepository(
                     blocks_needed TEXT NOT NULL
             );
         """
-        sqliteClient.executeQuery(sql)
+        sqliteClient.create(sql)
     }
 
     fun insert(name: String, nameEmbedding: DoubleArray, craftingTableNeeded: Boolean, blocksNeeded: String) {
-        val sql = "INSERT INTO requirements (name, name_embedding, crafting_table_needed, blocks_needed) VALUES (%S, %S, %S, %S)"
-        sqliteClient.executeQuery(String.format(sql, name, nameEmbedding, craftingTableNeeded, blocksNeeded))
+        val statement =
+            sqliteClient.buildPreparedStatement("INSERT INTO requirements (name, name_embedding, crafting_table_needed, blocks_needed) VALUES (?, ?, ?, ?)")
+        statement.setString(1, name)
+        statement.setBytes(2, VectorUtil.convertToBytes(nameEmbedding))
+        statement.setBoolean(3, craftingTableNeeded)
+        statement.setString(4, blocksNeeded)
+        sqliteClient.insert(statement)
     }
 
     fun select(requirementIds: List<Int>): List<Resource> {
         val sql = "SELECT * FROM requirements WHERE id IN (%S)"
-        val result = sqliteClient.query(String.format(sql, requirementIds.joinToString(",")))
+        val result = sqliteClient.select(String.format(sql, requirementIds.joinToString(",")))
         return processResult(result)
     }
 
     override fun selectAll(): List<Resource> {
         val sql = "SELECT * FROM requirements"
-        val result = sqliteClient.query(sql)
+        val result = sqliteClient.select(sql)
         return processResult(result)
     }
 

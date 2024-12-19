@@ -44,8 +44,9 @@ public class SqliteClient {
 
 	/**
 	 * Select data from the database.
+	 * @param sql the SQL query
 	 */
-	public ResultSet query(String sql) {
+	public ResultSet select(String sql) {
 		try (Statement statement = connection.createStatement();
 			 ResultSet resultSet = statement.executeQuery(sql)) {
 			LOGGER.info("Selected successfully: {} : {}", sql, resultSet);
@@ -56,10 +57,36 @@ public class SqliteClient {
 		}
 	}
 
-	public void executeQuery(String sql) {
+	/**
+	 * Insert data into the database.
+	 * @param statement the prepared statement
+	 */
+	public void insert(PreparedStatement statement) {
+		try {
+			statement.executeUpdate();
+			LOGGER.info("Inserted {} successfully", statement);
+		} catch (SQLException e) {
+			LOGGER.error("Error inserting statement: {} : {}", statement, e.getMessage());
+		}
+	}
+
+	public PreparedStatement buildPreparedStatement(String sql) {
+		try {
+			return connection.prepareStatement(sql);
+		} catch (SQLException e) {
+			LOGGER.error("Error building prepared statement: {}", e.getMessage());
+			return null;
+		}
+	}
+
+	/**
+	 * Create a table in the database.
+	 * @param sql the SQL query to create a table
+	 */
+	public void create(String sql) {
 		try (Statement statement = connection.createStatement()) {
 			statement.execute(sql);
-			LOGGER.info("Executed {} successfully", sql);
+			LOGGER.info("Created {} successfully", sql);
 		} catch (SQLException e) {
 			LOGGER.error("Error executing query {} : {}", sql, e.getMessage());
 		}
