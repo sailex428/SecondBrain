@@ -36,7 +36,7 @@ dependencies {
     mappings("net.fabricmc:yarn:$mcVersion+build.${property("deps.yarn_build")}:v2")
     modImplementation("net.fabricmc:fabric-loader:$fabricLoaderVersion")
     include(modImplementation("net.fabricmc.fabric-api:fabric-api:${property("deps.fapi")}+$mcVersion")!!)
-    include(modImplementation("net.fabricmc:fabric-language-kotlin:1.10.8+kotlin.1.9.0")!!)
+    include(modImplementation("net.fabricmc:fabric-language-kotlin:1.13.0+kotlin.2.1.0")!!)
 
     compileOnly("org.projectlombok:lombok:1.18.34")
     annotationProcessor("org.projectlombok:lombok:1.18.34")

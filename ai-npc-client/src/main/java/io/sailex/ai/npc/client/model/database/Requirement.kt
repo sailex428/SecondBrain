@@ -1,7 +1,7 @@
 package io.sailex.ai.npc.client.model.database
 
 data class Requirement(
-    override val id: Int,
+    val type: String,
     val name: String,
     override val embedding: DoubleArray,
     val craftingTableNeeded: Boolean,

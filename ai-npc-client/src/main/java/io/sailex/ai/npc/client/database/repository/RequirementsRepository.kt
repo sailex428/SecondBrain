@@ -15,8 +15,8 @@ class RequirementsRepository(
     override fun createTable() {
         val sql = """
             CREATE TABLE IF NOT EXISTS requirements (
-                    id INTEGER PRIMARY KEY,
-                    name TEXT NOT NULL,
+                    type TEXT NOT NULL,
+                    name TEXT UNIQUE NOT NULL,
                     name_embedding BLOB,
                     crafting_table_needed BOOLEAN NOT NULL,
                     blocks_needed TEXT NOT NULL
@@ -25,19 +25,26 @@ class RequirementsRepository(
         sqliteClient.create(sql)
     }
 
-    fun insert(name: String, nameEmbedding: DoubleArray, craftingTableNeeded: Boolean, blocksNeeded: String) {
+    fun insert(type: String, name: String, nameEmbedding: DoubleArray, craftingTableNeeded: Boolean, blocksNeeded: String) {
         val statement =
-            sqliteClient.buildPreparedStatement("INSERT INTO requirements (name, name_embedding, crafting_table_needed, blocks_needed) VALUES (?, ?, ?, ?)")
-        statement.setString(1, name)
-        statement.setBytes(2, VectorUtil.convertToBytes(nameEmbedding))
-        statement.setBoolean(3, craftingTableNeeded)
-        statement.setString(4, blocksNeeded)
+            sqliteClient.buildPreparedStatement("INSERT INTO requirements (type, name, name_embedding, crafting_table_needed, blocks_needed) VALUES (?, ?, ?, ?, ?)")
+        statement.setString(1, type)
+        statement.setString(2, name)
+        statement.setBytes(3, VectorUtil.convertToBytes(nameEmbedding))
+        statement.setBoolean(4, craftingTableNeeded)
+        statement.setString(5, blocksNeeded)
         sqliteClient.insert(statement)
     }
 
     fun select(requirementIds: List<Int>): List<Resource> {
         val sql = "SELECT * FROM requirements WHERE id IN (%S)"
         val result = sqliteClient.select(String.format(sql, requirementIds.joinToString(",")))
+        return processResult(result)
+    }
+
+    fun select(type: String): List<Resource> {
+        val sql = "SELECT * FROM requirements WHERE type IN (%S)"
+        val result = sqliteClient.select(String.format(sql, type))
         return processResult(result)
     }
 
@@ -51,7 +58,7 @@ class RequirementsRepository(
         val requirements = arrayListOf<Requirement>()
         while(result.next()) {
             val requirement = Requirement(
-                result.getInt("id"),
+                result.getString("type"),
                 result.getString("name"),
                 VectorUtil.convertToDoubles(result.getBytes("name_embedding")),
                 result.getBoolean("crafting_table_needed"),

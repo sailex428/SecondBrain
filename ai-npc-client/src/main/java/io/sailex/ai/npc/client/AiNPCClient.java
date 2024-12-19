@@ -2,8 +2,6 @@ package io.sailex.ai.npc.client;
 
 import io.sailex.ai.npc.client.config.Config;
 import io.sailex.ai.npc.client.constant.ConfigConstants;
-import io.sailex.ai.npc.client.database.indexer.DefaultResourcesIndexer;
-import io.sailex.ai.npc.client.database.repository.RepositoryFactory;
 import io.sailex.ai.npc.client.listener.EventListenerRegisterer;
 import io.sailex.ai.npc.client.llm.ILLMClient;
 import io.sailex.ai.npc.client.llm.OllamaClient;
@@ -12,6 +10,8 @@ import io.sailex.ai.npc.client.model.NPC;
 import io.sailex.ai.npc.client.npc.NPCContextGenerator;
 import io.sailex.ai.npc.client.npc.NPCController;
 import io.sailex.ai.npc.client.util.ConnectionUtil;
+import io.sailex.ai.npc.client.database.indexer.DefaultResourcesIndexer;
+import io.sailex.ai.npc.client.database.repository.RepositoryFactory;
 
 import lombok.Getter;
 
@@ -59,6 +59,7 @@ public class AiNPCClient implements ClientModInitializer {
 				LOGGER.info("Initialize NPC");
 				initializeNpc();
 				npcInitialized = true;
+				LOGGER.info("NPC successfully initialized");
 			}
 		});
 	}

@@ -37,7 +37,6 @@ class TemplatesRepository(
 
         while(result.next()) {
             val template = Template(
-                result.getInt("id"),
                 result.getString("name"),
                 result.getString("action"),
                 VectorUtil.convertToDoubles(result.getBytes("action_embedded"))

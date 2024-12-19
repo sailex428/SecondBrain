@@ -6,7 +6,7 @@ import io.sailex.ai.npc.client.database.repository.RequirementsRepository
 import io.sailex.ai.npc.client.database.repository.TemplatesRepository
 import io.sailex.ai.npc.client.llm.ILLMClient
 import io.sailex.ai.npc.client.util.LogUtil
-import net.minecraft.inventory.CraftingInventory
+
 import net.minecraft.recipe.Recipe
 import net.minecraft.recipe.RecipeEntry
 
@@ -37,19 +37,16 @@ class DefaultResourcesIndexer(
             return
         }
         val recipes: Collection<RecipeEntry<*>> = world.recipeManager.values()
-        recipes.forEach { recipe ->
-            {
-                val recipeValue = recipe.value
-                if (recipeValue is CraftingInventory) {
-                    val recipeName = recipe.id.namespace
-                    requirementsRepository.insert(
-                        recipeName,
-                        llmClient.generateEmbedding(listOf(recipeName)),
-                        recipeValue.fits(2, 2),
-                        getBlocksNeeded(recipeValue)
-                    )
-                }
-            }
+        recipes.forEach {
+            val recipeValue = it.value
+            val recipeName = it.id.namespace
+            requirementsRepository.insert(
+                recipeValue.type.toString(),
+                recipeName,
+                llmClient.generateEmbedding(listOf(recipeName)),
+                recipeValue.fits(2, 2),
+                getBlocksNeeded(recipeValue)
+            )
         }
     }
 
@@ -57,5 +54,4 @@ class DefaultResourcesIndexer(
         return recipe.ingredients.joinToString(",") { "${it.matchingStacks[0].name}=${it.matchingStacks.size}" }
     }
     //?}
-
 }

@@ -7,6 +7,8 @@ import org.apache.logging.log4j.Logger;
 
 public class LogUtil {
 
+	private LogUtil() {}
+
 	private static final Logger LOGGER = LogManager.getLogger(LogUtil.class);
 	private static final String PREFIX = "[§5AI-NPC§f] ";
 

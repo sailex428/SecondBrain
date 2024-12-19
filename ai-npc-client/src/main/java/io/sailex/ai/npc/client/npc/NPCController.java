@@ -1,4 +1,4 @@
-	package io.sailex.ai.npc.client.npc;
+package io.sailex.ai.npc.client.npc;
 
 import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
