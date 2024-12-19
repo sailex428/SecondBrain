@@ -215,7 +215,7 @@ public class NPCController {
 
 	private void cancelActions() {
 		actionQueue.clear();
-		baritone.getCommandManager().execute("cancel");
+		cancelExploring();
 	}
 
 	private void autoRespawn() {
@@ -228,17 +228,26 @@ public class NPCController {
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
 			lookAtPlayer();
 			autoRespawn();
-			if (!baritoneIsActive()) {
-				pollAction();
-			}
+			handleBaritoneState();
 		});
+	}
+
+	private void handleBaritoneState() {
+		if (!baritoneIsActive()) {
+			if (baritone.getExploreProcess().isActive()) {
+				cancelExploring();
+			}
+			pollAction();
+		}
 	}
 
 	private boolean baritoneIsActive() {
 		return baritone.getPathingBehavior().isPathing()
 				|| baritone.getCustomGoalProcess().isActive()
-				|| baritone.getMineProcess().isActive()
-				|| baritone.getFollowProcess().isActive()
-				|| baritone.getFarmProcess().isActive();
+				|| baritone.getMineProcess().isActive();
+	}
+
+	private void cancelExploring() {
+		baritone.getCommandManager().execute("cancel");
 	}
 }
