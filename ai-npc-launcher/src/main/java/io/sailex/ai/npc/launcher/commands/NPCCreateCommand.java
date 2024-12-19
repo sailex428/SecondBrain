@@ -47,25 +47,25 @@ public class NPCCreateCommand {
 
 	private int createNPC(CommandContext<ServerCommandSource> context) {
 		String name = StringArgumentType.getString(context, "name");
-		boolean isOffline = BoolArgumentType.getBool(context, IS_ONLINE_COMMAND);
+		boolean isOnline = BoolArgumentType.getBool(context, IS_ONLINE_COMMAND);
 
 		LogUtil.info("Creating NPC with name: " + name);
 
 		String type = ModConfig.getProperty(ConfigConstants.NPC_LLM_TYPE);
 
-		clientLauncher.launchAsync(name, type, getLlmModel(type), isOffline);
+		clientLauncher.launchAsync(name, type, getLlmModel(type), isOnline);
 		return 1;
 	}
 
 	private int createNPCWithLLM(CommandContext<ServerCommandSource> context) {
 		String name = StringArgumentType.getString(context, "name");
-		boolean isOffline = BoolArgumentType.getBool(context, IS_ONLINE_COMMAND);
+		boolean isOnline = BoolArgumentType.getBool(context, IS_ONLINE_COMMAND);
 		String llmType = StringArgumentType.getString(context, LLM_TYPE);
 		String llmModel = StringArgumentType.getString(context, LLM_MODEL);
 
 		LogUtil.info(("Creating NPC with name: " + name + ", LLM Type: " + llmType + ", LLM Model: " + llmModel));
 
-		clientLauncher.launchAsync(name, llmType, llmModel, isOffline);
+		clientLauncher.launchAsync(name, llmType, llmModel, isOnline);
 		return 1;
 	}
 

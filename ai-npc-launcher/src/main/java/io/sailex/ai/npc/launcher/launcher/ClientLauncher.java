@@ -54,10 +54,10 @@ public class ClientLauncher {
 	 * @param npcName   the name of the NPC
 	 * @param llmType   the type of the LLM
 	 * @param llmModel  the model of the LLM
-	 * @param isOffline whether to login offline
+	 * @param isOnline whether to login offline
 	 */
-	public void launchAsync(String npcName, String llmType, String llmModel, boolean isOffline) {
-		LaunchAccount account = getAccount(npcName, isOffline);
+	public void launchAsync(String npcName, String llmType, String llmModel, boolean isOnline) {
+		LaunchAccount account = getAccount(npcName, isOnline);
 		if (account == null) {
 			LogUtil.error("Failed to login.");
 			return;
@@ -198,8 +198,8 @@ public class ClientLauncher {
 		}
 	}
 
-	private LaunchAccount getAccount(String npcName, boolean isOffline) {
-		if (isOffline) {
+	private LaunchAccount getAccount(String npcName, boolean isOnline) {
+		if (!isOnline) {
 			LogUtil.info("Logging in offline.");
 			return new LaunchAccount("msa", npcName, UUID.randomUUID().toString(), "", "");
 		}

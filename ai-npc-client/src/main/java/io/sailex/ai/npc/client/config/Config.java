@@ -1,6 +1,8 @@
 package io.sailex.ai.npc.client.config;
 
 import java.util.Properties;
+
+import io.sailex.ai.npc.client.constant.ConfigConstants;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -21,11 +23,14 @@ public class Config {
 	 * @return the property value
 	 */
 	public static String getProperty(String key) {
-		return validateProperty(properties.getProperty(key));
+		String value = properties.getProperty(key);
+		if (!ConfigConstants.NPC_LLM_OPENAI_API_KEY.equals(key)) {
+			LOGGER.info("Property: {} : {}", key, value);
+		}
+		return validateProperty(value);
 	}
 
 	private static String validateProperty(String property) {
-		LOGGER.info("Property: {}", property);
 		if (property == null) {
 			LOGGER.error("Property is null");
 			return null;

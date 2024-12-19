@@ -23,8 +23,6 @@ import net.minecraft.client.network.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.concurrent.CompletableFuture;
-
 /**
  * Main class for the AI NPC client mod.
  * Initializes the NPC, its components, and connects to the server.

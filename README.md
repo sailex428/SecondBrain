@@ -32,7 +32,7 @@ AI-NPC Launcher is a Minecraft mod that launches and controls the AI-NPC client,
     - Use the `/setconfig <propertyKey> <propertyValue>` command to set the properties. (Example: `/setconfig npc.llm.openai.api_key sk-proj-XYZ...`)
 
 2. **Spawn NPCs**:
-    - Use the `/npc add <npcname> <isOffline> <openai|ollama> <llm model>` command to create an NPC. (Example: `/npc add sailex428 true openai gpt-4o-mini`) (at this point only openai is supported)
+    - Use the `/npc add <npcname> <isOnline> <openai|ollama> <llm model>` command to create an NPC. (Example: `/npc add sailex428 true openai gpt-4o-mini`) (at this point only openai is supported)
 
 3. **Remove NPCs**:
     - Use the `/npc remove <npcname>` command to remove an NPC from the game world.
