@@ -110,10 +110,8 @@ public class AiNPCClient implements ClientModInitializer {
 		DefaultResourcesIndexer defaultResourcesIndexer = new DefaultResourcesIndexer(
 				repositoryFactory.getRequirementsRepository(),
 				repositoryFactory.getTemplatesRepository(), llmClient);
-		CompletableFuture.runAsync(() -> {
-			defaultResourcesIndexer.indexRequirements();
-			defaultResourcesIndexer.indexTemplates();
-		});
+		defaultResourcesIndexer.indexRequirements();
+		defaultResourcesIndexer.indexTemplates();
 	}
 	//?}
 

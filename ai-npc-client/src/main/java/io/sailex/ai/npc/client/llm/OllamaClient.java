@@ -68,6 +68,7 @@ public class OllamaClient extends ALLMClient implements ILLMClient {
 						return ollamaAPI.chat(requestModel).getResponse();
 					} catch (IOException | InterruptedException | OllamaBaseException e) {
 						LOGGER.error("Error generating response from ollama", e);
+						Thread.currentThread().interrupt();
 						throw new CompletionException(
 								new ConnectException("Error generating response from ollama: " + e.getMessage()));
 					}
@@ -83,12 +84,13 @@ public class OllamaClient extends ALLMClient implements ILLMClient {
 		return CompletableFuture.supplyAsync(() -> {
 			try {
 				return convertEmbedding(ollamaAPI.embed(OllamaModelType.NOMIC_EMBED_TEXT, prompt).getEmbeddings());
-			} catch (IOException | InterruptedException | OllamaBaseException e) {
+			} catch (IOException | OllamaBaseException | InterruptedException e) {
+				Thread.currentThread().interrupt();
 				throw new CompletionException("Error generating embedding for prompt: " + prompt.getFirst(), e);
 			}
 		}, service).exceptionally(exception -> {
 				LogUtil.error(exception.getMessage());
-				return null;
+				return new double[]{};
 			})
 		.join();
     }

@@ -8,11 +8,14 @@ import io.sailex.ai.npc.client.llm.ILLMClient
 import io.sailex.ai.npc.client.util.LogUtil
 
 import net.minecraft.recipe.Ingredient
-
 import net.minecraft.recipe.Recipe
 import net.minecraft.recipe.RecipeEntry
+
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
+
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 
 class DefaultResourcesIndexer(
     val requirementsRepository: RequirementsRepository,
@@ -47,18 +50,23 @@ class DefaultResourcesIndexer(
             return
         }
         val recipes: Collection<RecipeEntry<*>> = world.recipeManager.values()
+        val executorService: ExecutorService = Executors.newFixedThreadPool(6)
+
         logger.info("Indexing all Requirements and Recipes")
         recipes.forEach {
-            val recipeValue = it.value
-            val recipeName = it.id.path
-            requirementsRepository.insert(
-                recipeValue.type.toString(),
-                recipeName,
-                llmClient.generateEmbedding(listOf(recipeName)),
-                recipeValue.fits(2, 2),
-                getItemNeeded(recipeValue)
-            )
+            executorService.submit {
+                val recipeValue = it.value
+                val recipeName = it.id.path
+                requirementsRepository.insert(
+                    recipeValue.type.toString(),
+                    recipeName,
+                    llmClient.generateEmbedding(listOf(recipeName)),
+                    recipeValue.fits(2, 2),
+                    getItemNeeded(recipeValue)
+                )
+            }
         }
+        executorService.shutdown()
         logger.info("Finished indexing of requirements")
     }
 
