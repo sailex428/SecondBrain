@@ -114,6 +114,7 @@ publishMods {
     }
 
     modrinth {
+        displayName.set("v$modVersion [$mcVersion] AI NPC")
         accessToken.set(providers.gradleProperty("MODRINTH_TOKEN"))
         projectId.set(property("publish.modrinth").toString())
         minecraftVersions.add(mcVersion)

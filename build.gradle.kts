@@ -12,8 +12,8 @@ repositories {
 
 publishMods {
     changelog.set(rootProject.file("CHANGELOG.md").readText())
-    displayName.set("v$modVersion")
-    type.set(ReleaseType.BETA)
+    displayName.set("v$modVersion AI NPC")
+    type.set(ReleaseType.STABLE)
     version.set(modVersion)
 
     github {
