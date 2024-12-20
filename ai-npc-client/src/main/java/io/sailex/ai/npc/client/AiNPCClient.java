@@ -10,7 +10,7 @@ import io.sailex.ai.npc.client.model.NPC;
 import io.sailex.ai.npc.client.npc.NPCContextGenerator;
 import io.sailex.ai.npc.client.npc.NPCController;
 import io.sailex.ai.npc.client.util.ConnectionUtil;
-import io.sailex.ai.npc.client.database.index.DefaultResourcesIndexer;
+import io.sailex.ai.npc.client.database.indexer.DefaultResourcesIndexer;
 import io.sailex.ai.npc.client.database.repositories.RepositoryFactory;
 
 import lombok.Getter;
@@ -55,11 +55,10 @@ public class AiNPCClient implements ClientModInitializer {
 			}
 		});
 		ClientTickEvents.END_WORLD_TICK.register(world -> {
-			if (!npcInitialized) {
-				LOGGER.info("Initialize NPC");
+			if (!npcInitialized && connected) {
+				LOGGER.info("Initializing NPC");
 				initializeNpc();
 				npcInitialized = true;
-				LOGGER.info("NPC successfully initialized");
 			}
 		});
 	}

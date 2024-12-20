@@ -2,7 +2,7 @@ package io.sailex.ai.npc.client.database.repositories
 
 import io.sailex.ai.npc.client.database.SqliteClient
 import io.sailex.ai.npc.client.llm.ILLMClient
-import io.sailex.ai.npc.client.model.database.Action
+import io.sailex.ai.npc.client.model.database.ActionResource
 import io.sailex.ai.npc.client.model.database.Conversation
 import io.sailex.ai.npc.client.model.database.Requirement
 import io.sailex.ai.npc.client.model.database.Template
@@ -26,7 +26,7 @@ class RepositoryFactory(llmClient: ILLMClient) {
 
     fun getRelevantResources(prompt: String): Resources {
         return Resources(
-            actionsRepository.getMostRelevantResources(prompt) as List<Action>,
+            actionsRepository.getMostRelevantResources(prompt) as List<ActionResource>,
             requirementsRepository.getMostRelevantResources(prompt) as List<Requirement>,
             templatesRepository.getMostRelevantResources(prompt) as List<Template>,
             conversationRepository.getMostRelevantResources(prompt) as List<Conversation>)

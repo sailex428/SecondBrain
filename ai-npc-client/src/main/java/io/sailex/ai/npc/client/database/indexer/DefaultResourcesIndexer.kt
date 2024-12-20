@@ -1,4 +1,4 @@
-package io.sailex.ai.npc.client.database.index
+package io.sailex.ai.npc.client.database.indexer
 
 import io.sailex.ai.npc.client.AiNPCClient.client
 import io.sailex.ai.npc.client.config.ResourceLoader
@@ -67,7 +67,6 @@ class DefaultResourcesIndexer(
             }
         }
         executorService.shutdown()
-        logger.info("Finished indexing of requirements")
     }
 
     private fun getItemNeeded(recipe: Recipe<*>): String {

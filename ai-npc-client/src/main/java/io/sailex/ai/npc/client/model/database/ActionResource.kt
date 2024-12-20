@@ -1,6 +1,6 @@
 package io.sailex.ai.npc.client.model.database
 
-data class Action(
+data class ActionResource(
     val id: Int,
     val name: String,
     val description: String,

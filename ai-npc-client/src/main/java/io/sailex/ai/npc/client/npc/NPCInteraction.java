@@ -70,7 +70,7 @@ public class NPCInteraction {
 	 * @return to string formatted resources
 	 */
 	public static String formatResources(
-			List<Action> actions, List<Requirement> requirements,
+			List<ActionResource> actionResources, List<Requirement> requirements,
 			List<Template> templates, List<Conversation> conversations) {
 		return String.format(
 				"""
@@ -84,7 +84,7 @@ public class NPCInteraction {
 				%s
 				""",
 				formatTemplates(templates),
-				formatActions(actions),
+				formatActions(actionResources),
 				formatRequirements(requirements),
 				formatConversation(conversations)
 		);
@@ -95,10 +95,10 @@ public class NPCInteraction {
 				String.format("- Messages: %s at %s", conversation.getMessage(), conversation.getTimeStamp()));
 	}
 
-	private static String formatActions(List<Action> actions) {
-		return formatList(actions, action ->
+	private static String formatActions(List<ActionResource> actionResources) {
+		return formatList(actionResources, actionResource ->
 				String.format("- Action name: %s : %s, example Json format/content for that action: %s, requirements: %s",
-						action.getName(), action.getDescription(), action.getExample(), action.getRequirements()));
+						actionResource.getName(), actionResource.getDescription(), actionResource.getExample(), actionResource.getRequirements()));
 	}
 
 	private static String formatTemplates(List<Template> templates) {

@@ -7,6 +7,7 @@ import io.github.ollama4j.models.chat.OllamaChatRequest;
 import io.github.ollama4j.models.chat.OllamaChatRequestBuilder;
 import io.github.ollama4j.types.OllamaModelType;
 import io.sailex.ai.npc.client.constant.Instructions;
+import io.sailex.ai.npc.client.exception.OllamaNotReachableException;
 import io.sailex.ai.npc.client.util.LogUtil;
 import lombok.Setter;
 
@@ -36,11 +37,21 @@ public class OllamaClient extends ALLMClient implements ILLMClient {
 		this.builder = OllamaChatRequestBuilder.getInstance(ollamaModel);
 	}
 
+	/**
+	 * Check if the service is reachable
+	 * @throws RuntimeException if server is not reachable
+	 */
 	@Override
 	public void checkServiceIsReachable() {
-		boolean isOllamaServerReachable = ollamaAPI.ping();
-		if (!isOllamaServerReachable) {
-			LogUtil.error("Ollama server is not reachable");
+		try {
+			boolean isOllamaServerReachable = ollamaAPI.ping();
+			if (!isOllamaServerReachable) {
+				LogUtil.error("Ollama server is not reachable");
+			}
+		} catch (RuntimeException e) {
+			String errorMsg = "Ollama server is not reachable";
+			LogUtil.error(errorMsg);
+			throw new OllamaNotReachableException(errorMsg);
 		}
 	}
 
@@ -89,7 +100,7 @@ public class OllamaClient extends ALLMClient implements ILLMClient {
 				throw new CompletionException("Error generating embedding for prompt: " + prompt.getFirst(), e);
 			}
 		}, service).exceptionally(exception -> {
-				LogUtil.error(exception.getMessage());
+				LOGGER.error(exception.getMessage());
 				return new double[]{};
 			})
 		.join();

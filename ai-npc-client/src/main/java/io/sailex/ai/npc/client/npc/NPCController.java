@@ -13,7 +13,8 @@ import io.sailex.ai.npc.client.model.context.WorldContext;
 import io.sailex.ai.npc.client.model.interaction.Action;
 import io.sailex.ai.npc.client.model.interaction.ActionType;
 import io.sailex.ai.npc.client.model.interaction.Actions;
-import java.util.Arrays;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
 
@@ -47,7 +48,7 @@ public class NPCController {
 	private final BlockingQueue<Action> actionQueue = new LinkedBlockingQueue<>();
 
 	private final ClientPlayerEntity npc;
-	private final ILLMClient llmService;
+	private final ILLMClient llmClient;
 	private final NPCContextGenerator npcContextGenerator;
 	private final RepositoryFactory repositoryFactory;
 	private final IBaritone baritone;
@@ -56,17 +57,17 @@ public class NPCController {
 	 * Constructor for NPCController.
 	 *
 	 * @param npc                 the NPC entity
-	 * @param llmService          the LLM client
+	 * @param llmClient          the LLM client
 	 * @param npcContextGenerator the NPC context generator
 	 */
 	public NPCController(
 			ClientPlayerEntity npc,
-			ILLMClient llmService,
+			ILLMClient llmClient,
 			NPCContextGenerator npcContextGenerator,
 			RepositoryFactory repositoryFactory
 	) {
 		this.npc = npc;
-		this.llmService = llmService;
+		this.llmClient = llmClient;
 		this.npcContextGenerator = npcContextGenerator;
         this.repositoryFactory = repositoryFactory;
         this.executorService = Executors.newFixedThreadPool(3);
@@ -89,16 +90,8 @@ public class NPCController {
 	 */
 	public void handleEvent(NPCEvent prompt) {
 		executorService.submit(() -> {
-			ActionType actionType = prompt.type();
-
-			boolean isValidRequestType = Arrays.asList(ActionType.values()).contains(actionType);
-			if (!isValidRequestType) {
-				LOGGER.error("Action type not recognized: {}", actionType);
-				return;
-			}
-
             Resources resources = repositoryFactory.getRelevantResources(prompt.message());
-			String relevantResources = NPCInteraction.formatResources(resources.getActions(), resources.getRequirements(),
+			String relevantResources = NPCInteraction.formatResources(resources.getActionResources(), resources.getRequirements(),
                     resources.getTemplates(), resources.getConversations());
 			String context = NPCInteraction.formatContext(npcContextGenerator.getContext());
 
@@ -107,7 +100,7 @@ public class NPCController {
 
 			LOGGER.info("User prompt: {}, System prompt: {}", userPrompt, systemPrompt);
 
-			String generatedResponse = llmService.generateResponse(userPrompt, systemPrompt);
+			String generatedResponse = llmClient.generateResponse(userPrompt, systemPrompt);
 			offerActions(NPCInteraction.parseResponse(generatedResponse));
 		});
 	}
@@ -142,6 +135,7 @@ public class NPCController {
 			case STOP -> cancelActions();
 			default -> LOGGER.warn("Action type not recognized in: {}", actionType);
 		}
+		saveAction(action);
 	}
 
 	private void handleInitMessage() {
@@ -249,5 +243,25 @@ public class NPCController {
 
 	private void cancelExploring() {
 		baritone.getCommandManager().execute("cancel");
+	}
+
+	private void saveAction(Action action) {
+		String message = action.getMessage();
+		ActionType type = action.getAction();
+		if (type.equals(ActionType.CHAT)) {
+			repositoryFactory.getConversationRepository().insert(
+					npc.getName().getString(),
+					message,
+					llmClient.generateEmbedding(List.of(message))
+			);
+			return;
+		}
+		repositoryFactory.getActionsRepository().insert(
+				type.toString(),
+				message,
+				llmClient.generateEmbedding(List.of(message)),
+				action,
+				new ArrayList<>()
+		);
 	}
 }
