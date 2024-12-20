@@ -8,13 +8,13 @@ import io.sailex.ai.npc.client.model.database.Requirement
 import io.sailex.ai.npc.client.model.database.Template
 import io.sailex.ai.npc.client.model.interaction.Resources
 
-class RepositoryFactory(llmClient: ILLMClient) {
+class RepositoryFactory(val llmClient: ILLMClient) {
 
     val sqliteClient = SqliteClient()
-    val requirementsRepository = RequirementsRepository(sqliteClient, llmClient)
-    val actionsRepository = ActionsRepository(sqliteClient, requirementsRepository, llmClient)
-    val templatesRepository = TemplatesRepository(sqliteClient, llmClient)
-    val conversationRepository = ConversationRepository(sqliteClient, llmClient)
+    val requirementsRepository = RequirementsRepository(sqliteClient)
+    val actionsRepository = ActionsRepository(sqliteClient, requirementsRepository)
+    val templatesRepository = TemplatesRepository(sqliteClient)
+    val conversationRepository = ConversationRepository(sqliteClient)
 
     fun initRepositories() {
         sqliteClient.initDatabase("actions")
@@ -25,11 +25,12 @@ class RepositoryFactory(llmClient: ILLMClient) {
     }
 
     fun getRelevantResources(prompt: String): Resources {
+        val promptEmbedding = llmClient.generateEmbedding(listOf(prompt))
         return Resources(
-            actionsRepository.getMostRelevantResources(prompt) as List<ActionResource>,
-            requirementsRepository.getMostRelevantResources(prompt) as List<Requirement>,
-            templatesRepository.getMostRelevantResources(prompt) as List<Template>,
-            conversationRepository.getMostRelevantResources(prompt) as List<Conversation>)
+            actionsRepository.getMostRelevantResources(promptEmbedding).filterIsInstance<ActionResource>(),
+            requirementsRepository.getMostRelevantResources(promptEmbedding).filterIsInstance<Requirement>(),
+            templatesRepository.getMostRelevantResources(promptEmbedding).filterIsInstance<Template>(),
+            conversationRepository.getMostRelevantResources(promptEmbedding).filterIsInstance<Conversation>())
     }
 
 }

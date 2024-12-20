@@ -1,7 +1,6 @@
 package io.sailex.ai.npc.client.npc;
 
 import com.google.gson.*;
-import io.sailex.ai.npc.client.model.NPCEvent;
 import io.sailex.ai.npc.client.model.context.WorldContext;
 import io.sailex.ai.npc.client.model.database.*;
 import io.sailex.ai.npc.client.model.interaction.Actions;
@@ -23,16 +22,6 @@ public class NPCInteraction {
 
 	private static final Gson GSON = new Gson();
 	private static final Logger LOGGER = LogManager.getLogger(NPCInteraction.class);
-
-	/**
-	 * Builds a JSON user prompt from an NPC event.
-	 *
-	 * @param message the NPC event
-	 * @return the user prompt
-	 */
-	public static String buildUserPrompt(NPCEvent message) {
-		return GSON.toJson(message);
-	}
 
 	/**
 	 * Builds a JSON system prompt from the context of the Minecraft world.

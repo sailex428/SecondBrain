@@ -1,16 +1,12 @@
 package io.sailex.ai.npc.client.database.repositories
 
 import io.sailex.ai.npc.client.database.SqliteClient
-import io.sailex.ai.npc.client.llm.ILLMClient
 import io.sailex.ai.npc.client.model.database.Requirement
 import io.sailex.ai.npc.client.model.database.Resource
 import io.sailex.ai.npc.client.util.VectorUtil
 import java.sql.ResultSet
 
-class RequirementsRepository(
-    val sqliteClient: SqliteClient,
-    llmClient: ILLMClient
-) : ARepository(llmClient) {
+class RequirementsRepository(val sqliteClient: SqliteClient, ) : ARepository() {
 
     override fun createTable() {
         val sql = """

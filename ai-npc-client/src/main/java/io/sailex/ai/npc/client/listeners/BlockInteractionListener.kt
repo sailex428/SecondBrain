@@ -1,7 +1,6 @@
-package io.sailex.ai.npc.client.listener
+package io.sailex.ai.npc.client.listeners
 
 import io.sailex.ai.npc.client.model.NPC
-import io.sailex.ai.npc.client.model.interaction.ActionType
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents
 import net.fabricmc.fabric.api.event.player.UseBlockCallback
 import net.minecraft.util.ActionResult
@@ -20,7 +19,7 @@ class BlockInteractionListener(npc: NPC) : AEventListener(npc) {
                 state.block.name.string, pos.toShortString())
 
             logger.info(blockBreakMessage)
-            handleMessage(ActionType.MINE, blockBreakMessage)
+            handleMessage(blockBreakMessage)
         }
 
         UseBlockCallback.EVENT.register { player, _, hand, hitResult ->
@@ -31,7 +30,7 @@ class BlockInteractionListener(npc: NPC) : AEventListener(npc) {
                 )
 
                 logger.info(blockInteractionMessage)
-                handleMessage(ActionType.INTERACT, blockInteractionMessage)
+                handleMessage(blockInteractionMessage)
             }
             return@register ActionResult.PASS
         }

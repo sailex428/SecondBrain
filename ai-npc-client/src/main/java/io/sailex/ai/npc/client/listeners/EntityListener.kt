@@ -1,7 +1,6 @@
-package io.sailex.ai.npc.client.listener
+package io.sailex.ai.npc.client.listeners
 
 import io.sailex.ai.npc.client.model.NPC
-import io.sailex.ai.npc.client.model.interaction.ActionType
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents
 import net.minecraft.entity.player.PlayerEntity
 
@@ -16,7 +15,7 @@ class EntityListener(npc: NPC) : AEventListener(npc) {
                 entity.name.string, entity.pos.x, entity.pos.y, entity.pos.z)
 
             logger.info(entityLoadMessage)
-            handleMessage(ActionType.INTERACT, entityLoadMessage)
+            handleMessage(entityLoadMessage)
         }
     }
 

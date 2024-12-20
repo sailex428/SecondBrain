@@ -1,14 +1,10 @@
 package io.sailex.ai.npc.client.database.repositories
 
 import io.sailex.ai.npc.client.database.SqliteClient
-import io.sailex.ai.npc.client.llm.ILLMClient
 import io.sailex.ai.npc.client.model.database.Template
 import io.sailex.ai.npc.client.util.VectorUtil
 
-class TemplatesRepository(
-    val sqliteClient: SqliteClient,
-    llmClient: ILLMClient
-) : ARepository(llmClient) {
+class TemplatesRepository(val sqliteClient: SqliteClient) : ARepository() {
 
     override fun createTable() {
         val query = """

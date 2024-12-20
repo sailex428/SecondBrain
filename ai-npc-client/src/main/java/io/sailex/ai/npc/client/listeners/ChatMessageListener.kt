@@ -1,4 +1,4 @@
-package io.sailex.ai.npc.client.listener
+package io.sailex.ai.npc.client.listeners
 
 import io.sailex.ai.npc.client.model.NPC
 import io.sailex.ai.npc.client.model.interaction.ActionType
@@ -13,7 +13,7 @@ class ChatMessageListener(npc : NPC) : AEventListener(npc) {
             }
             val chatMessage = String.format ("%S : %S has written the message: %S",
                 receptionTimestamp.toString(), sender?.name ?: "Server Console", message.string)
-            handleMessage(ActionType.CHAT, chatMessage)
+            handleMessage(chatMessage)
         }
     }
 }

@@ -8,7 +8,6 @@ import io.sailex.ai.npc.client.constant.Instructions;
 import io.sailex.ai.npc.client.database.repositories.RepositoryFactory;
 import io.sailex.ai.npc.client.llm.ILLMClient;
 import io.sailex.ai.npc.client.mixin.InventoryAccessor;
-import io.sailex.ai.npc.client.model.NPCEvent;
 import io.sailex.ai.npc.client.model.context.WorldContext;
 import io.sailex.ai.npc.client.model.interaction.Action;
 import io.sailex.ai.npc.client.model.interaction.ActionType;
@@ -86,21 +85,20 @@ public class NPCController {
 	/**
 	 * Handles the NPC events (actions in-game).
 	 *
-	 * @param prompt the NPC event
+	 * @param eventPrompt the NPC event
 	 */
-	public void handleEvent(NPCEvent prompt) {
+	public void handleEvent(String eventPrompt) {
 		executorService.submit(() -> {
-            Resources resources = repositoryFactory.getRelevantResources(prompt.message());
+            Resources resources = repositoryFactory.getRelevantResources(eventPrompt);
 			String relevantResources = NPCInteraction.formatResources(resources.getActionResources(), resources.getRequirements(),
                     resources.getTemplates(), resources.getConversations());
 			String context = NPCInteraction.formatContext(npcContextGenerator.getContext());
 
-			String userPrompt = NPCInteraction.buildUserPrompt(prompt);
 			String systemPrompt = NPCInteraction.buildSystemPrompt(context, relevantResources);
 
-			LOGGER.info("User prompt: {}, System prompt: {}", userPrompt, systemPrompt);
+			LOGGER.info("User prompt: {}, System prompt: {}", eventPrompt, systemPrompt);
 
-			String generatedResponse = llmClient.generateResponse(userPrompt, systemPrompt);
+			String generatedResponse = llmClient.generateResponse(eventPrompt, systemPrompt);
 			offerActions(NPCInteraction.parseResponse(generatedResponse));
 		});
 	}
@@ -139,9 +137,7 @@ public class NPCController {
 	}
 
 	private void handleInitMessage() {
-		handleEvent(new NPCEvent(
-				ActionType.CHAT,
-				Instructions.getDefaultInstruction(npc.getName().getString())));
+		handleEvent(Instructions.getDefaultInstruction(npc.getName().getString()));
 		baritone.getCommandManager().execute("explore");
 	}
 

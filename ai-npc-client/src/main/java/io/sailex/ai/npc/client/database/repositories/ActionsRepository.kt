@@ -2,7 +2,6 @@ package io.sailex.ai.npc.client.database.repositories
 
 import com.google.gson.Gson
 import io.sailex.ai.npc.client.database.SqliteClient
-import io.sailex.ai.npc.client.llm.ILLMClient
 import io.sailex.ai.npc.client.model.database.ActionResource
 import io.sailex.ai.npc.client.model.database.Requirement
 import io.sailex.ai.npc.client.model.database.Resource
@@ -12,8 +11,7 @@ import io.sailex.ai.npc.client.util.VectorUtil
 class ActionsRepository(
     val sqliteClient: SqliteClient,
     val requirementsRepository: RequirementsRepository,
-    llmClient: ILLMClient
-) : ARepository(llmClient) {
+) : ARepository() {
 
     val gson = Gson()
 
@@ -55,7 +53,7 @@ class ActionsRepository(
                 result.getString("description"),
                 VectorUtil.convertToDoubles(result.getBytes("description_embedding")),
                 result.getString("example"),
-                requirementsRepository.select(requirements) as List<Requirement>,
+                requirementsRepository.select(requirements).filterIsInstance<Requirement>(),
                 result.getString("created_at")
             )
             actionResources.add(actionResource)

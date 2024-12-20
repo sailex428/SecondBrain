@@ -2,7 +2,7 @@ package io.sailex.ai.npc.client;
 
 import io.sailex.ai.npc.client.config.Config;
 import io.sailex.ai.npc.client.constant.ConfigConstants;
-import io.sailex.ai.npc.client.listener.EventListenerRegisterer;
+import io.sailex.ai.npc.client.listeners.EventListenerRegisterer;
 import io.sailex.ai.npc.client.llm.ILLMClient;
 import io.sailex.ai.npc.client.llm.OllamaClient;
 import io.sailex.ai.npc.client.llm.OpenAiClient;
