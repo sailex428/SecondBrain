@@ -103,19 +103,18 @@ publishing {
 
 publishMods {
     file.set(tasks.named<RemapJarTask>("remapJar").get().archiveFile)
-    changelog.set(providers.environmentVariable("CHANGELOG"))
-    type.set(ReleaseType.STABLE)
-    displayName.set("v$modVersion - [$mcVersion] AI-NPC-Launcher")
+    changelog.set(rootProject.file("CHANGELOG.md").readText())
     modLoaders.add("fabric")
+    type.set(ReleaseType.BETA)
+    version.set(modVersion)
 
     github {
-        accessToken.set(providers.environmentVariable("GITHUB_TOKEN"))
-        repository.set(providers.environmentVariable("GITHUB_REPOSITORY"))
-        commitish.set("main")
-        tagName.set("v$modVersion-$mcVersion-launcher")
+        accessToken.set(providers.gradleProperty("GITHUB_TOKEN"))
+        parent(project(":").tasks.named("publishGithub"))
     }
+
     modrinth {
-        accessToken.set(providers.environmentVariable("MODRINTH_TOKEN"))
+        accessToken.set(providers.gradleProperty("MODRINTH_TOKEN"))
         projectId.set(property("publish.modrinth").toString())
         minecraftVersions.add(mcVersion)
         requires("fabric-api")

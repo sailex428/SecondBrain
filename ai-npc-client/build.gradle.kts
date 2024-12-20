@@ -1,4 +1,3 @@
-import me.modmuss50.mpp.ReleaseType
 import net.fabricmc.loom.task.RemapJarTask
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
@@ -130,15 +129,9 @@ publishing {
 
 publishMods {
     file.set(tasks.named<RemapJarTask>("remapJar").get().archiveFile)
-    changelog.set(providers.environmentVariable("CHANGELOG"))
-    type.set(ReleaseType.STABLE)
-    displayName.set("$modVersion - [$mcVersion] AI-NPC-Client")
-    modLoaders.add("fabric")
 
     github {
-        accessToken.set(providers.environmentVariable("GITHUB_TOKEN"))
-        repository.set(providers.environmentVariable("GITHUB_REPOSITORY"))
-        commitish.set("main")
-        tagName.set("v$modVersion-$mcVersion")
+        accessToken.set(providers.gradleProperty("GITHUB_TOKEN"))
+        parent(project(":").tasks.named("publishGithub"))
     }
 }
