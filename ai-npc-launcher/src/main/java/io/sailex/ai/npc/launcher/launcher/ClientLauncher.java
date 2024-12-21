@@ -4,14 +4,14 @@ import io.sailex.ai.npc.launcher.config.ModConfig;
 import io.sailex.ai.npc.launcher.constants.ConfigConstants;
 import io.sailex.ai.npc.launcher.constants.ModRepositories;
 import io.sailex.ai.npc.launcher.util.LogUtil;
-import java.awt.*;
 import java.io.IOException;
-import java.net.URI;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+
+import lombok.Getter;
 import me.earth.headlessmc.api.command.CommandException;
 import me.earth.headlessmc.api.exit.ExitManager;
 import me.earth.headlessmc.launcher.Launcher;
@@ -28,19 +28,16 @@ import me.earth.headlessmc.launcher.specifics.VersionSpecificException;
 import me.earth.headlessmc.launcher.version.Version;
 import me.earth.headlessmc.launcher.version.VersionImpl;
 import net.fabricmc.loader.api.FabricLoader;
-import net.lenni0451.commons.httpclient.HttpClient;
 import net.minecraft.SharedConstants;
-import net.raphimc.minecraftauth.MinecraftAuth;
-import net.raphimc.minecraftauth.step.java.session.StepFullJavaSession;
-import net.raphimc.minecraftauth.step.msa.StepMsaDeviceCode;
 
 /**
  * Launcher for the AI-NPC client.
  */
 public class ClientLauncher {
 
-	private final ClientProcessManager npcClientProcesses;
+	@Getter
 	private Launcher launcher;
+	private final ClientProcessManager npcClientProcesses;
 	private FileManager files;
 	private Version version;
 
@@ -59,7 +56,7 @@ public class ClientLauncher {
 	public void launchAsync(String npcName, String llmType, String llmModel, boolean isOnline) {
 		LaunchAccount account = getAccount(npcName, isOnline);
 		if (account == null) {
-			LogUtil.error("Failed to login.");
+			LogUtil.error("Account could not be found. Please login first using the /login command.");
 			return;
 		}
 		CompletableFuture.runAsync(() -> launch(account, npcName, llmType, llmModel)).exceptionally(e -> {
@@ -203,36 +200,11 @@ public class ClientLauncher {
 			LogUtil.info("Logging in offline.");
 			return new LaunchAccount("msa", npcName, UUID.randomUUID().toString(), "", "");
 		}
-
-		try {
-			LogUtil.info("Logging in MC account.");
-			HttpClient httpClient = MinecraftAuth.createHttpClient();
-			StepFullJavaSession.FullJavaSession javaSession = MinecraftAuth.JAVA_DEVICE_CODE_LOGIN.getFromInput(
-					httpClient, new StepMsaDeviceCode.MsaDeviceCodeCallback(this::handleLogin));
-
-			ValidatedAccount validatedAccount = new ValidatedAccount(
-					javaSession, javaSession.getMcProfile().getMcToken().getAccessToken());
-			return validatedAccount.toLaunchAccount();
-		} catch (Exception e) {
-			LogUtil.error("Login failed: " + e.getMessage());
-			return null;
-		}
-	}
-
-	private void handleLogin(StepMsaDeviceCode.MsaDeviceCode msaDeviceCode) {
-		LogUtil.info("Go to", true);
-		LogUtil.info(msaDeviceCode.getDirectVerificationUri(), true);
-		try {
-			URI url = URI.create(msaDeviceCode.getDirectVerificationUri());
-			if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
-				Desktop.getDesktop().browse(url);
-			} else {
-				new ProcessBuilder("open", url.toString()).start();
-			}
-		} catch (Exception e) {
-			LogUtil.error("Failed to open the verification URL automatically" + e);
-		}
-	}
+		LogUtil.info("Looking for logged in account with name: " + npcName);
+		return launcher.getAccountManager().getAccounts().stream()
+				.map(ValidatedAccount::toLaunchAccount)
+				.filter(account -> account.getName().equals(npcName)).findFirst().orElse(null);
+    }
 
 	private List<String> getJvmArgs(String llmType, String llmModel) {
 		List<String> jvmArgs = new ArrayList<>();
