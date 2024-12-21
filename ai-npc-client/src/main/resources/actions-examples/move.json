@@ -1,0 +1,21 @@
+[
+  {
+    "action": "CHAT",
+    "message": "I will move to the location you said.",
+    "targetId": null,
+    "targetType": null,
+    "parameters": {}
+  },
+  {
+    "action": "MOVE",
+    "message": null,
+    "targetId": null,
+    "targetType": null,
+    "targetPosition": {
+      "x": 435,
+      "y": 80,
+      "z": -234
+    },
+    "parameters": {}
+  }
+]

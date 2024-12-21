@@ -1,0 +1,17 @@
+[
+  {
+    "action": "CHAT",
+    "message": "I will stop all actions.",
+    "targetId": null,
+    "targetType": null,
+    "parameters": {}
+  },
+  {
+    "action": "STOP",
+    "message": null,
+    "targetId": null,
+    "targetType": null,
+    "targetPosition": null,
+    "parameters": {}
+  }
+]

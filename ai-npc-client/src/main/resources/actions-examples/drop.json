@@ -1,0 +1,28 @@
+[
+  {
+    "action": "CHAT",
+    "message": "Im walking to you and drop you my spruce log.",
+    "targetId": null,
+    "targetType": null,
+    "parameters": {}
+  },
+  {
+    "action": "MOVE",
+    "message": null,
+    "targetId": null,
+    "targetType": null,
+    "targetPosition": {
+      "x": 120,
+      "y": 70,
+      "z": 334
+    },
+    "parameters": {}
+  },
+  {
+    "action": "DROP",
+    "message": null,
+    "targetId": null,
+    "targetType": "spruce_log",
+    "parameters": {}
+  }
+]

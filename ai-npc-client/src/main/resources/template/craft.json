@@ -1,8 +1,0 @@
-{
-  "action": "CRAFT",
-  "message": null,
-  "targetId": "your-recipe-identifier",
-  "targetType": null,
-  "targetPosition": null,
-  "parameters": {}
-}

@@ -1,0 +1,9 @@
+[
+  {
+    "action": "CHAT",
+    "message": "Heyy, whats up!",
+    "targetId": null,
+    "targetType": null,
+    "parameters": {}
+  }
+]

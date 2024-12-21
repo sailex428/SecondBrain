@@ -1,0 +1,21 @@
+[
+  {
+    "action": "CHAT",
+    "message": "No Problem. I will mine the dark oak log.",
+    "targetId": null,
+    "targetType": null,
+    "parameters": {}
+  },
+  {
+    "action": "mine",
+    "message": null,
+    "targetId": null,
+    "targetType": null,
+    "targetPosition": {
+      "x": 123,
+      "y": 90,
+      "z": 456
+    },
+    "parameters": {}
+  }
+]
