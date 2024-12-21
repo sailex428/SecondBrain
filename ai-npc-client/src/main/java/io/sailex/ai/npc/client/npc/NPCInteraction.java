@@ -59,12 +59,9 @@ public class NPCInteraction {
 	 * @return to string formatted resources
 	 */
 	public static String formatResources(
-			List<ActionResource> actionResources, List<Requirement> requirements,
-			List<Template> templates, List<Conversation> conversations) {
+			List<ActionResource> actionResources, List<Requirement> requirements, List<Conversation> conversations) {
 		return String.format(
 				"""
-				Templates: predefined formats for performing actions:
-				%s,
 				Actions: (example) actions that you have done before with requirements that are needed:
 				%s,
 				Recipes/Requirements: recipes for items that the player request to craft:
@@ -72,7 +69,6 @@ public class NPCInteraction {
 				Conversations: previous dialogues between you and the players:
 				%s
 				""",
-				formatTemplates(templates),
 				formatActions(actionResources),
 				formatRequirements(requirements),
 				formatConversation(conversations)
@@ -90,18 +86,12 @@ public class NPCInteraction {
 						actionResource.getName(), actionResource.getDescription(), actionResource.getExample(), actionResource.getRequirements()));
 	}
 
-	private static String formatTemplates(List<Template> templates) {
-		return formatList(templates, template ->
-				String.format("- Action name: %s, json format of the action: %s",
-						template.getName(), template.getAction()));
-	}
-
 	private static String formatRequirements(List<Requirement> requirements) {
 		return formatList(requirements, requirement ->
 				String.format("- Requirement name: %s, %s, needed items: %s",
-						requirement.getBlocksNeeded(),
+						requirement.getItemsNeeded(),
 						requirement.getCraftingTableNeeded() ? "needs crafting table to create this item" : "can be crafted in your inventory",
-						formatBlocksNeeded(requirement.getBlocksNeeded())));
+						formatBlocksNeeded(requirement.getItemsNeeded())));
 	}
 
 	private static String formatBlocksNeeded(Map<String, Integer> blocksNeeded) {

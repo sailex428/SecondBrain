@@ -106,9 +106,9 @@ public class AiNPCClient implements ClientModInitializer {
 	private void indexDefaultResources(ILLMClient llmClient, RepositoryFactory repositoryFactory) {
 		DefaultResourcesIndexer defaultResourcesIndexer = new DefaultResourcesIndexer(
 				repositoryFactory.getRequirementsRepository(),
-				repositoryFactory.getTemplatesRepository(), llmClient);
+				repositoryFactory.getActionsRepository(), llmClient);
 		defaultResourcesIndexer.indexRequirements();
-		defaultResourcesIndexer.indexTemplates();
+		defaultResourcesIndexer.indexActions();
 	}
 	//?}
 

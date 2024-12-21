@@ -5,5 +5,5 @@ data class Requirement(
     val name: String,
     override val embedding: DoubleArray,
     val craftingTableNeeded: Boolean,
-    val blocksNeeded: Map<String, Int>
+    val itemsNeeded: Map<String, Int>
 ) : Resource

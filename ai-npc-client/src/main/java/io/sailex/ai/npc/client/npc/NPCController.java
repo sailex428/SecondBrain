@@ -90,8 +90,7 @@ public class NPCController {
 	public void handleEvent(String eventPrompt) {
 		executorService.submit(() -> {
             Resources resources = repositoryFactory.getRelevantResources(eventPrompt);
-			String relevantResources = NPCInteraction.formatResources(resources.getActionResources(), resources.getRequirements(),
-                    resources.getTemplates(), resources.getConversations());
+			String relevantResources = NPCInteraction.formatResources(resources.getActionResources(), resources.getRequirements(), resources.getConversations());
 			String context = NPCInteraction.formatContext(npcContextGenerator.getContext());
 
 			String systemPrompt = NPCInteraction.buildSystemPrompt(context, relevantResources);

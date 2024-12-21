@@ -15,21 +15,21 @@ class RequirementsRepository(val sqliteClient: SqliteClient, ) : ARepository() {
                     name TEXT UNIQUE NOT NULL,
                     name_embedding BLOB,
                     crafting_table_needed BOOLEAN NOT NULL,
-                    blocks_needed TEXT
+                    items_needed TEXT
             );
         """
         sqliteClient.create(sql)
     }
 
-    fun insert(type: String, name: String, nameEmbedding: DoubleArray, craftingTableNeeded: Boolean, blocksNeeded: String) {
+    fun insert(type: String, name: String, nameEmbedding: DoubleArray, craftingTableNeeded: Boolean, itemsNeeded: String) {
         val statement =
-            sqliteClient.buildPreparedStatement("INSERT INTO requirements (type, name, name_embedding, crafting_table_needed, blocks_needed) VALUES (?, ?, ?, ?, ?)" +
-                    " ON CONFLICT(name) DO UPDATE SET blocks_needed = excluded.blocks_needed")
+            sqliteClient.buildPreparedStatement("INSERT INTO requirements (type, name, name_embedding, crafting_table_needed, items_needed) VALUES (?, ?, ?, ?, ?)" +
+                    " ON CONFLICT(name) DO UPDATE SET blocks_needed = excluded.items_needed")
         statement.setString(1, type)
         statement.setString(2, name)
         statement.setBytes(3, VectorUtil.convertToBytes(nameEmbedding))
         statement.setBoolean(4, craftingTableNeeded)
-        statement.setString(5, blocksNeeded)
+        statement.setString(5, itemsNeeded)
         sqliteClient.insert(statement)
     }
 
@@ -59,15 +59,15 @@ class RequirementsRepository(val sqliteClient: SqliteClient, ) : ARepository() {
                 result.getString("name"),
                 VectorUtil.convertToDoubles(result.getBytes("name_embedding")),
                 result.getBoolean("crafting_table_needed"),
-                parseBlocksNeededToMap(result.getString("blocks_needed"))
+                parseItemsNeededToMap(result.getString("items_needed"))
             )
             requirements.add(requirement)
         }
         return requirements
     }
 
-    private fun parseBlocksNeededToMap(blocksNeeded: String): Map<String, Int> {
-        return blocksNeeded.split(",")
+    private fun parseItemsNeededToMap(itemsNeeded: String): Map<String, Int> {
+        return itemsNeeded.split(",")
             .map { it.split("=") }
             .associate { it[0] to it[1].toInt() }
     }

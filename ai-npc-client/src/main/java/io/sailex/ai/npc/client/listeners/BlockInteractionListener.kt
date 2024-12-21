@@ -22,11 +22,10 @@ class BlockInteractionListener(npc: NPC) : AEventListener(npc) {
             handleMessage(blockBreakMessage)
         }
 
-        UseBlockCallback.EVENT.register { player, _, hand, hitResult ->
+        UseBlockCallback.EVENT.register { player, _, _, hitResult ->
             if (player.uuid == npc.id) {
                 val blockInteractionMessage = String.format(
-                    "Player %S interacted with block at %S",
-                    player.name.string, hitResult.blockPos.toShortString()
+                    "You used block at %S", hitResult.blockPos
                 )
 
                 logger.info(blockInteractionMessage)
