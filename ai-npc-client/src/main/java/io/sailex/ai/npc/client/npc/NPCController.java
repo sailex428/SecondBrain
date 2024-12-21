@@ -4,6 +4,7 @@ import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
 import baritone.api.pathing.goals.GoalBlock;
 import baritone.api.utils.BetterBlockPos;
+import com.google.gson.Gson;
 import io.sailex.ai.npc.client.constant.Instructions;
 import io.sailex.ai.npc.client.database.repositories.RepositoryFactory;
 import io.sailex.ai.npc.client.llm.ILLMClient;
@@ -255,7 +256,7 @@ public class NPCController {
 				type.toString(),
 				message,
 				llmClient.generateEmbedding(List.of(message)),
-				action,
+				new Gson().toJson(action),
 				new ArrayList<>()
 		);
 	}
