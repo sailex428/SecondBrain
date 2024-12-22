@@ -1,5 +1,7 @@
 package io.sailex.ai.npc.client;
 
+import baritone.api.BaritoneAPI;
+import baritone.api.IBaritone;
 import io.sailex.ai.npc.client.config.Config;
 import io.sailex.ai.npc.client.constant.ConfigConstants;
 import io.sailex.ai.npc.client.listeners.EventListenerRegisterer;
@@ -7,7 +9,7 @@ import io.sailex.ai.npc.client.llm.ILLMClient;
 import io.sailex.ai.npc.client.llm.OllamaClient;
 import io.sailex.ai.npc.client.llm.OpenAiClient;
 import io.sailex.ai.npc.client.model.NPC;
-import io.sailex.ai.npc.client.npc.NPCContextGenerator;
+import io.sailex.ai.npc.client.context.ContextGenerator;
 import io.sailex.ai.npc.client.npc.NPCController;
 import io.sailex.ai.npc.client.util.ConnectionUtil;
 import io.sailex.ai.npc.client.database.indexer.DefaultResourcesIndexer;
@@ -49,7 +51,7 @@ public class AiNPCClient implements ClientModInitializer {
 	private void waitForClientToLoad() {
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
 			if (client.isFinishedLoading() && !connected) {
-				client.getSoundManager().close();
+				client.getSoundManager().stopAll();
 				ConnectionUtil.connectToServer();
 				connected = true;
 			}
@@ -76,9 +78,10 @@ public class AiNPCClient implements ClientModInitializer {
 		indexDefaultResources(llmClient, repositoryFactory);
 		//?}
 
-		NPCContextGenerator npcContextGenerator = new NPCContextGenerator(npcEntity);
-		NPCController controller = new NPCController(npcEntity, llmClient, npcContextGenerator, repositoryFactory);
-		NPC npc = new NPC(npcEntity.getUuid(), npcEntity, controller, npcContextGenerator, llmClient);
+		IBaritone baritone = BaritoneAPI.getProvider().getPrimaryBaritone();
+		ContextGenerator contextGenerator = new ContextGenerator(npcEntity, baritone);
+		NPCController controller = new NPCController(npcEntity, llmClient, contextGenerator, repositoryFactory, baritone);
+		NPC npc = new NPC(npcEntity.getUuid(), npcEntity, controller, contextGenerator, llmClient);
 
 		EventListenerRegisterer eventListenerRegisterer = new EventListenerRegisterer(npc);
 		eventListenerRegisterer.registerListeners(repositoryFactory.getSqliteClient());
@@ -105,9 +108,9 @@ public class AiNPCClient implements ClientModInitializer {
 	//? if <1.21.2 {
 	private void indexDefaultResources(ILLMClient llmClient, RepositoryFactory repositoryFactory) {
 		DefaultResourcesIndexer defaultResourcesIndexer = new DefaultResourcesIndexer(
-				repositoryFactory.getRequirementsRepository(),
+				repositoryFactory.getRecipesRepository(),
 				repositoryFactory.getActionsRepository(), llmClient);
-		defaultResourcesIndexer.indexRequirements();
+		defaultResourcesIndexer.indexRecipes();
 		defaultResourcesIndexer.indexExampleActions();
 	}
 	//?}

@@ -1,11 +1,11 @@
 package io.sailex.ai.npc.client.npc;
 
-import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
 import baritone.api.pathing.goals.GoalBlock;
 import baritone.api.utils.BetterBlockPos;
 
 import io.sailex.ai.npc.client.constant.Instructions;
+import io.sailex.ai.npc.client.context.ContextGenerator;
 import io.sailex.ai.npc.client.database.repositories.RepositoryFactory;
 import io.sailex.ai.npc.client.llm.ILLMClient;
 import io.sailex.ai.npc.client.mixin.InventoryAccessor;
@@ -49,42 +49,29 @@ public class NPCController {
 
 	private final ClientPlayerEntity npc;
 	private final ILLMClient llmClient;
-	private final NPCContextGenerator npcContextGenerator;
+	private final ContextGenerator contextGenerator;
 	private final RepositoryFactory repositoryFactory;
 	private final IBaritone baritone;
 
-	/**
-	 * Constructor for NPCController.
-	 *
-	 * @param npc                 the NPC entity
-	 * @param llmClient          the LLM client
-	 * @param npcContextGenerator the NPC context generator
-	 */
 	public NPCController(
 			ClientPlayerEntity npc,
 			ILLMClient llmClient,
-			NPCContextGenerator npcContextGenerator,
-			RepositoryFactory repositoryFactory
+			ContextGenerator contextGenerator,
+			RepositoryFactory repositoryFactory,
+			IBaritone baritone
 	) {
 		this.npc = npc;
 		this.llmClient = llmClient;
-		this.npcContextGenerator = npcContextGenerator;
+		this.contextGenerator = contextGenerator;
         this.repositoryFactory = repositoryFactory;
         this.executorService = Executors.newFixedThreadPool(3);
-		this.baritone = setupPathFinding();
+		this.baritone = baritone;
 		handleInitMessage();
 		onClientTick();
 	}
 
-	private IBaritone setupPathFinding() {
-		BaritoneAPI.getSettings().allowSprint.value = true;
-		BaritoneAPI.getSettings().primaryTimeoutMS.value = 2000L;
-		BaritoneAPI.getSettings().allowInventory.value = true;
-		return BaritoneAPI.getProvider().getPrimaryBaritone();
-	}
-
 	/**
-	 * Handles the NPC events (actions in-game).
+	 * Handles the NPC events (actions in-game) and executes NPC actions.
 	 *
 	 * @param eventPrompt the NPC event
 	 */
@@ -92,7 +79,7 @@ public class NPCController {
 		executorService.submit(() -> {
             Resources resources = repositoryFactory.getRelevantResources(eventPrompt);
 			String relevantResources = NPCInteraction.formatResources(resources.getActionResources(), resources.getRequirements(), resources.getConversations());
-			String context = NPCInteraction.formatContext(npcContextGenerator.getContext());
+			String context = NPCInteraction.formatContext(contextGenerator.getContext());
 
 			String systemPrompt = NPCInteraction.buildSystemPrompt(context, relevantResources);
 

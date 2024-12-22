@@ -1,31 +1,32 @@
-package io.sailex.ai.npc.client.npc;
+package io.sailex.ai.npc.client.context;
 
+import baritone.api.IBaritone;
 import io.sailex.ai.npc.client.model.context.WorldContext;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.stream.Collectors;
+
 import net.minecraft.block.Block;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
+import net.minecraft.world.biome.Biome;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 /**
- * Generates the context for the NPC based on the world state.
+ * Generates the context for the LLM based on the world state.
  */
-public class NPCContextGenerator {
+public class ContextGenerator {
 
-	private static final Logger LOGGER = LogManager.getLogger(NPCContextGenerator.class);
+	private static final Logger LOGGER = LogManager.getLogger(ContextGenerator.class);
 	private final ExecutorService service;
 	private static final int CHUNK_SCAN_RADIUS = 2;
 	private static final int VERTICAL_SCAN_RANGE = 16;
@@ -33,14 +34,11 @@ public class NPCContextGenerator {
 
 	private final ClientPlayerEntity npcEntity;
 	private final World world;
+	private final IBaritone baritone;
 
-	/**
-	 * Constructor for NPCContextGenerator.
-	 *
-	 * @param npcEntity the NPC entity
-	 */
-	public NPCContextGenerator(ClientPlayerEntity npcEntity) {
+	public ContextGenerator(ClientPlayerEntity npcEntity, IBaritone baritone) {
 		this.npcEntity = npcEntity;
+		this.baritone = baritone;
 		this.world = npcEntity.getWorld();
 		this.service = Executors.newFixedThreadPool(3);
 	}
@@ -48,7 +46,7 @@ public class NPCContextGenerator {
 	/**
 	 * Creates a world context of entities, blocks, and inventory for the NPC.
 	 *
-	 * @return the context for the NPC
+	 * @return the context of the NPC world
 	 */
 	public WorldContext getContext() {
 		try {
@@ -65,8 +63,15 @@ public class NPCContextGenerator {
 				npcEntity.getHealth(),
 				npcEntity.getHungerManager().getFoodLevel(),
 				npcEntity.isOnGround(),
-				npcEntity.isTouchingWater());
+				npcEntity.isTouchingWater(),
+				getBiome()
+		);
 	}
+
+	private String getBiome() {
+		Optional<RegistryKey<Biome>> biomeKey = npcEntity.getWorld().getBiome(npcEntity.getBlockPos()).getKey();
+        return biomeKey.map(biomeRegistryKey -> biomeRegistryKey.getValue().getPath()).orElse("");
+    }
 
 	private List<WorldContext.BlockData> scanNearbyBlocks() {
 		Map<String, WorldContext.BlockData> nearestBlocks = new HashMap<>();
@@ -94,10 +99,10 @@ public class NPCContextGenerator {
 
 					if (isAccessible(pos)) {
 						WorldContext.BlockData currentBlockData = new WorldContext.BlockData(
-								blockType, new WorldContext.Position(pos.getX(), pos.getY(), pos.getZ()), true);
+								blockType, new WorldContext.Position(pos.getX(), pos.getY(), pos.getZ()), true, "test", "test");
 
-						if (!nearestBlocks.containsKey(blockType)
-								|| isCloser(pos, nearestBlocks.get(blockType).position())) {
+						if (!nearestBlocks.containsKey(blockType) ||
+								isCloser(pos, nearestBlocks.get(blockType).position())) {
 							nearestBlocks.put(blockType, currentBlockData);
 						}
 					}

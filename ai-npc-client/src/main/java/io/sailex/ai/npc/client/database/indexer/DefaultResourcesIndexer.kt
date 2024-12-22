@@ -3,7 +3,7 @@ package io.sailex.ai.npc.client.database.indexer
 import io.sailex.ai.npc.client.AiNPCClient.client
 import io.sailex.ai.npc.client.config.ResourceLoader.getAllResourcesContent
 import io.sailex.ai.npc.client.database.repositories.ActionsRepository
-import io.sailex.ai.npc.client.database.repositories.RequirementsRepository
+import io.sailex.ai.npc.client.database.repositories.RecipesRepository
 import io.sailex.ai.npc.client.llm.ILLMClient
 import io.sailex.ai.npc.client.util.ActionParser.parseSingleAction
 import io.sailex.ai.npc.client.util.LogUtil
@@ -19,7 +19,7 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 class DefaultResourcesIndexer(
-    val requirementsRepository: RequirementsRepository,
+    val recipesRepository: RecipesRepository,
     val actionsRepository: ActionsRepository,
     val llmClient: ILLMClient
 ) {
@@ -46,7 +46,7 @@ class DefaultResourcesIndexer(
      * Indexes the requirements/recipes of the game in db
      */
     //? if <1.21.2 {
-    fun indexRequirements() {
+    fun indexRecipes() {
         val world = client.world
         if (world == null) {
             LogUtil.error("Could not get 'recipes', cause the client world is null")
@@ -55,12 +55,12 @@ class DefaultResourcesIndexer(
         val recipes: Collection<RecipeEntry<*>> = world.recipeManager.values()
         val executorService: ExecutorService = Executors.newFixedThreadPool(6)
 
-        logger.info("Indexing all Requirements and Recipes")
+        logger.info("Indexing all Recipes")
         recipes.forEach {
             executorService.submit {
                 val recipeValue = it.value
                 val recipeName = it.id.path
-                requirementsRepository.insert(
+                recipesRepository.insert(
                     recipeValue.type.toString(),
                     recipeName,
                     llmClient.generateEmbedding(listOf(recipeName)),

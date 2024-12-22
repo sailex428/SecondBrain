@@ -33,7 +33,7 @@ class EventListenerRegisterer(private val npc: NPC) {
 
     private fun stopServices(sqliteClient: SqliteClient) {
         npc.llmService.stopService()
-        npc.npcContextGenerator.stopService()
+        npc.contextGenerator.stopService()
         sqliteClient.closeConnection()
     }
 }

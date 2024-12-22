@@ -13,9 +13,9 @@ public record WorldContext(
 
 	public record Position(int x, int y, int z) {}
 
-	public record NPCState(Position position, float health, int food, boolean onGround, boolean inWater) {}
+	public record NPCState(Position position, float health, int food, boolean onGround, boolean inWater, String biome) {}
 
-	public record BlockData(String type, Position position, boolean accessible) {}
+	public record BlockData(String type, Position position, boolean accessible, String mineLevel, String toolNeeded) {}
 
 	public record EntityData(String type, Position position, boolean canHit, boolean isPlayer) {}
 

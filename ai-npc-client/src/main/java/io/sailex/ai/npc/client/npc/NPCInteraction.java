@@ -61,7 +61,7 @@ public class NPCInteraction {
 	 * @return to string formatted resources
 	 */
 	public static String formatResources(
-			List<ActionResource> actionResources, List<RequirementResource> requirements, List<Conversation> conversations) {
+			List<ActionResource> actionResources, List<Recipe> recipes, List<Conversation> conversations) {
 		return String.format(
 				"""
 				Actions: (example) actions that you have done before:
@@ -72,7 +72,7 @@ public class NPCInteraction {
 				%s
 				""",
 				formatActions(actionResources),
-				formatRequirements(requirements),
+				formatRecipes(recipes),
 				formatConversation(conversations)
 		);
 	}
@@ -88,12 +88,12 @@ public class NPCInteraction {
 						actionResource.getName(), actionResource.getDescription(), actionResource.getExample()));
 	}
 
-	private static String formatRequirements(List<RequirementResource> requirements) {
-		return formatList(requirements, requirement ->
+	private static String formatRecipes(List<Recipe> recipes) {
+		return formatList(recipes, recipe ->
 				String.format("- Requirement name: %s, %s, needed items: %s",
-						requirement.getItemsNeeded(),
-						requirement.getTableNeeded(),
-						formatBlocksNeeded(requirement.getItemsNeeded())));
+						recipe.getItemsNeeded(),
+						recipe.getTableNeeded(),
+						formatBlocksNeeded(recipe.getItemsNeeded())));
 	}
 
 	private static String formatBlocksNeeded(Map<String, Integer> blocksNeeded) {
