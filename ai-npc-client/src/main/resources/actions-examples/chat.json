@@ -4,6 +4,7 @@
     "message": "Heyy, whats up!",
     "targetId": null,
     "targetType": null,
-    "parameters": {}
+    "targetPosition": null,
+    "requirement": {}
   }
 ]

@@ -4,7 +4,7 @@ import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
 import baritone.api.pathing.goals.GoalBlock;
 import baritone.api.utils.BetterBlockPos;
-import com.google.gson.Gson;
+
 import io.sailex.ai.npc.client.constant.Instructions;
 import io.sailex.ai.npc.client.database.repositories.RepositoryFactory;
 import io.sailex.ai.npc.client.llm.ILLMClient;
@@ -14,11 +14,10 @@ import io.sailex.ai.npc.client.model.interaction.Action;
 import io.sailex.ai.npc.client.model.interaction.ActionType;
 import io.sailex.ai.npc.client.model.interaction.Actions;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
 
-import io.sailex.ai.npc.client.model.interaction.Resources;
+import io.sailex.ai.npc.client.model.database.Resources;
 import io.sailex.ai.npc.client.util.ClientWorldUtil;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.network.ClientPlayerEntity;
@@ -34,6 +33,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import static io.sailex.ai.npc.client.AiNPCClient.client;
+import static io.sailex.ai.npc.client.util.ActionParser.actionToJson;
 
 /**
  * Controller for managing NPC actions and events.
@@ -242,8 +242,8 @@ public class NPCController {
 	}
 
 	private void saveAction(Action action) {
-		String message = action.getMessage();
 		ActionType type = action.getAction();
+		String message = action.getMessage();
 		if (type.equals(ActionType.CHAT)) {
 			repositoryFactory.getConversationRepository().insert(
 					npc.getName().getString(),
@@ -256,8 +256,7 @@ public class NPCController {
 				type.toString(),
 				message,
 				llmClient.generateEmbedding(List.of(message)),
-				new Gson().toJson(action),
-				new ArrayList<>()
+				actionToJson(action)
 		);
 	}
 }

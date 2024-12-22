@@ -1,19 +1,13 @@
 package io.sailex.ai.npc.client.database.repositories
 
-import com.google.gson.Gson
 import io.sailex.ai.npc.client.database.SqliteClient
 import io.sailex.ai.npc.client.model.database.ActionResource
-import io.sailex.ai.npc.client.model.database.Requirement
 import io.sailex.ai.npc.client.model.database.Resource
-import io.sailex.ai.npc.client.model.interaction.Action
 import io.sailex.ai.npc.client.util.VectorUtil
 
 class ActionsRepository(
     val sqliteClient: SqliteClient,
-    val requirementsRepository: RequirementsRepository,
 ) : ARepository() {
-
-    val gson = Gson()
 
     override fun createTable() {
         val sql = """
@@ -23,20 +17,18 @@ class ActionsRepository(
                     description TEXT,
                     description_embedding BLOB,
                     example TEXT NOT NULL,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    requirements TEXT
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         """
         sqliteClient.create(sql)
     }
 
-    fun insert(name: String, description: String, descriptionEmbedding: DoubleArray, example: Action, requirements: List<Int>) {
-        val statement = sqliteClient.buildPreparedStatement("INSERT INTO actions (name, description, description_embedding, example, requirements) VALUES (?, ?, ?, ?, ?)")
+    fun insert(name: String, description: String, descriptionEmbedding: DoubleArray, example: String) {
+        val statement = sqliteClient.buildPreparedStatement("INSERT INTO actions (name, description, description_embedding, example) VALUES (?, ?, ?, )")
         statement.setString(1, name)
         statement.setString(2, description)
         statement.setBytes(3, VectorUtil.convertToBytes(descriptionEmbedding))
-        statement.setString(4, gson.toJson(example))
-        statement.setString(5, requirements.joinToString(","))
+        statement.setString(4, example)
         sqliteClient.insert(statement)
     }
 
@@ -46,19 +38,16 @@ class ActionsRepository(
         val actionResources = arrayListOf<ActionResource>()
 
         while(result.next()) {
-            val requirements = result.getString("requirements").split(",").map { it.toInt() }
             val actionResource = ActionResource(
                 result.getInt("id"),
                 result.getString("name"),
                 result.getString("description"),
                 VectorUtil.convertToDoubles(result.getBytes("description_embedding")),
                 result.getString("example"),
-                requirementsRepository.select(requirements).filterIsInstance<Requirement>(),
                 result.getString("created_at")
             )
             actionResources.add(actionResource)
         }
         return actionResources
     }
-
 }

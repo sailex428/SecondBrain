@@ -10,8 +10,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import static io.sailex.ai.npc.client.util.ActionParser.parseActions;
 
 /**
  * Generates prompts and parses responses for communication between the NPC and the LLM.
@@ -20,13 +23,12 @@ public class NPCInteraction {
 
 	private NPCInteraction() {}
 
-	private static final Gson GSON = new Gson();
 	private static final Logger LOGGER = LogManager.getLogger(NPCInteraction.class);
 
 	/**
-	 * Builds a JSON system prompt from the context of the Minecraft world.
+	 * Builds a JSON system prompt from the context of the world.
 	 *
-	 * @param context the context of the Minecraft world
+	 * @param context the context of the world
 	 * @param relevantResources resources matching the user prompt
 	 * @return the system prompt
 	 */
@@ -46,7 +48,7 @@ public class NPCInteraction {
 	 */
 	public static Actions parseResponse(String response) {
 		try {
-			return GSON.fromJson(response, Actions.class);
+			return parseActions(response);
 		} catch (JsonSyntaxException e) {
 			LOGGER.error("Error parsing response: {}", e.getMessage());
 			throw new JsonSyntaxException("Error parsing response: " + e.getMessage());
@@ -59,12 +61,12 @@ public class NPCInteraction {
 	 * @return to string formatted resources
 	 */
 	public static String formatResources(
-			List<ActionResource> actionResources, List<Requirement> requirements, List<Conversation> conversations) {
+			List<ActionResource> actionResources, List<RequirementResource> requirements, List<Conversation> conversations) {
 		return String.format(
 				"""
-				Actions: (example) actions that you have done before with requirements that are needed:
+				Actions: (example) actions that you have done before:
 				%s,
-				Recipes/Requirements: recipes for items that the player request to craft:
+				Recipes: recipes for items that the player request to craft:
 				%s,
 				Conversations: previous dialogues between you and the players:
 				%s
@@ -82,15 +84,15 @@ public class NPCInteraction {
 
 	private static String formatActions(List<ActionResource> actionResources) {
 		return formatList(actionResources, actionResource ->
-				String.format("- Action name: %s : %s, example Json format/content for that action: %s, requirements: %s",
-						actionResource.getName(), actionResource.getDescription(), actionResource.getExample(), actionResource.getRequirements()));
+				String.format("- Action name: %s : %s, example Json format/content for that action: %s",
+						actionResource.getName(), actionResource.getDescription(), actionResource.getExample()));
 	}
 
-	private static String formatRequirements(List<Requirement> requirements) {
+	private static String formatRequirements(List<RequirementResource> requirements) {
 		return formatList(requirements, requirement ->
 				String.format("- Requirement name: %s, %s, needed items: %s",
 						requirement.getItemsNeeded(),
-						requirement.getCraftingTableNeeded() ? "needs crafting table to create this item" : "can be crafted in your inventory",
+						requirement.getTableNeeded(),
 						formatBlocksNeeded(requirement.getItemsNeeded())));
 	}
 

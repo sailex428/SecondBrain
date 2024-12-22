@@ -28,8 +28,17 @@ class ConversationRepository(val sqliteClient: SqliteClient) : ARepository() {
         sqliteClient.insert(statement)
     }
 
+    fun selectByName(npcName: String): List<Conversation> {
+        val sql = "SELECT * FROM conversation WHERE npc_name = %S"
+        return executeAndProcessConversations(sql)
+    }
+
     override fun selectAll(): List<Resource> {
         val sql = "SELECT * FROM conversations"
+        return executeAndProcessConversations(sql)
+    }
+
+    private fun executeAndProcessConversations(sql: String): List<Conversation> {
         val result = sqliteClient.select(sql)
         val conversations = arrayListOf<Conversation>()
 

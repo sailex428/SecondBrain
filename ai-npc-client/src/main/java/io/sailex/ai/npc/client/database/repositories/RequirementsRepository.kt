@@ -1,7 +1,7 @@
 package io.sailex.ai.npc.client.database.repositories
 
 import io.sailex.ai.npc.client.database.SqliteClient
-import io.sailex.ai.npc.client.model.database.Requirement
+import io.sailex.ai.npc.client.model.database.RequirementResource
 import io.sailex.ai.npc.client.model.database.Resource
 import io.sailex.ai.npc.client.util.VectorUtil
 import java.sql.ResultSet
@@ -14,21 +14,21 @@ class RequirementsRepository(val sqliteClient: SqliteClient, ) : ARepository() {
                     type TEXT NOT NULL,
                     name TEXT UNIQUE NOT NULL,
                     name_embedding BLOB,
-                    crafting_table_needed BOOLEAN NOT NULL,
+                    table_needed BOOLEAN NOT NULL,
                     items_needed TEXT
             );
         """
         sqliteClient.create(sql)
     }
 
-    fun insert(type: String, name: String, nameEmbedding: DoubleArray, craftingTableNeeded: Boolean, itemsNeeded: String) {
+    fun insert(type: String, name: String, nameEmbedding: DoubleArray, tableNeeded: String, itemsNeeded: String) {
         val statement =
-            sqliteClient.buildPreparedStatement("INSERT INTO requirements (type, name, name_embedding, crafting_table_needed, items_needed) VALUES (?, ?, ?, ?, ?)" +
+            sqliteClient.buildPreparedStatement("INSERT INTO requirements (type, name, name_embedding, table_needed, items_needed) VALUES (?, ?, ?, ?, ?)" +
                     " ON CONFLICT(name) DO UPDATE SET blocks_needed = excluded.items_needed")
         statement.setString(1, type)
         statement.setString(2, name)
         statement.setBytes(3, VectorUtil.convertToBytes(nameEmbedding))
-        statement.setBoolean(4, craftingTableNeeded)
+        statement.setString(4, tableNeeded)
         statement.setString(5, itemsNeeded)
         sqliteClient.insert(statement)
     }
@@ -52,13 +52,13 @@ class RequirementsRepository(val sqliteClient: SqliteClient, ) : ARepository() {
     }
 
     private fun processResult(result: ResultSet): List<Resource> {
-        val requirements = arrayListOf<Requirement>()
+        val requirements = arrayListOf<RequirementResource>()
         while(result.next()) {
-            val requirement = Requirement(
+            val requirement = RequirementResource(
                 result.getString("type"),
                 result.getString("name"),
                 VectorUtil.convertToDoubles(result.getBytes("name_embedding")),
-                result.getBoolean("crafting_table_needed"),
+                result.getString("table_needed"),
                 parseItemsNeededToMap(result.getString("items_needed"))
             )
             requirements.add(requirement)

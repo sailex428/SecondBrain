@@ -4,14 +4,13 @@
     "message": "I will stop all actions.",
     "targetId": null,
     "targetType": null,
-    "parameters": {}
+    "targetPosition": null
   },
   {
     "action": "STOP",
     "message": null,
     "targetId": null,
     "targetType": null,
-    "targetPosition": null,
-    "parameters": {}
+    "targetPosition": null
   }
 ]

@@ -1,10 +1,11 @@
 package io.sailex.ai.npc.client.database.indexer
 
 import io.sailex.ai.npc.client.AiNPCClient.client
-import io.sailex.ai.npc.client.config.ResourceLoader
+import io.sailex.ai.npc.client.config.ResourceLoader.getAllResourcesContent
+import io.sailex.ai.npc.client.database.repositories.ActionsRepository
 import io.sailex.ai.npc.client.database.repositories.RequirementsRepository
-import io.sailex.ai.npc.client.database.repositories.TemplatesRepository
 import io.sailex.ai.npc.client.llm.ILLMClient
+import io.sailex.ai.npc.client.util.ActionParser.parseSingleAction
 import io.sailex.ai.npc.client.util.LogUtil
 
 import net.minecraft.recipe.Ingredient
@@ -19,24 +20,26 @@ import java.util.concurrent.Executors
 
 class DefaultResourcesIndexer(
     val requirementsRepository: RequirementsRepository,
-    val templatesRepository: TemplatesRepository,
+    val actionsRepository: ActionsRepository,
     val llmClient: ILLMClient
 ) {
     val logger: Logger = LogManager.getLogger(this.javaClass)
 
     /**
-     * Indexes the templates set in resources/templates dir
+     * Indexes the actions set in resources/actions-examples dir
      */
-    fun indexTemplates() {
-        logger.info("Indexing all Templates")
-        ResourceLoader.getAllResourcesContent("template").forEach {
-            templatesRepository.insert(
+    fun indexExampleActions() {
+        logger.info("Indexing all example Actions")
+        getAllResourcesContent("actions-examples").forEach {
+            val action = parseSingleAction(it.value)
+            actionsRepository.insert(
                 it.key,
-                it.value,
-                llmClient.generateEmbedding(listOf(it.value))
+                action.message,
+                llmClient.generateEmbedding(listOf(action.message)),
+                it.value
             )
         }
-        logger.info("Finished indexing all Templates")
+        logger.info("Finished indexing example Actions")
     }
 
     /**
@@ -61,7 +64,7 @@ class DefaultResourcesIndexer(
                     recipeValue.type.toString(),
                     recipeName,
                     llmClient.generateEmbedding(listOf(recipeName)),
-                    recipeValue.fits(2, 2),
+                    recipeValue.createIcon().name.string,
                     getItemNeeded(recipeValue)
                 )
             }

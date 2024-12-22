@@ -4,18 +4,17 @@
     "message": "I will move to the location you said.",
     "targetId": null,
     "targetType": null,
-    "parameters": {}
+    "targetPosition": null
   },
   {
     "action": "MOVE",
-    "message": null,
+    "message": "I will move to the location 435 80 -234.",
     "targetId": null,
     "targetType": null,
     "targetPosition": {
       "x": 435,
       "y": 80,
       "z": -234
-    },
-    "parameters": {}
+    }
   }
 ]

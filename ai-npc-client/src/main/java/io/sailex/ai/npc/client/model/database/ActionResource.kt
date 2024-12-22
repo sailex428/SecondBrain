@@ -6,6 +6,5 @@ data class ActionResource(
     val description: String,
     override val embedding: DoubleArray,
     val example: String,
-    val requirements: List<Requirement>,
     val timeStamp: String,
 ) : Resource

@@ -4,14 +4,13 @@
     "message": "Okay, let me craft that. Wait, I need some iron ingots to craft this iron boots",
     "targetId": null,
     "targetType": null,
-    "parameters": {}
+    "targetPosition": null
   },
   {
     "action": "CRAFT",
-    "message": null,
+    "message": "I will craft iron boots.",
     "targetId": null,
     "targetType": "item.minecraft.iron_boots",
-    "targetPosition": null,
-    "parameters": {}
+    "targetPosition": null
   }
 ]

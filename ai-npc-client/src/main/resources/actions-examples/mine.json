@@ -4,18 +4,17 @@
     "message": "No Problem. I will mine the dark oak log.",
     "targetId": null,
     "targetType": null,
-    "parameters": {}
+    "targetPosition": null
   },
   {
     "action": "mine",
-    "message": null,
+    "message": "I will mine the dark oak log.",
     "targetId": null,
     "targetType": null,
     "targetPosition": {
       "x": 123,
       "y": 90,
       "z": 456
-    },
-    "parameters": {}
+    }
   }
 ]
