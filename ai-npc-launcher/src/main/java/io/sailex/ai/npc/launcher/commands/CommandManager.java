@@ -19,7 +19,7 @@ public class CommandManager {
 	public void registerAll() {
 		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
 			new SetConfigCommand().register(dispatcher);
-			new NPCLoginCommand(clientLauncher.getLauncher()).register(dispatcher);
+			new NPCLoginCommand(clientLauncher).register(dispatcher);
 			dispatcher.register(literal("npc")
 					.requires(source -> source.hasPermissionLevel(2))
 					.then(new NPCCreateCommand(clientLauncher).getCommand())

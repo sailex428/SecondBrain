@@ -163,14 +163,15 @@ public class NPCController {
 			LOGGER.warn("Could not craft item {} cause client world is null", recipeId);
 			return;
 		}
-		//? if <=1.21.1 {
+		// ? if <=1.21.1 {
 
-		//? if <=1.20.4 {
+		// ? if <=1.20.4 {
 		Identifier identifier = new Identifier(recipeId);
-		//?} else {
+		// ?} else {
 		/*Identifier identifier = Identifier.of(recipeId);
-		 
-		*///?}
+
+		*/
+		// ?}
 
 		RecipeEntry<?> recipe = client.world.getRecipeManager().get(identifier).orElse(null);
 		ClientPlayerInteractionManager interactionManager = client.interactionManager;
@@ -179,7 +180,7 @@ public class NPCController {
 		} else {
 			LOGGER.warn("Could not find recipe with id: {}", recipeId);
 		}
-		//?}
+		// ?}
 	}
 
 	private void lookAtPlayer() {

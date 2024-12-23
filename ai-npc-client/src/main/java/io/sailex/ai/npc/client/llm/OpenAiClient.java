@@ -30,7 +30,8 @@ public class OpenAiClient extends ALLMClient implements ILLMClient {
 	public OpenAiClient(String openAiModel, String apiKey, String baseUrl) {
 		super();
 		this.openAiModel = openAiModel;
-		this.openAiService = SimpleOpenAI.builder().apiKey(apiKey).baseUrl(baseUrl).build();
+		this.openAiService =
+				SimpleOpenAI.builder().apiKey(apiKey).baseUrl(baseUrl).build();
 	}
 
 	/**

@@ -5,8 +5,8 @@ import static net.minecraft.server.command.CommandManager.argument;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
+import io.sailex.ai.npc.launcher.launcher.ClientLauncher;
 import io.sailex.ai.npc.launcher.util.LogUtil;
-import me.earth.headlessmc.launcher.Launcher;
 import me.earth.headlessmc.launcher.auth.AuthException;
 import me.earth.headlessmc.launcher.auth.ValidatedAccount;
 import net.lenni0451.commons.httpclient.HttpClient;
@@ -24,10 +24,10 @@ import net.raphimc.minecraftauth.step.msa.StepCredentialsMsaCode;
  */
 public class NPCLoginCommand {
 
-	private final Launcher launcher;
+	private final ClientLauncher clientLauncher;
 
-	public NPCLoginCommand(Launcher launcher) {
-		this.launcher = launcher;
+	public NPCLoginCommand(ClientLauncher clientLauncher) {
+		this.clientLauncher = clientLauncher;
 	}
 
 	public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
@@ -64,14 +64,17 @@ public class NPCLoginCommand {
 	private void saveAccount(StepFullJavaSession.FullJavaSession fullJavaSession, ServerPlayerEntity source) {
 		ValidatedAccount validatedAccount;
 		try {
-			validatedAccount =
-					launcher.getAccountManager().getAccountValidator().validate(fullJavaSession);
+			validatedAccount = clientLauncher
+					.getLauncher()
+					.getAccountManager()
+					.getAccountValidator()
+					.validate(fullJavaSession);
 		} catch (AuthException e) {
 			source.sendMessage(LogUtil.formatError("Failed to validate account!"));
 			return;
 		}
 		source.sendMessage(LogUtil.formatInfo("Logged into account " + validatedAccount.getName()
 				+ " successfully! Now you can spawn a NPC with this account."));
-		launcher.getAccountManager().addAccount(validatedAccount);
+		clientLauncher.getLauncher().getAccountManager().addAccount(validatedAccount);
 	}
 }

@@ -51,7 +51,7 @@ public class ClientLauncher {
 	 * @param npcName   the name of the NPC
 	 * @param llmType   the type of the LLM
 	 * @param llmModel  the model of the LLM
-	 * @param isOnline whether to login offline
+	 * @param isOnline whether to login online or offline
 	 */
 	public void launchAsync(String npcName, String llmType, String llmModel, boolean isOnline) {
 		LaunchAccount account = getAccount(npcName, isOnline);
@@ -232,7 +232,8 @@ public class ClientLauncher {
 			jvmArgs.addAll(List.of(
 					buildJvmArg(ConfigConstants.NPC_LLM_OPENAI_MODEL, llmModel),
 					buildJvmArg(ConfigConstants.NPC_LLM_OPENAI_API_KEY, apiKey),
-					buildJvmArg(ConfigConstants.NPC_LLM_OPENAI_BASE_URL,
+					buildJvmArg(
+							ConfigConstants.NPC_LLM_OPENAI_BASE_URL,
 							ModConfig.getProperty(ConfigConstants.NPC_LLM_OPENAI_BASE_URL))));
 		}
 		return jvmArgs;
