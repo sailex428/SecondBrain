@@ -7,6 +7,8 @@ import io.sailex.ai.npc.client.database.repositories.BlockRepository
 import io.sailex.ai.npc.client.database.repositories.RecipesRepository
 import io.sailex.ai.npc.client.llm.ILLMClient
 import io.sailex.ai.npc.client.util.ActionParser.parseSingleAction
+import io.sailex.ai.npc.client.util.ClientWorldUtil.getMiningLevel
+import io.sailex.ai.npc.client.util.ClientWorldUtil.getToolNeeded
 import io.sailex.ai.npc.client.util.LogUtil
 
 import net.minecraft.recipe.Ingredient
@@ -29,10 +31,18 @@ class DefaultResourcesIndexer(
     val logger: Logger = LogManager.getLogger(this.javaClass)
     val executorService: ExecutorService = Executors.newFixedThreadPool(6)
 
+    fun indexAll() {
+        indexExampleActions()
+        indexBlocks()
+        //? if <1.21.2
+        indexRecipes()
+        executorService.shutdown()
+    }
+
     /**
      * Indexes the actions set in resources/actions-examples dir
      */
-    fun indexExampleActions() {
+    private fun indexExampleActions() {
         logger.info("Indexing all example Actions")
         getAllResourcesContent("actions-examples").forEach {
             executorService.submit {
@@ -45,18 +55,20 @@ class DefaultResourcesIndexer(
                 )
             }
         }
-        logger.info("Finished indexing example Actions")
     }
 
-    fun indexBlocks() {
+    private fun indexBlocks() {
         logger.info("Indexing all Blocks")
         Registries.BLOCK.forEach { block -> {
             executorService.submit {
                 val name = block.translationKey.toString()
+                val blockState = block.stateManager.defaultState
                 blockRepository.insert(
                     Registries.BLOCK.getId(block).namespace,
                     name,
-                    llmClient.generateEmbedding(listOf(name))
+                    llmClient.generateEmbedding(listOf(name)),
+                    getMiningLevel(blockState),
+                    getToolNeeded(blockState)
                 )
             }
         }}
@@ -66,7 +78,7 @@ class DefaultResourcesIndexer(
      * Indexes the requirements/recipes of the game in db
      */
     //? if <1.21.2 {
-    fun indexRecipes() {
+    private fun indexRecipes() {
         val world = client.world
         if (world == null) {
             LogUtil.error("Could not get 'recipes', cause the client world is null")
@@ -88,7 +100,6 @@ class DefaultResourcesIndexer(
                 )
             }
         }
-        executorService.shutdown()
     }
 
     private fun getItemNeeded(recipe: Recipe<*>): String {

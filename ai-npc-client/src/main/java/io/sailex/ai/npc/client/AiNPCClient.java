@@ -74,9 +74,7 @@ public class AiNPCClient implements ClientModInitializer {
 		ILLMClient llmClient = initLLMClient();
 		RepositoryFactory repositoryFactory = new RepositoryFactory(llmClient);
 		repositoryFactory.initRepositories();
-		//? if <1.21.2 {
 		indexDefaultResources(llmClient, repositoryFactory);
-		//?}
 
 		IBaritone baritone = BaritoneAPI.getProvider().getPrimaryBaritone();
 		ContextGenerator contextGenerator = new ContextGenerator(npcEntity, baritone);
@@ -105,17 +103,13 @@ public class AiNPCClient implements ClientModInitializer {
 		return llmService;
 	}
 
-	//? if <1.21.2 {
 	private void indexDefaultResources(ILLMClient llmClient, RepositoryFactory repositoryFactory) {
 		DefaultResourcesIndexer defaultResourcesIndexer = new DefaultResourcesIndexer(
 				repositoryFactory.getRecipesRepository(),
 				repositoryFactory.getActionsRepository(),
 				repositoryFactory.getBlockRepository(),
 				llmClient);
-		defaultResourcesIndexer.indexRecipes();
-		defaultResourcesIndexer.indexExampleActions();
-		defaultResourcesIndexer.indexBlocks();
+		defaultResourcesIndexer.indexAll();
 	}
-	//?}
 
 }

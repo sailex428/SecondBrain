@@ -15,6 +15,8 @@ public class Instructions {
 				Your primary function is to interact and CHAT with players and do the tasks the players ask you to do.
 				Please act like a normal Minecraft Player.
 				Do not write any data that you receive via the context directly into the chat
+				If you cannot e.g mine a block cause you need e.g. an iron pickaxe and ask firstly the player,
+				if you should mine a iron pickaxe first.
 				""",
 				npcName);
 	}

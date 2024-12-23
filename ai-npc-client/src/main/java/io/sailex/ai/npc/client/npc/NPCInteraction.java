@@ -60,20 +60,23 @@ public class NPCInteraction {
 	 *
 	 * @return to string formatted resources
 	 */
-	public static String formatResources(
-			List<ActionResource> actionResources, List<Recipe> recipes, List<Conversation> conversations) {
+	public static String formatResources(List<ActionResource> actionResources, List<Recipe> recipes,
+										 List<Conversation> conversations, List<WorldContext.BlockData> blocks) {
 		return String.format(
 				"""
 				Actions: (example) actions that you have done before:
 				%s,
 				Recipes: recipes for items that the player request to craft:
 				%s,
+				Blocks: relevant blocks data that matches the player message:
+				%s,
 				Conversations: previous dialogues between you and the players:
 				%s
 				""",
 				formatActions(actionResources),
 				formatRecipes(recipes),
-				formatConversation(conversations)
+				formatConversation(conversations),
+				formatBlocks(blocks)
 		);
 	}
 
@@ -163,7 +166,8 @@ public class NPCInteraction {
 
 	private static String formatBlocks(List<WorldContext.BlockData> blocks) {
 		return formatList(blocks, block ->
-				String.format("- Block %s is at %s", block.type(), formatPosition(block.position())));
+				String.format("- Block %s is at %s can be mined with tool %s %s",
+						block.type(), formatPosition(block.position()), block.mineLevel(), block.toolNeeded()));
 	}
 
 	private static String formatEntities(List<WorldContext.EntityData> entities) {

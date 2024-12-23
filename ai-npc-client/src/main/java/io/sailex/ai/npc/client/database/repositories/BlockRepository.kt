@@ -12,17 +12,21 @@ class BlockRepository(val sqliteClient: SqliteClient) : ARepository() {
             CREATE TABLE IF NOT EXISTS blocks (
                     id TEXT PRIMARY KEY,
                     name TEXT NOT NULL,
-                    name_embedding TEXT,
+                    name_embedding BLOB,
+                    miningLevel TEXT,
+                    toolNeeded TEXT
             );
         """
         sqliteClient.create(sql)
     }
 
-    fun insert(id: String, name: String, nameEmbedding: DoubleArray) {
-        val statement = sqliteClient.buildPreparedStatement("INSERT INTO blocks (id, name, name_embedding) VALUES (?, ?, ?)")
+    fun insert(id: String, name: String, nameEmbedding: DoubleArray, miningLevel: String, toolNeeded: String) {
+        val statement = sqliteClient.buildPreparedStatement("INSERT INTO blocks (id, name, name_embedding, miningLevel, toolNeeded) VALUES (?, ?, ?, ?)")
         statement.setString(1, id)
         statement.setString(2, name)
         statement.setBytes(3, VectorUtil.convertToBytes(nameEmbedding))
+        statement.setString(4, miningLevel)
+        statement.setString(5, toolNeeded)
         sqliteClient.insert(statement)
     }
 
@@ -36,6 +40,8 @@ class BlockRepository(val sqliteClient: SqliteClient) : ARepository() {
                 result.getString("id"),
                 result.getString("name"),
                 VectorUtil.convertToDoubles(result.getBytes("name_embedding")),
+                result.getString("miningLevel"),
+                result.getString("toolNeeded")
             )
             blocks.add(block)
         }

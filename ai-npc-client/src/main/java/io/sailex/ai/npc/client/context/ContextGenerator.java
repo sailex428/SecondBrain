@@ -7,7 +7,8 @@ import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import net.minecraft.block.Block;
+import io.sailex.ai.npc.client.model.database.Block;
+import net.minecraft.block.BlockState;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
@@ -20,6 +21,9 @@ import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import static io.sailex.ai.npc.client.util.ClientWorldUtil.getMiningLevel;
+import static io.sailex.ai.npc.client.util.ClientWorldUtil.getToolNeeded;
 
 /**
  * Generates the context for the LLM based on the world state.
@@ -55,6 +59,22 @@ public class ContextGenerator {
 			LOGGER.error("Exception during context generation", e);
 			return null;
 		}
+	}
+
+	/**
+	 * Searches for block by id in the world and create BlockData
+	 *
+	 * @param blocks 	 relevant blocks from db
+	 * @return blockData list of relevant blockData (with position)
+	 */
+	public List<WorldContext.BlockData> getRelevantBlockData(List<Block> blocks) {
+		List<WorldContext.BlockData> blockDataList = new ArrayList<>();
+		for (Block block : blocks) {
+			List<BlockPos> blocksOccurrence = baritone.getWorldProvider().getCurrentWorld().getCachedWorld()
+					.getLocationsOf(block.getId(), 2, npcEntity.getBlockX(), npcEntity.getBlockY(), 4);
+			blocksOccurrence.forEach(pos -> blockDataList.add(buildBlockData(block.getId(), world.getBlockState(pos), pos)));
+		}
+		return blockDataList;
 	}
 
 	private WorldContext.NPCState getNpcState() {
@@ -94,12 +114,10 @@ public class ContextGenerator {
 			for (int z = 0; z < 16; z++) {
 				for (int y = baseY; y < maxY; y++) {
 					pos.set(chunk.getStartX() + x, y, chunk.getStartZ() + z);
-					Block block = world.getBlockState(pos).getBlock();
-					String blockType = block.getName().getString().toLowerCase();
-
 					if (isAccessible(pos)) {
-						WorldContext.BlockData currentBlockData = new WorldContext.BlockData(
-								blockType, new WorldContext.Position(pos.getX(), pos.getY(), pos.getZ()), true, "test", "test");
+						BlockState blockState = world.getBlockState(pos);
+						String blockType = blockState.getBlock().getName().getString().toLowerCase();
+						WorldContext.BlockData currentBlockData = buildBlockData(blockType, blockState, pos);
 
 						if (!nearestBlocks.containsKey(blockType) ||
 								isCloser(pos, nearestBlocks.get(blockType).position())) {
@@ -188,7 +206,12 @@ public class ContextGenerator {
 	private String getBlockName(ItemStack stack) {
 		String translationKey = stack.getItem().getTranslationKey();
 		return translationKey.substring(translationKey.lastIndexOf(".") + 1);
+	}
 
+	private WorldContext.BlockData buildBlockData(String blockType, BlockState blockState, BlockPos pos) {
+		return new WorldContext.BlockData(
+				blockType, new WorldContext.Position(pos.getX(), pos.getY(), pos.getZ()),
+				getMiningLevel(blockState), getToolNeeded(blockState));
 	}
 
 	public void stopService() {
