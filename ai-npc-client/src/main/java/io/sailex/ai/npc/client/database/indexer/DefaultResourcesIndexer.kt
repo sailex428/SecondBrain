@@ -3,6 +3,7 @@ package io.sailex.ai.npc.client.database.indexer
 import io.sailex.ai.npc.client.AiNPCClient.client
 import io.sailex.ai.npc.client.config.ResourceLoader.getAllResourcesContent
 import io.sailex.ai.npc.client.database.repositories.ActionsRepository
+import io.sailex.ai.npc.client.database.repositories.BlockRepository
 import io.sailex.ai.npc.client.database.repositories.RecipesRepository
 import io.sailex.ai.npc.client.llm.ILLMClient
 import io.sailex.ai.npc.client.util.ActionParser.parseSingleAction
@@ -11,6 +12,7 @@ import io.sailex.ai.npc.client.util.LogUtil
 import net.minecraft.recipe.Ingredient
 import net.minecraft.recipe.Recipe
 import net.minecraft.recipe.RecipeEntry
+import net.minecraft.registry.Registries
 
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
@@ -21,9 +23,11 @@ import java.util.concurrent.Executors
 class DefaultResourcesIndexer(
     val recipesRepository: RecipesRepository,
     val actionsRepository: ActionsRepository,
+    val blockRepository: BlockRepository,
     val llmClient: ILLMClient
 ) {
     val logger: Logger = LogManager.getLogger(this.javaClass)
+    val executorService: ExecutorService = Executors.newFixedThreadPool(6)
 
     /**
      * Indexes the actions set in resources/actions-examples dir
@@ -31,15 +35,31 @@ class DefaultResourcesIndexer(
     fun indexExampleActions() {
         logger.info("Indexing all example Actions")
         getAllResourcesContent("actions-examples").forEach {
-            val action = parseSingleAction(it.value)
-            actionsRepository.insert(
-                it.key,
-                action.message,
-                llmClient.generateEmbedding(listOf(action.message)),
-                it.value
-            )
+            executorService.submit {
+                val action = parseSingleAction(it.value)
+                actionsRepository.insert(
+                    it.key,
+                    action.message,
+                    llmClient.generateEmbedding(listOf(action.message)),
+                    it.value
+                )
+            }
         }
         logger.info("Finished indexing example Actions")
+    }
+
+    fun indexBlocks() {
+        logger.info("Indexing all Blocks")
+        Registries.BLOCK.forEach { block -> {
+            executorService.submit {
+                val name = block.translationKey.toString()
+                blockRepository.insert(
+                    Registries.BLOCK.getId(block).namespace,
+                    name,
+                    llmClient.generateEmbedding(listOf(name))
+                )
+            }
+        }}
     }
 
     /**
@@ -53,7 +73,6 @@ class DefaultResourcesIndexer(
             return
         }
         val recipes: Collection<RecipeEntry<*>> = world.recipeManager.values()
-        val executorService: ExecutorService = Executors.newFixedThreadPool(6)
 
         logger.info("Indexing all Recipes")
         recipes.forEach {

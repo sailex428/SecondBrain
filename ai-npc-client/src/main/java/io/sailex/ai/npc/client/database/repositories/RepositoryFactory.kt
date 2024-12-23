@@ -13,12 +13,14 @@ class RepositoryFactory(val llmClient: ILLMClient) {
     val recipesRepository = RecipesRepository(sqliteClient)
     val actionsRepository = ActionsRepository(sqliteClient)
     val conversationRepository = ConversationRepository(sqliteClient)
+    val blockRepository = BlockRepository(sqliteClient)
 
     fun initRepositories() {
         sqliteClient.initDatabase("actions")
         recipesRepository.init()
         actionsRepository.init()
         conversationRepository.init()
+        blockRepository.init()
     }
 
     fun getRelevantResources(prompt: String): Resources {

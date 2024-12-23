@@ -6,7 +6,7 @@ import io.sailex.ai.npc.client.model.database.Resource
 import io.sailex.ai.npc.client.util.VectorUtil
 
 class ActionsRepository(
-    val sqliteClient: SqliteClient,
+    val sqliteClient: SqliteClient
 ) : ARepository() {
 
     override fun createTable() {
