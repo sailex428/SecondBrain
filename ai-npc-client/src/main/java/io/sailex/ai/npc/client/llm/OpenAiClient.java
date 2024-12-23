@@ -27,10 +27,10 @@ public class OpenAiClient extends ALLMClient implements ILLMClient {
 	 * @param openAiModel the openai model (e.g. "gpt-3.5-turbo")
 	 * @param apiKey      the api key
 	 */
-	public OpenAiClient(String openAiModel, String apiKey) {
+	public OpenAiClient(String openAiModel, String apiKey, String baseUrl) {
 		super();
 		this.openAiModel = openAiModel;
-		this.openAiService = SimpleOpenAI.builder().apiKey(apiKey).build();
+		this.openAiService = SimpleOpenAI.builder().apiKey(apiKey).baseUrl(baseUrl).build();
 	}
 
 	/**

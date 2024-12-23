@@ -94,7 +94,8 @@ public class AiNPCClient implements ClientModInitializer {
 		} else if ("openai".equals(npcType)) {
 			String apiKey = Config.getProperty(ConfigConstants.NPC_LLM_OPENAI_API_KEY);
 			String openAiModel = Config.getProperty(ConfigConstants.NPC_LLM_OPENAI_MODEL);
-			llmService = new OpenAiClient(openAiModel, apiKey);
+			String baseUrl = Config.getProperty(ConfigConstants.NPC_LLM_OPENAI_BASE_URL);
+			llmService = new OpenAiClient(openAiModel, apiKey, baseUrl);
 		} else {
 			throw new IllegalArgumentException("Invalid LLM type: " + npcType);
 		}

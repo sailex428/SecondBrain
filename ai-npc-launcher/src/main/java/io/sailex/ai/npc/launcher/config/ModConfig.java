@@ -25,11 +25,11 @@ public class ModConfig {
 		File configDir = new File(FabricLoader.getInstance().getConfigDir().toFile(), MOD_ID);
 		configDir.mkdirs();
 		configFile = new File(configDir, CONFIG_NAME);
+		setDefaultProperties();
 
 		if (configFile.exists()) {
 			loadProperties();
 		} else {
-			setDefaultProperties();
 			saveProperties();
 		}
 	}
@@ -43,6 +43,7 @@ public class ModConfig {
 		properties.setProperty(ConfigConstants.NPC_LLM_TYPE, "openai");
 		properties.setProperty(ConfigConstants.NPC_IS_HEADLESS, "true");
 		properties.setProperty(ConfigConstants.NPC_SERVER_PORT, "25565");
+		properties.setProperty(ConfigConstants.NPC_LLM_OPENAI_BASE_URL, "https://api.openai.com");
 	}
 
 	public static boolean saveProperties() {

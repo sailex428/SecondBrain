@@ -231,7 +231,9 @@ public class ClientLauncher {
 			}
 			jvmArgs.addAll(List.of(
 					buildJvmArg(ConfigConstants.NPC_LLM_OPENAI_MODEL, llmModel),
-					buildJvmArg(ConfigConstants.NPC_LLM_OPENAI_API_KEY, apiKey)));
+					buildJvmArg(ConfigConstants.NPC_LLM_OPENAI_API_KEY, apiKey),
+					buildJvmArg(ConfigConstants.NPC_LLM_OPENAI_BASE_URL,
+							ModConfig.getProperty(ConfigConstants.NPC_LLM_OPENAI_BASE_URL))));
 		}
 		return jvmArgs;
 	}
