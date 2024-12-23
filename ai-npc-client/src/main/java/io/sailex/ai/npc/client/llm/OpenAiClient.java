@@ -8,9 +8,8 @@ import io.github.sashirestela.openai.domain.embedding.EmbeddingFloat;
 import io.github.sashirestela.openai.domain.embedding.EmbeddingRequest;
 import io.sailex.ai.npc.client.exception.EmptyResponseException;
 import io.sailex.ai.npc.client.model.interaction.Actions;
-import lombok.Setter;
-
 import java.util.List;
+import lombok.Setter;
 
 /**
  * OpenAI client for generating responses.
@@ -19,6 +18,7 @@ public class OpenAiClient extends ALLMClient implements ILLMClient {
 
 	@Setter
 	private SimpleOpenAI openAiService;
+
 	private final String openAiModel;
 
 	/**
@@ -32,7 +32,7 @@ public class OpenAiClient extends ALLMClient implements ILLMClient {
 		this.openAiModel = openAiModel;
 		this.openAiService = SimpleOpenAI.builder().apiKey(apiKey).build();
 	}
-	
+
 	/**
 	 * Generate response from OpenAI.
 	 *
@@ -53,11 +53,8 @@ public class OpenAiClient extends ALLMClient implements ILLMClient {
 							.build()))
 					.build();
 
-			String chatResponse = openAiService
-					.chatCompletions()
-					.create(chatRequest)
-					.join()
-					.firstContent();
+			String chatResponse =
+					openAiService.chatCompletions().create(chatRequest).join().firstContent();
 
 			LOGGER.info("Generated response from openai: {}", chatResponse);
 			if (!chatResponse.isBlank()) {
@@ -75,7 +72,10 @@ public class OpenAiClient extends ALLMClient implements ILLMClient {
 		try {
 			return convertEmbedding(openAiService
 					.embeddings()
-					.create(EmbeddingRequest.builder().model("text-embedding-3-small").input(prompt).build())
+					.create(EmbeddingRequest.builder()
+							.model("text-embedding-3-small")
+							.input(prompt)
+							.build())
 					.join()
 					.getData()
 					.stream()
@@ -83,7 +83,7 @@ public class OpenAiClient extends ALLMClient implements ILLMClient {
 					.toList());
 		} catch (Exception e) {
 			LOGGER.error("Could not generate embedding for prompt: {}", prompt.getFirst(), e);
-			return new double[]{};
+			return new double[] {};
 		}
 	}
 }

@@ -6,9 +6,8 @@ import io.sailex.ai.npc.client.model.database.Resource
 import io.sailex.ai.npc.client.util.VectorUtil
 
 class ActionsRepository(
-    val sqliteClient: SqliteClient
+    val sqliteClient: SqliteClient,
 ) : ARepository() {
-
     override fun createTable() {
         val sql = """
             CREATE TABLE IF NOT EXISTS actions (
@@ -23,8 +22,16 @@ class ActionsRepository(
         sqliteClient.create(sql)
     }
 
-    fun insert(name: String, description: String, descriptionEmbedding: DoubleArray, example: String) {
-        val statement = sqliteClient.buildPreparedStatement("INSERT INTO actions (name, description, description_embedding, example) VALUES (?, ?, ?, )")
+    fun insert(
+        name: String,
+        description: String,
+        descriptionEmbedding: DoubleArray,
+        example: String,
+    ) {
+        val statement =
+            sqliteClient.buildPreparedStatement(
+                "INSERT INTO actions (name, description, description_embedding, example) VALUES (?, ?, ?, )",
+            )
         statement.setString(1, name)
         statement.setString(2, description)
         statement.setBytes(3, VectorUtil.convertToBytes(descriptionEmbedding))
@@ -37,15 +44,16 @@ class ActionsRepository(
         val result = sqliteClient.select(sql)
         val actionResources = arrayListOf<ActionResource>()
 
-        while(result.next()) {
-            val actionResource = ActionResource(
-                result.getInt("id"),
-                result.getString("name"),
-                result.getString("description"),
-                VectorUtil.convertToDoubles(result.getBytes("description_embedding")),
-                result.getString("example"),
-                result.getString("created_at")
-            )
+        while (result.next()) {
+            val actionResource =
+                ActionResource(
+                    result.getInt("id"),
+                    result.getString("name"),
+                    result.getString("description"),
+                    VectorUtil.convertToDoubles(result.getBytes("description_embedding")),
+                    result.getString("example"),
+                    result.getString("created_at"),
+                )
             actionResources.add(actionResource)
         }
         return actionResources

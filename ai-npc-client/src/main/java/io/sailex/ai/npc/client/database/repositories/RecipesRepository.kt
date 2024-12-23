@@ -6,8 +6,9 @@ import io.sailex.ai.npc.client.model.database.Resource
 import io.sailex.ai.npc.client.util.VectorUtil
 import java.sql.ResultSet
 
-class RecipesRepository(val sqliteClient: SqliteClient) : ARepository() {
-
+class RecipesRepository(
+    val sqliteClient: SqliteClient,
+) : ARepository() {
     override fun createTable() {
         val sql = """
             CREATE TABLE IF NOT EXISTS recipes (
@@ -21,10 +22,18 @@ class RecipesRepository(val sqliteClient: SqliteClient) : ARepository() {
         sqliteClient.create(sql)
     }
 
-    fun insert(type: String, name: String, nameEmbedding: DoubleArray, tableNeeded: String, itemsNeeded: String) {
+    fun insert(
+        type: String,
+        name: String,
+        nameEmbedding: DoubleArray,
+        tableNeeded: String,
+        itemsNeeded: String,
+    ) {
         val statement =
-            sqliteClient.buildPreparedStatement("INSERT INTO recipes (type, name, name_embedding, table_needed, items_needed) VALUES (?, ?, ?, ?, ?)" +
-                    " ON CONFLICT(name) DO UPDATE SET blocks_needed = excluded.items_needed")
+            sqliteClient.buildPreparedStatement(
+                "INSERT INTO recipes (type, name, name_embedding, table_needed, items_needed) VALUES (?, ?, ?, ?, ?)" +
+                    " ON CONFLICT(name) DO UPDATE SET blocks_needed = excluded.items_needed",
+            )
         statement.setString(1, type)
         statement.setString(2, name)
         statement.setBytes(3, VectorUtil.convertToBytes(nameEmbedding))
@@ -53,23 +62,23 @@ class RecipesRepository(val sqliteClient: SqliteClient) : ARepository() {
 
     private fun processResult(result: ResultSet): List<Resource> {
         val recipes = arrayListOf<Recipe>()
-        while(result.next()) {
-            val requirement = Recipe(
-                result.getString("type"),
-                result.getString("name"),
-                VectorUtil.convertToDoubles(result.getBytes("name_embedding")),
-                result.getString("table_needed"),
-                parseItemsNeededToMap(result.getString("items_needed"))
-            )
+        while (result.next()) {
+            val requirement =
+                Recipe(
+                    result.getString("type"),
+                    result.getString("name"),
+                    VectorUtil.convertToDoubles(result.getBytes("name_embedding")),
+                    result.getString("table_needed"),
+                    parseItemsNeededToMap(result.getString("items_needed")),
+                )
             recipes.add(requirement)
         }
         return recipes
     }
 
-    private fun parseItemsNeededToMap(itemsNeeded: String): Map<String, Int> {
-        return itemsNeeded.split(",")
+    private fun parseItemsNeededToMap(itemsNeeded: String): Map<String, Int> =
+        itemsNeeded
+            .split(",")
             .map { it.split("=") }
             .associate { it[0] to it[1].toInt() }
-    }
-
 }

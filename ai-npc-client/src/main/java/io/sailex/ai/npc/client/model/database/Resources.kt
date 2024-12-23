@@ -4,5 +4,5 @@ data class Resources(
     val actionResources: List<ActionResource>,
     val requirements: List<Recipe>,
     val conversations: List<Conversation>,
-    val blocks: List<Block>
+    val blocks: List<Block>,
 )

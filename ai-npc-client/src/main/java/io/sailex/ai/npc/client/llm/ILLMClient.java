@@ -17,11 +17,11 @@ public interface ILLMClient {
 	String generateResponse(String userPrompt, String systemPrompt);
 
 	/**
-     * Generate an embedding for a given prompt
-     *
-     * @param prompt the text prompt
-     * @return the embedding as float array
-     */
+	 * Generate an embedding for a given prompt
+	 *
+	 * @param prompt the text prompt
+	 * @return the embedding as float array
+	 */
 	double[] generateEmbedding(List<String> prompt);
 
 	/**

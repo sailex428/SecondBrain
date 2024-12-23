@@ -8,15 +8,20 @@ import net.minecraft.util.ActionResult
 /**
  * Listens to block interactions of this npc
  */
-class BlockInteractionListener(npc: NPC) : AEventListener(npc) {
-
+class BlockInteractionListener(
+    npc: NPC,
+) : AEventListener(npc) {
     override fun register() {
         PlayerBlockBreakEvents.AFTER.register { _, player, pos, state, _ ->
             if (player.uuid != npc.id) {
                 return@register
             }
-            val blockBreakMessage = String.format("You broke the block %S at %S",
-                state.block.name.string, pos.toShortString())
+            val blockBreakMessage =
+                String.format(
+                    "You broke the block %S at %S",
+                    state.block.name.string,
+                    pos.toShortString(),
+                )
 
             logger.info(blockBreakMessage)
             handleMessage(blockBreakMessage)
@@ -24,9 +29,11 @@ class BlockInteractionListener(npc: NPC) : AEventListener(npc) {
 
         UseBlockCallback.EVENT.register { player, _, _, hitResult ->
             if (player.uuid == npc.id) {
-                val blockInteractionMessage = String.format(
-                    "You used block at %S", hitResult.blockPos
-                )
+                val blockInteractionMessage =
+                    String.format(
+                        "You used block at %S",
+                        hitResult.blockPos,
+                    )
 
                 logger.info(blockInteractionMessage)
                 handleMessage(blockInteractionMessage)
@@ -34,5 +41,4 @@ class BlockInteractionListener(npc: NPC) : AEventListener(npc) {
             return@register ActionResult.PASS
         }
     }
-
 }

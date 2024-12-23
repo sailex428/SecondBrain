@@ -5,5 +5,5 @@ data class Conversation(
     val npcName: String,
     val message: String,
     override val embedding: DoubleArray,
-    val timeStamp: String
+    val timeStamp: String,
 ) : Resource

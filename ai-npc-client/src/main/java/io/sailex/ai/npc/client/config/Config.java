@@ -1,8 +1,7 @@
 package io.sailex.ai.npc.client.config;
 
-import java.util.Properties;
-
 import io.sailex.ai.npc.client.constant.ConfigConstants;
+import java.util.Properties;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

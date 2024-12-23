@@ -8,8 +8,9 @@ import io.sailex.ai.npc.client.model.database.Conversation
 import io.sailex.ai.npc.client.model.database.Recipe
 import io.sailex.ai.npc.client.model.database.Resources
 
-class RepositoryFactory(val llmClient: ILLMClient) {
-
+class RepositoryFactory(
+    val llmClient: ILLMClient,
+) {
     val sqliteClient = SqliteClient()
     val recipesRepository = RecipesRepository(sqliteClient)
     val actionsRepository = ActionsRepository(sqliteClient)
@@ -29,8 +30,8 @@ class RepositoryFactory(val llmClient: ILLMClient) {
         return Resources(
             actionsRepository.getMostRelevantResources(promptEmbedding).filterIsInstance<ActionResource>(),
             recipesRepository.getMostRelevantResources(promptEmbedding).filterIsInstance<Recipe>(),
-            conversationRepository.getMostRelevantResources(promptEmbedding).filterIsInstance<Conversation>(), //TODO: select records with name = npcName
-            blockRepository.getMostRelevantResources(promptEmbedding).filterIsInstance<Block>())
+            conversationRepository.getMostRelevantResources(promptEmbedding).filterIsInstance<Conversation>(),
+            blockRepository.getMostRelevantResources(promptEmbedding).filterIsInstance<Block>(),
+        )
     }
-
 }

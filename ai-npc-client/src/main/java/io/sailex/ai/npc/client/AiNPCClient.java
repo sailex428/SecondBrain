@@ -4,24 +4,21 @@ import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
 import io.sailex.ai.npc.client.config.Config;
 import io.sailex.ai.npc.client.constant.ConfigConstants;
+import io.sailex.ai.npc.client.context.ContextGenerator;
+import io.sailex.ai.npc.client.database.indexer.DefaultResourcesIndexer;
+import io.sailex.ai.npc.client.database.repositories.RepositoryFactory;
 import io.sailex.ai.npc.client.listeners.EventListenerRegisterer;
 import io.sailex.ai.npc.client.llm.ILLMClient;
 import io.sailex.ai.npc.client.llm.OllamaClient;
 import io.sailex.ai.npc.client.llm.OpenAiClient;
 import io.sailex.ai.npc.client.model.NPC;
-import io.sailex.ai.npc.client.context.ContextGenerator;
 import io.sailex.ai.npc.client.npc.NPCController;
 import io.sailex.ai.npc.client.util.ConnectionUtil;
-import io.sailex.ai.npc.client.database.indexer.DefaultResourcesIndexer;
-import io.sailex.ai.npc.client.database.repositories.RepositoryFactory;
-
 import lombok.Getter;
-
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.*;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -78,7 +75,8 @@ public class AiNPCClient implements ClientModInitializer {
 
 		IBaritone baritone = BaritoneAPI.getProvider().getPrimaryBaritone();
 		ContextGenerator contextGenerator = new ContextGenerator(npcEntity, baritone);
-		NPCController controller = new NPCController(npcEntity, llmClient, contextGenerator, repositoryFactory, baritone);
+		NPCController controller =
+				new NPCController(npcEntity, llmClient, contextGenerator, repositoryFactory, baritone);
 		NPC npc = new NPC(npcEntity.getUuid(), npcEntity, controller, contextGenerator, llmClient);
 
 		EventListenerRegisterer eventListenerRegisterer = new EventListenerRegisterer(npc);
@@ -111,5 +109,4 @@ public class AiNPCClient implements ClientModInitializer {
 				llmClient);
 		defaultResourcesIndexer.indexAll();
 	}
-
 }

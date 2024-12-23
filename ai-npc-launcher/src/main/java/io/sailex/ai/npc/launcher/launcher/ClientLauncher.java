@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-
 import lombok.Getter;
 import me.earth.headlessmc.api.command.CommandException;
 import me.earth.headlessmc.api.exit.ExitManager;
@@ -37,6 +36,7 @@ public class ClientLauncher {
 
 	@Getter
 	private Launcher launcher;
+
 	private final ClientProcessManager npcClientProcesses;
 	private FileManager files;
 	private Version version;
@@ -59,10 +59,11 @@ public class ClientLauncher {
 			LogUtil.error("Account could not be found. Please login first using the /login command.");
 			return;
 		}
-		CompletableFuture.runAsync(() -> launch(account, npcName, llmType, llmModel)).exceptionally(e -> {
-			LogUtil.error(e.getMessage());
-			return null;
-		});
+		CompletableFuture.runAsync(() -> launch(account, npcName, llmType, llmModel))
+				.exceptionally(e -> {
+					LogUtil.error(e.getMessage());
+					return null;
+				});
 	}
 
 	private void launch(LaunchAccount account, String npcName, String llmType, String llmModel) {
@@ -146,7 +147,8 @@ public class ClientLauncher {
 		if (version != null) {
 			return version;
 		}
-		LogUtil.info("No Fabric client found for version '" + versionName + "'. Initiating download of the Fabric client...");
+		LogUtil.info("No Fabric client found for version '" + versionName
+				+ "'. Initiating download of the Fabric client...");
 		Version neededVersion = VersionImpl.builder().name(versionName).build();
 
 		DownloadCommand downloadCommand = new DownloadCommand(launcher);
@@ -203,8 +205,10 @@ public class ClientLauncher {
 		LogUtil.info("Looking for logged in account with name: " + npcName);
 		return launcher.getAccountManager().getAccounts().stream()
 				.map(ValidatedAccount::toLaunchAccount)
-				.filter(account -> account.getName().equals(npcName)).findFirst().orElse(null);
-    }
+				.filter(account -> account.getName().equals(npcName))
+				.findFirst()
+				.orElse(null);
+	}
 
 	private List<String> getJvmArgs(String llmType, String llmModel) {
 		List<String> jvmArgs = new ArrayList<>();

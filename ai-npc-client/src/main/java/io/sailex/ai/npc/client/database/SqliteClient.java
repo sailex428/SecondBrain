@@ -1,10 +1,8 @@
 package io.sailex.ai.npc.client.database;
 
 import io.sailex.ai.npc.client.AiNPCClient;
-
 import java.io.File;
 import java.sql.*;
-
 import net.fabricmc.loader.api.FabricLoader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -48,7 +46,7 @@ public class SqliteClient {
 	 */
 	public ResultSet select(String sql) {
 		try (Statement statement = connection.createStatement()) {
-            return statement.executeQuery(sql);
+			return statement.executeQuery(sql);
 		} catch (SQLException e) {
 			LOGGER.error("Error selecting rule: {}", e.getMessage());
 			return null;

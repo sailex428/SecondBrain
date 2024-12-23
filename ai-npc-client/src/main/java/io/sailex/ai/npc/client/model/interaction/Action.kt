@@ -6,9 +6,9 @@ import io.sailex.ai.npc.client.model.context.WorldContext
  * Represents an action that can be taken by the NPC
  */
 data class Action(
-	val action: ActionType,
-	val message: String,
-	val targetType: String,
-	val targetId: String,
-	val targetPosition: WorldContext.Position
+    val action: ActionType,
+    val message: String,
+    val targetType: String,
+    val targetId: String,
+    val targetPosition: WorldContext.Position,
 )

@@ -1,13 +1,14 @@
 package io.sailex.ai.npc.client.context;
 
+import static io.sailex.ai.npc.client.util.ClientWorldUtil.getMiningLevel;
+import static io.sailex.ai.npc.client.util.ClientWorldUtil.getToolNeeded;
+
 import baritone.api.IBaritone;
 import io.sailex.ai.npc.client.model.context.WorldContext;
-
+import io.sailex.ai.npc.client.model.database.Block;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
-import io.sailex.ai.npc.client.model.database.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -21,9 +22,6 @@ import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import static io.sailex.ai.npc.client.util.ClientWorldUtil.getMiningLevel;
-import static io.sailex.ai.npc.client.util.ClientWorldUtil.getToolNeeded;
 
 /**
  * Generates the context for the LLM based on the world state.
@@ -70,9 +68,12 @@ public class ContextGenerator {
 	public List<WorldContext.BlockData> getRelevantBlockData(List<Block> blocks) {
 		List<WorldContext.BlockData> blockDataList = new ArrayList<>();
 		for (Block block : blocks) {
-			List<BlockPos> blocksOccurrence = baritone.getWorldProvider().getCurrentWorld().getCachedWorld()
+			List<BlockPos> blocksOccurrence = baritone.getWorldProvider()
+					.getCurrentWorld()
+					.getCachedWorld()
 					.getLocationsOf(block.getId(), 2, npcEntity.getBlockX(), npcEntity.getBlockY(), 4);
-			blocksOccurrence.forEach(pos -> blockDataList.add(buildBlockData(block.getId(), world.getBlockState(pos), pos)));
+			blocksOccurrence.forEach(
+					pos -> blockDataList.add(buildBlockData(block.getId(), world.getBlockState(pos), pos)));
 		}
 		return blockDataList;
 	}
@@ -84,14 +85,15 @@ public class ContextGenerator {
 				npcEntity.getHungerManager().getFoodLevel(),
 				npcEntity.isOnGround(),
 				npcEntity.isTouchingWater(),
-				getBiome()
-		);
+				getBiome());
 	}
 
 	private String getBiome() {
-		Optional<RegistryKey<Biome>> biomeKey = npcEntity.getWorld().getBiome(npcEntity.getBlockPos()).getKey();
-        return biomeKey.map(biomeRegistryKey -> biomeRegistryKey.getValue().getPath()).orElse("");
-    }
+		Optional<RegistryKey<Biome>> biomeKey =
+				npcEntity.getWorld().getBiome(npcEntity.getBlockPos()).getKey();
+		return biomeKey.map(biomeRegistryKey -> biomeRegistryKey.getValue().getPath())
+				.orElse("");
+	}
 
 	private List<WorldContext.BlockData> scanNearbyBlocks() {
 		Map<String, WorldContext.BlockData> nearestBlocks = new HashMap<>();
@@ -116,11 +118,12 @@ public class ContextGenerator {
 					pos.set(chunk.getStartX() + x, y, chunk.getStartZ() + z);
 					if (isAccessible(pos)) {
 						BlockState blockState = world.getBlockState(pos);
-						String blockType = blockState.getBlock().getName().getString().toLowerCase();
+						String blockType =
+								blockState.getBlock().getName().getString().toLowerCase();
 						WorldContext.BlockData currentBlockData = buildBlockData(blockType, blockState, pos);
 
-						if (!nearestBlocks.containsKey(blockType) ||
-								isCloser(pos, nearestBlocks.get(blockType).position())) {
+						if (!nearestBlocks.containsKey(blockType)
+								|| isCloser(pos, nearestBlocks.get(blockType).position())) {
 							nearestBlocks.put(blockType, currentBlockData);
 						}
 					}
@@ -198,8 +201,7 @@ public class ContextGenerator {
 
 	private void addItemData(ItemStack stack, List<WorldContext.ItemData> items, int slot) {
 		if (!stack.isEmpty()) {
-			items.add(new WorldContext.ItemData(
-					getBlockName(stack), stack.getCount(), stack.getDamage(), slot));
+			items.add(new WorldContext.ItemData(getBlockName(stack), stack.getCount(), stack.getDamage(), slot));
 		}
 	}
 
@@ -210,8 +212,10 @@ public class ContextGenerator {
 
 	private WorldContext.BlockData buildBlockData(String blockType, BlockState blockState, BlockPos pos) {
 		return new WorldContext.BlockData(
-				blockType, new WorldContext.Position(pos.getX(), pos.getY(), pos.getZ()),
-				getMiningLevel(blockState), getToolNeeded(blockState));
+				blockType,
+				new WorldContext.Position(pos.getX(), pos.getY(), pos.getZ()),
+				getMiningLevel(blockState),
+				getToolNeeded(blockState));
 	}
 
 	public void stopService() {

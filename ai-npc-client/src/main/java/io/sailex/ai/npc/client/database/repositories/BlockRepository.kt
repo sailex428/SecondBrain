@@ -5,8 +5,9 @@ import io.sailex.ai.npc.client.model.database.Block
 import io.sailex.ai.npc.client.model.database.Resource
 import io.sailex.ai.npc.client.util.VectorUtil
 
-class BlockRepository(val sqliteClient: SqliteClient) : ARepository() {
-
+class BlockRepository(
+    val sqliteClient: SqliteClient,
+) : ARepository() {
     override fun createTable() {
         val sql = """
             CREATE TABLE IF NOT EXISTS blocks (
@@ -20,8 +21,17 @@ class BlockRepository(val sqliteClient: SqliteClient) : ARepository() {
         sqliteClient.create(sql)
     }
 
-    fun insert(id: String, name: String, nameEmbedding: DoubleArray, miningLevel: String, toolNeeded: String) {
-        val statement = sqliteClient.buildPreparedStatement("INSERT INTO blocks (id, name, name_embedding, miningLevel, toolNeeded) VALUES (?, ?, ?, ?)")
+    fun insert(
+        id: String,
+        name: String,
+        nameEmbedding: DoubleArray,
+        miningLevel: String,
+        toolNeeded: String,
+    ) {
+        val statement =
+            sqliteClient.buildPreparedStatement(
+                "INSERT INTO blocks (id, name, name_embedding, miningLevel, toolNeeded) VALUES (?, ?, ?, ?)",
+            )
         statement.setString(1, id)
         statement.setString(2, name)
         statement.setBytes(3, VectorUtil.convertToBytes(nameEmbedding))
@@ -35,17 +45,17 @@ class BlockRepository(val sqliteClient: SqliteClient) : ARepository() {
         val result = sqliteClient.select(sql)
         val blocks = arrayListOf<Block>()
 
-        while(result.next()) {
-            val block = Block(
-                result.getString("id"),
-                result.getString("name"),
-                VectorUtil.convertToDoubles(result.getBytes("name_embedding")),
-                result.getString("miningLevel"),
-                result.getString("toolNeeded")
-            )
+        while (result.next()) {
+            val block =
+                Block(
+                    result.getString("id"),
+                    result.getString("name"),
+                    VectorUtil.convertToDoubles(result.getBytes("name_embedding")),
+                    result.getString("miningLevel"),
+                    result.getString("toolNeeded"),
+                )
             blocks.add(block)
         }
         return blocks
     }
-
 }

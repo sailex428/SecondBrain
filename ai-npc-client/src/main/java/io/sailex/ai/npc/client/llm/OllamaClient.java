@@ -9,12 +9,11 @@ import io.github.ollama4j.types.OllamaModelType;
 import io.sailex.ai.npc.client.constant.Instructions;
 import io.sailex.ai.npc.client.exception.OllamaNotReachableException;
 import io.sailex.ai.npc.client.util.LogUtil;
-import lombok.Setter;
-
 import java.io.IOException;
 import java.net.ConnectException;
 import java.util.List;
 import java.util.concurrent.*;
+import lombok.Setter;
 
 /**
  * Ollama client for generating responses.
@@ -23,6 +22,7 @@ public class OllamaClient extends ALLMClient implements ILLMClient {
 
 	@Setter
 	private OllamaAPI ollamaAPI;
+
 	private final OllamaChatRequestBuilder builder;
 
 	/**
@@ -65,44 +65,52 @@ public class OllamaClient extends ALLMClient implements ILLMClient {
 	@Override
 	public String generateResponse(String userPrompt, String systemPrompt) {
 		return CompletableFuture.supplyAsync(
-				() -> {
-					try {
-						OllamaChatRequest requestModel = builder.withMessage(
-										OllamaChatMessageRole.SYSTEM,
-										systemPrompt + Instructions.STRUCTURE_INSTRUCTIONS)
-								.withMessage(OllamaChatMessageRole.USER, userPrompt)
-								.build();
-						//allow only json output
-						requestModel.setReturnFormatJson(true);
-						ollamaAPI.setRequestTimeoutSeconds(30);
+						() -> {
+							try {
+								OllamaChatRequest requestModel = builder.withMessage(
+												OllamaChatMessageRole.SYSTEM,
+												systemPrompt + Instructions.STRUCTURE_INSTRUCTIONS)
+										.withMessage(OllamaChatMessageRole.USER, userPrompt)
+										.build();
+								// allow only json output
+								requestModel.setReturnFormatJson(true);
+								ollamaAPI.setRequestTimeoutSeconds(30);
 
-						return ollamaAPI.chat(requestModel).getResponse();
-					} catch (IOException | InterruptedException | OllamaBaseException e) {
-						LOGGER.error("Error generating response from ollama", e);
-						Thread.currentThread().interrupt();
-						throw new CompletionException(
-								new ConnectException("Error generating response from ollama: " + e.getMessage()));
-					}
-				},
-				service).exceptionally(exception -> {
+								return ollamaAPI.chat(requestModel).getResponse();
+							} catch (IOException | InterruptedException | OllamaBaseException e) {
+								LOGGER.error("Error generating response from ollama", e);
+								Thread.currentThread().interrupt();
+								throw new CompletionException(new ConnectException(
+										"Error generating response from ollama: " + e.getMessage()));
+							}
+						},
+						service)
+				.exceptionally(exception -> {
 					LogUtil.error(exception.getMessage());
 					return null;
-		}).join();
+				})
+				.join();
 	}
 
 	@Override
 	public double[] generateEmbedding(List<String> prompt) {
-		return CompletableFuture.supplyAsync(() -> {
-			try {
-				return convertEmbedding(ollamaAPI.embed(OllamaModelType.NOMIC_EMBED_TEXT, prompt).getEmbeddings());
-			} catch (IOException | OllamaBaseException | InterruptedException e) {
-				Thread.currentThread().interrupt();
-				throw new CompletionException("Error generating embedding for prompt: " + prompt.getFirst(), e);
-			}
-		}, service).exceptionally(exception -> {
-				LOGGER.error(exception.getMessage());
-				return new double[]{};
-			})
-		.join();
-    }
+		return CompletableFuture.supplyAsync(
+						() -> {
+							try {
+								return convertEmbedding(ollamaAPI
+										.embed(OllamaModelType.NOMIC_EMBED_TEXT, prompt)
+										.getEmbeddings());
+							} catch (IOException | OllamaBaseException | InterruptedException e) {
+								Thread.currentThread().interrupt();
+								throw new CompletionException(
+										"Error generating embedding for prompt: " + prompt.getFirst(), e);
+							}
+						},
+						service)
+				.exceptionally(exception -> {
+					LOGGER.error(exception.getMessage());
+					return new double[] {};
+				})
+				.join();
+	}
 }

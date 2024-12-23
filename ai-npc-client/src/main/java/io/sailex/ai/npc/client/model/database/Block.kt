@@ -5,5 +5,5 @@ data class Block(
     val name: String,
     override val embedding: DoubleArray,
     val miningLevel: String,
-    val toolNeeded: String
+    val toolNeeded: String,
 ) : Resource

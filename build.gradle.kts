@@ -2,12 +2,39 @@ import me.modmuss50.mpp.ReleaseType
 
 plugins {
     id("me.modmuss50.mod-publish-plugin") version "0.8.1"
+    id("com.diffplug.spotless") version "7.0.0.BETA4"
 }
 
 val modVersion = rootProject.property("mod.version").toString()
 
 repositories {
     gradlePluginPortal()
+}
+
+subprojects {
+    apply(plugin = "com.diffplug.spotless")
+
+    spotless {
+        java {
+            target("**/*.java")
+            targetExclude("**/build/**")
+            palantirJavaFormat()
+            indentWithTabs()
+            removeUnusedImports()
+            trimTrailingWhitespace()
+            endWithNewline()
+        }
+        kotlin {
+            target("**/*.kt")
+            targetExclude("**/build/**/*.kt")
+            endWithNewline()
+            trimTrailingWhitespace()
+        }
+    }
+
+    repositories {
+        mavenCentral()
+    }
 }
 
 publishMods {

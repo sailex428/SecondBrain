@@ -13,7 +13,8 @@ public record WorldContext(
 
 	public record Position(int x, int y, int z) {}
 
-	public record NPCState(Position position, float health, int food, boolean onGround, boolean inWater, String biome) {}
+	public record NPCState(
+			Position position, float health, int food, boolean onGround, boolean inWater, String biome) {}
 
 	public record BlockData(String type, Position position, String mineLevel, String toolNeeded) {}
 

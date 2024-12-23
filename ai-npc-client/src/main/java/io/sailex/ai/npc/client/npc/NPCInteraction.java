@@ -1,20 +1,18 @@
 package io.sailex.ai.npc.client.npc;
 
+import static io.sailex.ai.npc.client.util.ActionParser.parseActions;
+
 import com.google.gson.*;
 import io.sailex.ai.npc.client.model.context.WorldContext;
 import io.sailex.ai.npc.client.model.database.*;
 import io.sailex.ai.npc.client.model.interaction.Actions;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import static io.sailex.ai.npc.client.util.ActionParser.parseActions;
 
 /**
  * Generates prompts and parses responses for communication between the NPC and the LLM.
@@ -33,10 +31,12 @@ public class NPCInteraction {
 	 * @return the system prompt
 	 */
 	public static String buildSystemPrompt(String context, String relevantResources) {
-		return String.format("""
+		return String.format(
+				"""
 			Context from the minecraft world: %s,
 			relevant Resources: %s
-			""", context, relevantResources);
+			""",
+				context, relevantResources);
 	}
 
 	/**
@@ -60,8 +60,11 @@ public class NPCInteraction {
 	 *
 	 * @return to string formatted resources
 	 */
-	public static String formatResources(List<ActionResource> actionResources, List<Recipe> recipes,
-										 List<Conversation> conversations, List<WorldContext.BlockData> blocks) {
+	public static String formatResources(
+			List<ActionResource> actionResources,
+			List<Recipe> recipes,
+			List<Conversation> conversations,
+			List<WorldContext.BlockData> blocks) {
 		return String.format(
 				"""
 				Actions: (example) actions that you have done before:
@@ -76,32 +79,36 @@ public class NPCInteraction {
 				formatActions(actionResources),
 				formatRecipes(recipes),
 				formatConversation(conversations),
-				formatBlocks(blocks)
-		);
+				formatBlocks(blocks));
 	}
 
 	private static String formatConversation(List<Conversation> conversations) {
-		return formatList(conversations, conversation ->
-				String.format("- Messages: %s at %s", conversation.getMessage(), conversation.getTimeStamp()));
+		return formatList(
+				conversations,
+				conversation ->
+						String.format("- Messages: %s at %s", conversation.getMessage(), conversation.getTimeStamp()));
 	}
 
 	private static String formatActions(List<ActionResource> actionResources) {
-		return formatList(actionResources, actionResource ->
-				String.format("- Action name: %s : %s, example Json format/content for that action: %s",
+		return formatList(
+				actionResources,
+				actionResource -> String.format(
+						"- Action name: %s : %s, example Json format/content for that action: %s",
 						actionResource.getName(), actionResource.getDescription(), actionResource.getExample()));
 	}
 
 	private static String formatRecipes(List<Recipe> recipes) {
-		return formatList(recipes, recipe ->
-				String.format("- Requirement name: %s, %s, needed items: %s",
-						recipe.getItemsNeeded(),
-						recipe.getTableNeeded(),
-						formatBlocksNeeded(recipe.getItemsNeeded())));
+		return formatList(
+				recipes,
+				recipe -> String.format(
+						"- Requirement name: %s, %s, needed items: %s",
+						recipe.getItemsNeeded(), recipe.getTableNeeded(), formatBlocksNeeded(recipe.getItemsNeeded())));
 	}
 
 	private static String formatBlocksNeeded(Map<String, Integer> blocksNeeded) {
-		return formatList(new ArrayList<>(blocksNeeded.entrySet()), entry ->
-				String.format("Block: %s, needed amount: %s", entry.getKey(), entry.getValue()));
+		return formatList(
+				new ArrayList<>(blocksNeeded.entrySet()),
+				entry -> String.format("Block: %s, needed amount: %s", entry.getKey(), entry.getValue()));
 	}
 
 	/**
@@ -121,7 +128,7 @@ public class NPCInteraction {
 			Current State:
 			- NPC state: %s
 			- Inventory: %s
-			
+
 			Nearest Entities:
 			%s
 
@@ -157,27 +164,28 @@ public class NPCInteraction {
 			- on Ground: %s
 			- touching water: %s
 			""",
-				formatPosition(position),
-				state.health(),
-				state.food(),
-				state.onGround(),
-				state.inWater());
+				formatPosition(position), state.health(), state.food(), state.onGround(), state.inWater());
 	}
 
 	private static String formatBlocks(List<WorldContext.BlockData> blocks) {
-		return formatList(blocks, block ->
-				String.format("- Block %s is at %s can be mined with tool %s %s",
+		return formatList(
+				blocks,
+				block -> String.format(
+						"- Block %s is at %s can be mined with tool %s %s",
 						block.type(), formatPosition(block.position()), block.mineLevel(), block.toolNeeded()));
 	}
 
 	private static String formatEntities(List<WorldContext.EntityData> entities) {
-		return formatList(entities, entity ->
-				String.format("- Entity of type: %s %s, %s %s",
+		return formatList(
+				entities,
+				entity -> String.format(
+						"- Entity of type: %s %s, %s %s",
 						entity.type(),
 						entity.isPlayer() ? "is a Player" : "",
 						entity.canHit() ? "this entity can hit you" : "",
 						formatPosition(entity.position())));
 	}
+
 	private static String formatPosition(WorldContext.Position position) {
 		return String.format("Coordinates: x: %s y: %s, z: %s", position.x(), position.y(), position.z());
 	}

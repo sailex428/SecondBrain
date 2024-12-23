@@ -4,8 +4,9 @@ import io.sailex.ai.npc.client.model.NPC
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 
-abstract class AEventListener(val npc: NPC) : IEventListener {
-
+abstract class AEventListener(
+    val npc: NPC,
+) : IEventListener {
     protected val logger: Logger = LogManager.getLogger()
 
     abstract override fun register()

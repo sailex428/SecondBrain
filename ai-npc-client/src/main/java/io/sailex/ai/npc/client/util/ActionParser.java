@@ -7,21 +7,21 @@ import io.sailex.ai.npc.client.model.interaction.Actions;
 
 public class ActionParser {
 
-    private static final Gson GSON = new Gson();
+	private static final Gson GSON = new Gson();
 
-    public static String actionToJson(Action action) {
-        return GSON.toJson(action);
-    }
+	public static String actionToJson(Action action) {
+		return GSON.toJson(action);
+	}
 
-    public static Action parseSingleAction(String action) throws JsonSyntaxException {
-        return parse(action, Action.class);
-    }
+	public static Action parseSingleAction(String action) throws JsonSyntaxException {
+		return parse(action, Action.class);
+	}
 
-    public static Actions parseActions(String actions) throws JsonSyntaxException {
-        return parse(actions, Actions.class);
-    }
+	public static Actions parseActions(String actions) throws JsonSyntaxException {
+		return parse(actions, Actions.class);
+	}
 
-    private static <T> T parse(String action, Class<T> type) throws JsonSyntaxException {
-        return GSON.fromJson(action, type);
-    }
+	private static <T> T parse(String action, Class<T> type) throws JsonSyntaxException {
+		return GSON.fromJson(action, type);
+	}
 }

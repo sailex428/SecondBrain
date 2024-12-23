@@ -5,5 +5,5 @@ data class Recipe(
     val name: String,
     override val embedding: DoubleArray,
     val tableNeeded: String,
-    val itemsNeeded: Map<String, Int>
+    val itemsNeeded: Map<String, Int>,
 ) : Resource

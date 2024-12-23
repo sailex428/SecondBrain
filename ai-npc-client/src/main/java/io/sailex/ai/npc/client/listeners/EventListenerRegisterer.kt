@@ -9,7 +9,9 @@ import net.minecraft.client.MinecraftClient
  * Manager for handling event listeners.
  * Registers listeners for block interactions, chat messages, and stopping the client.
  */
-class EventListenerRegisterer(private val npc: NPC) {
+class EventListenerRegisterer(
+    private val npc: NPC,
+) {
     /**
      * Register the event listeners.
      */
@@ -17,18 +19,20 @@ class EventListenerRegisterer(private val npc: NPC) {
         listOf<IEventListener>(
             BlockInteractionListener(npc),
             EntityListener(npc),
-            ChatMessageListener(npc)
+            ChatMessageListener(npc),
         ).forEach { listener -> listener.register() }
 
         registerStoppingListener(sqliteClient)
     }
 
     private fun registerStoppingListener(sqliteClient: SqliteClient) {
-        ClientLifecycleEvents.CLIENT_STOPPING.register(ClientLifecycleEvents.ClientStopping { _: MinecraftClient? ->
-            stopServices(
-                sqliteClient
-            )
-        })
+        ClientLifecycleEvents.CLIENT_STOPPING.register(
+            ClientLifecycleEvents.ClientStopping { _: MinecraftClient? ->
+                stopServices(
+                    sqliteClient,
+                )
+            },
+        )
     }
 
     private fun stopServices(sqliteClient: SqliteClient) {

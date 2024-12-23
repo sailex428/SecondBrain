@@ -47,8 +47,7 @@ public class LogUtil {
 	}
 
 	public static MutableText formatError(String message) {
-		return Text.literal("").append(PREFIX)
-				.append(message).setStyle(Style.EMPTY.withFormatting(Formatting.RED));
+		return Text.literal("").append(PREFIX).append(message).setStyle(Style.EMPTY.withFormatting(Formatting.RED));
 	}
 
 	private static MutableText buildPrefix() {

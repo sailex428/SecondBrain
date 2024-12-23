@@ -1,24 +1,24 @@
 package io.sailex.ai.npc.client.npc;
 
+import static io.sailex.ai.npc.client.AiNPCClient.client;
+import static io.sailex.ai.npc.client.util.ActionParser.actionToJson;
+
 import baritone.api.IBaritone;
 import baritone.api.pathing.goals.GoalBlock;
 import baritone.api.utils.BetterBlockPos;
-
 import io.sailex.ai.npc.client.constant.Instructions;
 import io.sailex.ai.npc.client.context.ContextGenerator;
 import io.sailex.ai.npc.client.database.repositories.RepositoryFactory;
 import io.sailex.ai.npc.client.llm.ILLMClient;
 import io.sailex.ai.npc.client.mixin.InventoryAccessor;
 import io.sailex.ai.npc.client.model.context.WorldContext;
+import io.sailex.ai.npc.client.model.database.Resources;
 import io.sailex.ai.npc.client.model.interaction.Action;
 import io.sailex.ai.npc.client.model.interaction.ActionType;
 import io.sailex.ai.npc.client.model.interaction.Actions;
-
+import io.sailex.ai.npc.client.util.ClientWorldUtil;
 import java.util.List;
 import java.util.concurrent.*;
-
-import io.sailex.ai.npc.client.model.database.Resources;
-import io.sailex.ai.npc.client.util.ClientWorldUtil;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.network.ClientPlayerInteractionManager;
@@ -31,9 +31,6 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.collection.DefaultedList;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import static io.sailex.ai.npc.client.AiNPCClient.client;
-import static io.sailex.ai.npc.client.util.ActionParser.actionToJson;
 
 /**
  * Controller for managing NPC actions and events.
@@ -58,13 +55,12 @@ public class NPCController {
 			ILLMClient llmClient,
 			ContextGenerator contextGenerator,
 			RepositoryFactory repositoryFactory,
-			IBaritone baritone
-	) {
+			IBaritone baritone) {
 		this.npc = npc;
 		this.llmClient = llmClient;
 		this.contextGenerator = contextGenerator;
-        this.repositoryFactory = repositoryFactory;
-        this.executorService = Executors.newFixedThreadPool(3);
+		this.repositoryFactory = repositoryFactory;
+		this.executorService = Executors.newFixedThreadPool(3);
 		this.baritone = baritone;
 		handleInitMessage();
 		onClientTick();
@@ -77,9 +73,12 @@ public class NPCController {
 	 */
 	public void handleEvent(String eventPrompt) {
 		executorService.submit(() -> {
-            Resources resources = repositoryFactory.getRelevantResources(eventPrompt);
-			String relevantResources = NPCInteraction.formatResources(resources.getActionResources(), resources.getRequirements(),
-					resources.getConversations(), contextGenerator.getRelevantBlockData(resources.getBlocks()));
+			Resources resources = repositoryFactory.getRelevantResources(eventPrompt);
+			String relevantResources = NPCInteraction.formatResources(
+					resources.getActionResources(),
+					resources.getRequirements(),
+					resources.getConversations(),
+					contextGenerator.getRelevantBlockData(resources.getBlocks()));
 			String context = NPCInteraction.formatContext(contextGenerator.getContext());
 
 			String systemPrompt = NPCInteraction.buildSystemPrompt(context, relevantResources);
@@ -93,8 +92,7 @@ public class NPCController {
 
 	private void offerActions(Actions actions) {
 		actions.getActions().forEach(action -> {
-			if (action.getAction().equals(ActionType.STOP) ||
-					action.getAction().equals(ActionType.CHAT)) {
+			if (action.getAction().equals(ActionType.STOP) || action.getAction().equals(ActionType.CHAT)) {
 				executeAction(action);
 				return;
 			}
@@ -165,13 +163,14 @@ public class NPCController {
 			LOGGER.warn("Could not craft item {} cause client world is null", recipeId);
 			return;
 		}
-		//? if <=1.21.1 {
+		// ? if <=1.21.1 {
 
-		//? if <=1.20.4 {
+		// ? if <=1.20.4 {
 		Identifier identifier = new Identifier(recipeId);
-		//?} else {
+		// ?} else {
 		/*Identifier identifier = Identifier.of(recipeId);
-		*///?}
+		 */
+		// ?}
 
 		RecipeEntry<?> recipe = client.world.getRecipeManager().get(identifier).orElse(null);
 		ClientPlayerInteractionManager interactionManager = client.interactionManager;
@@ -180,7 +179,7 @@ public class NPCController {
 		} else {
 			LOGGER.warn("Could not find recipe with id: {}", recipeId);
 		}
-		//?}
+		// ?}
 	}
 
 	private void lookAtPlayer() {
@@ -233,18 +232,13 @@ public class NPCController {
 		ActionType type = action.getAction();
 		String message = action.getMessage();
 		if (type.equals(ActionType.CHAT)) {
-			repositoryFactory.getConversationRepository().insert(
-					npc.getName().getString(),
-					message,
-					llmClient.generateEmbedding(List.of(message))
-			);
+			repositoryFactory
+					.getConversationRepository()
+					.insert(npc.getName().getString(), message, llmClient.generateEmbedding(List.of(message)));
 			return;
 		}
-		repositoryFactory.getActionsRepository().insert(
-				type.toString(),
-				message,
-				llmClient.generateEmbedding(List.of(message)),
-				actionToJson(action)
-		);
+		repositoryFactory
+				.getActionsRepository()
+				.insert(type.toString(), message, llmClient.generateEmbedding(List.of(message)), actionToJson(action));
 	}
 }
