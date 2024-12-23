@@ -51,4 +51,12 @@ publishMods {
 
         allowEmptyFiles = true
     }
+
+    discord {
+        webhookUrl.set(providers.gradleProperty("DISCORD_WEBHOOK"))
+        username.set("Update Bot")
+        avatarUrl.set("https://www.sailex.me/img/sailex_head.png")
+        content.set(changelog.map { "## New Version of AI-NPC Mod has been released! \n$it" })
+        setPlatformsAllFrom(project(":ai-npc-client"))
+    }
 }
