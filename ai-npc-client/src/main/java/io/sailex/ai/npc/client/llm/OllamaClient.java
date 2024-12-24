@@ -8,6 +8,7 @@ import io.github.ollama4j.models.chat.OllamaChatRequestBuilder;
 import io.github.ollama4j.types.OllamaModelType;
 import io.sailex.ai.npc.client.constant.Instructions;
 import io.sailex.ai.npc.client.exception.OllamaNotReachableException;
+import io.sailex.ai.npc.client.model.interaction.Skill;
 import io.sailex.ai.npc.client.util.LogUtil;
 import java.io.IOException;
 import java.net.ConnectException;
@@ -71,9 +72,8 @@ public class OllamaClient extends ALLMClient implements ILLMClient {
 												OllamaChatMessageRole.SYSTEM,
 												systemPrompt + Instructions.STRUCTURE_INSTRUCTIONS)
 										.withMessage(OllamaChatMessageRole.USER, userPrompt)
+										.withResponseClass(Skill.class)
 										.build();
-								// allow only json output
-								requestModel.setReturnFormatJson(true);
 								ollamaAPI.setRequestTimeoutSeconds(30);
 
 								return ollamaAPI.chat(requestModel).getResponse();

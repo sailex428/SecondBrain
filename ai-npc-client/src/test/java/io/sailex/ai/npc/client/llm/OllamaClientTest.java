@@ -6,8 +6,7 @@ import static org.mockito.Mockito.*;
 
 import io.github.ollama4j.OllamaAPI;
 import io.github.ollama4j.exceptions.OllamaBaseException;
-import io.github.ollama4j.models.chat.OllamaChatRequest;
-import io.github.ollama4j.models.chat.OllamaChatResult;
+import io.github.ollama4j.models.chat.*;
 import io.github.ollama4j.models.embeddings.OllamaEmbedResponseModel;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -34,8 +33,10 @@ class OllamaClientTest {
 		String systemPrompt = "some world context";
 		String expectedResponse = "expected response";
 
+		OllamaChatResponseModel model = new OllamaChatResponseModel();
+		model.setMessage(new OllamaChatMessage(OllamaChatMessageRole.SYSTEM, expectedResponse));
 		when(ollamaAPI.chat(any(OllamaChatRequest.class)))
-				.thenReturn(new OllamaChatResult(expectedResponse, 0L, 200, new ArrayList<>()));
+				.thenReturn(new OllamaChatResult(model, new ArrayList<>()));
 
 		String response = ollamaClient.generateResponse(userPrompt, systemPrompt);
 
