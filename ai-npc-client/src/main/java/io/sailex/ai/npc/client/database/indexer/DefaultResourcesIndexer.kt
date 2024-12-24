@@ -41,12 +41,10 @@ class DefaultResourcesIndexer(
         logger.info("Indexing all example Skills")
         getAllResourcesContent("skill-examples").forEach {
             indexAsync {
-                val message = "standard template to mine, move, drop, cancel, craft and chat actions"
                 skillRepository.insert(
                     it.key,
-                    message,
-                    llmClient.generateEmbedding(listOf(message)),
-                    it.value
+                    it.value,
+                    llmClient.generateEmbedding(listOf(it.value)),
                 )
             }
         }

@@ -13,9 +13,8 @@ class SkillRepository(
             CREATE TABLE IF NOT EXISTS skills (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     name TEXT NOT NULL,
-                    description TEXT,
-                    description_embedding BLOB,
                     example TEXT NOT NULL,
+                    example_embedding BLOB,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         """
@@ -24,18 +23,16 @@ class SkillRepository(
 
     fun insert(
         name: String,
-        description: String,
-        descriptionEmbedding: DoubleArray,
         example: String,
+        exampleEmbedding: DoubleArray,
     ) {
         val statement =
             sqliteClient.buildPreparedStatement(
-                "INSERT INTO skills (name, description, description_embedding, example) VALUES (?, ?, ?, ?)",
+                "INSERT INTO skills (name, example, example_embedding) VALUES (?, ?, ?)",
             )
         statement.setString(1, name)
-        statement.setString(2, description)
-        statement.setBytes(3, VectorUtil.convertToBytes(descriptionEmbedding))
-        statement.setString(4, example)
+        statement.setString(2, example)
+        statement.setBytes(3, VectorUtil.convertToBytes(exampleEmbedding))
         sqliteClient.insert(statement)
     }
 

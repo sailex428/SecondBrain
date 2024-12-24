@@ -24,7 +24,7 @@ public class SqliteClient {
 			String jdbcUrl = String.format("jdbc:sqlite:%s/%s.db", databasePath, databaseName);
 			connection = DriverManager.getConnection(jdbcUrl);
 			if (connection.isValid(3)) {
-				LOGGER.info("Database created or opened at: {}", databasePath);
+				LOGGER.info("Connected to database at: {}", databasePath);
 			}
 		} catch (SQLException e) {
 			LOGGER.error("Error creating/connecting to database: {}", e.getMessage());
