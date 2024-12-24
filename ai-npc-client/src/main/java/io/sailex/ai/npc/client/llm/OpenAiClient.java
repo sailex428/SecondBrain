@@ -7,7 +7,7 @@ import io.github.sashirestela.openai.domain.chat.ChatRequest;
 import io.github.sashirestela.openai.domain.embedding.EmbeddingFloat;
 import io.github.sashirestela.openai.domain.embedding.EmbeddingRequest;
 import io.sailex.ai.npc.client.exception.EmptyResponseException;
-import io.sailex.ai.npc.client.model.interaction.Actions;
+import io.sailex.ai.npc.client.model.interaction.Skill;
 import java.util.List;
 import lombok.Setter;
 
@@ -50,7 +50,7 @@ public class OpenAiClient extends ALLMClient implements ILLMClient {
 					.message(ChatMessage.UserMessage.of(userPrompt))
 					.responseFormat(ResponseFormat.jsonSchema(ResponseFormat.JsonSchema.builder()
 							.name("Actions")
-							.schemaClass(Actions.class)
+							.schemaClass(Skill.class)
 							.build()))
 					.build();
 

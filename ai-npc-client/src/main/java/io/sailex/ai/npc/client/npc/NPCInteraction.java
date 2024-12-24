@@ -1,14 +1,14 @@
 package io.sailex.ai.npc.client.npc;
 
-import static io.sailex.ai.npc.client.util.ActionParser.parseActions;
-
 import com.google.gson.*;
 import io.sailex.ai.npc.client.model.context.WorldContext;
 import io.sailex.ai.npc.client.model.database.*;
-import io.sailex.ai.npc.client.model.interaction.Actions;
+import io.sailex.ai.npc.client.model.interaction.Action;
+import io.sailex.ai.npc.client.model.interaction.Skill;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
@@ -22,6 +22,7 @@ public class NPCInteraction {
 	private NPCInteraction() {}
 
 	private static final Logger LOGGER = LogManager.getLogger(NPCInteraction.class);
+	private static final Gson GSON = new Gson();
 
 	/**
 	 * Builds a JSON system prompt from the context of the world.
@@ -44,11 +45,11 @@ public class NPCInteraction {
 	 * Casts the response to Actions.
 	 *
 	 * @param response the response from the LLM
-	 * @return the actions generated from the LLM
+	 * @return the skill generated from the LLM
 	 */
-	public static Actions parseResponse(String response) {
+	public static Skill parseResponse(String response) {
 		try {
-			return parseActions(response);
+			return parseSkill(response);
 		} catch (JsonSyntaxException e) {
 			LOGGER.error("Error parsing response: {}", e.getMessage());
 			throw new JsonSyntaxException("Error parsing response: " + e.getMessage());
@@ -61,13 +62,13 @@ public class NPCInteraction {
 	 * @return to string formatted resources
 	 */
 	public static String formatResources(
-			List<ActionResource> actionResources,
+			List<SkillResource> skills,
 			List<Recipe> recipes,
 			List<Conversation> conversations,
 			List<WorldContext.BlockData> blocks) {
 		return String.format(
 				"""
-				Actions: (example) actions that you have done before:
+				Actions: (example) skill that you have done before:
 				%s,
 				Recipes: recipes for items that the player request to craft:
 				%s,
@@ -76,10 +77,7 @@ public class NPCInteraction {
 				Conversations: previous dialogues between you and the players:
 				%s
 				""",
-				formatActions(actionResources),
-				formatRecipes(recipes),
-				formatConversation(conversations),
-				formatBlocks(blocks));
+				formatSkills(skills), formatRecipes(recipes), formatConversation(conversations), formatBlocks(blocks));
 	}
 
 	private static String formatConversation(List<Conversation> conversations) {
@@ -89,12 +87,12 @@ public class NPCInteraction {
 						String.format("- Messages: %s at %s", conversation.getMessage(), conversation.getTimeStamp()));
 	}
 
-	private static String formatActions(List<ActionResource> actionResources) {
+	private static String formatSkills(List<SkillResource> skills) {
 		return formatList(
-				actionResources,
-				actionResource -> String.format(
+				skills,
+				skill -> String.format(
 						"- Action name: %s : %s, example Json format/content for that action: %s",
-						actionResource.getName(), actionResource.getDescription(), actionResource.getExample()));
+						skill.getName(), skill.getDescription(), skill.getExample()));
 	}
 
 	private static String formatRecipes(List<Recipe> recipes) {
@@ -135,7 +133,7 @@ public class NPCInteraction {
 			You should:
 			1. Check if the action is possible (correct tools, resources in range)
 			2. Move to nearest appropriate resource if the player request for that
-			3. Inform player of your actions/intentions
+			3. Inform player of your skill/intentions
 			""",
 				formatBlocks(context.nearbyBlocks()),
 				formatNPCState(context.npcState()),
@@ -192,5 +190,35 @@ public class NPCInteraction {
 
 	private static <T> String formatList(List<T> list, Function<T, String> formatter) {
 		return list.stream().map(formatter).collect(Collectors.joining("\n"));
+	}
+
+	public static boolean skillHasMessages(Skill skill) {
+		for (Action action : skill.getActions()) {
+			if (action.getMessage() != null) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public static String getMessages(Skill skill) {
+		return skill.getActions().stream()
+				.map(Action::getMessage)
+				.filter(Objects::isNull)
+				.collect(Collectors.joining(";"));
+	}
+
+	public static String getTypes(Skill skill) {
+		return skill.getActions().stream()
+				.map(action -> action.getAction().toString())
+				.collect(Collectors.joining(";"));
+	}
+
+	public static String skillToJson(Skill skill) {
+		return GSON.toJson(skill);
+	}
+
+	public static Skill parseSkill(String actions) throws JsonSyntaxException {
+		return GSON.fromJson(actions, Skill.class);
 	}
 }

@@ -2,15 +2,15 @@
   {
     "action": "CHAT",
     "message": "I will stop all actions.",
-    "targetId": null,
     "targetType": null,
-    "targetPosition": null
+    "targetId": null,
+    "targetPosition": {}
   },
   {
     "action": "STOP",
     "message": null,
-    "targetId": null,
     "targetType": null,
-    "targetPosition": null
+    "targetId": null,
+    "targetPosition": {}
   }
 ]

@@ -1,6 +1,6 @@
 # AI NPCs
 
-AI-NPC Launcher is a Minecraft mod that launches and controls the AI-NPC client, enabling you to create and interact with NPCs that can move, mine, and chat with players in the game. This mod serves as the launcher for the [AI-NPC](https://github.com/sailex428/AI-NPC) client, which powers the actual NPC functionality. Currently, the AI-NPC's capabilities include basic movement, mining actions, and chatting with players.
+AI-NPC Launcher is a Minecraft mod that launches and controls the AI-NPC client, enabling you to create and interact with NPCs that can move, mine, and chat with players in the game. This mod serves as the launcher for the [AI-NPC](https://github.com/sailex428/AI-NPC) client, which powers the actual NPC functionality. Currently, the AI-NPC's capabilities include basic movement, mining skill, and chatting with players.
 
 ![](https://cdn.modrinth.com/data/cached_images/9a70948639591c9d03b9f7695ec09d336572b522.png)
 ![](https://cdn.modrinth.com/data/cached_images/a126513c98bbc01e289307466e5d065acfb21e59.png)

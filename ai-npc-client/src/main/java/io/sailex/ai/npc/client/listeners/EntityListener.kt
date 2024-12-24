@@ -7,6 +7,7 @@ import net.minecraft.entity.player.PlayerEntity
 class EntityListener(
     npc: NPC,
 ) : AEventListener(npc) {
+
     override fun register() {
         ServerEntityEvents.ENTITY_LOAD.register { entity, _ ->
             if (npc.id == entity.getUuid() || entity !is PlayerEntity) {

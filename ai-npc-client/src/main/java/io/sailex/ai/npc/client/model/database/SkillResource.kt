@@ -1,6 +1,6 @@
 package io.sailex.ai.npc.client.model.database
 
-data class ActionResource(
+data class SkillResource(
     val id: Int,
     val name: String,
     val description: String,

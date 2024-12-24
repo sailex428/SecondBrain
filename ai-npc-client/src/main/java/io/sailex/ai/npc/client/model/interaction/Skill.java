@@ -10,7 +10,7 @@ import lombok.Getter;
  * @see ActionType
  */
 @Getter
-public class Actions {
+public class Skill {
 
 	private List<Action> actions;
 }

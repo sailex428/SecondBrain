@@ -32,7 +32,7 @@ class RecipesRepository(
         val statement =
             sqliteClient.buildPreparedStatement(
                 "INSERT INTO recipes (type, name, name_embedding, table_needed, items_needed) VALUES (?, ?, ?, ?, ?)" +
-                    " ON CONFLICT(name) DO UPDATE SET blocks_needed = excluded.items_needed",
+                    " ON CONFLICT(name) DO UPDATE SET items_needed = excluded.items_needed",
             )
         statement.setString(1, type)
         statement.setString(2, name)

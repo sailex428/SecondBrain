@@ -2,9 +2,8 @@
   {
     "action": "CHAT",
     "message": "Heyy, whats up!",
-    "targetId": null,
     "targetType": null,
-    "targetPosition": null,
-    "requirement": {}
+    "targetId": null,
+    "targetPosition": {}
   }
 ]

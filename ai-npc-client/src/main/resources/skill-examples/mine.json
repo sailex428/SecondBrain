@@ -2,15 +2,15 @@
   {
     "action": "CHAT",
     "message": "No Problem. I will mine the dark oak log.",
-    "targetId": null,
     "targetType": null,
-    "targetPosition": null
+    "targetId": null,
+    "targetPosition": {}
   },
   {
     "action": "mine",
     "message": "I will mine the dark oak log.",
-    "targetId": null,
     "targetType": null,
+    "targetId": null,
     "targetPosition": {
       "x": 123,
       "y": 90,

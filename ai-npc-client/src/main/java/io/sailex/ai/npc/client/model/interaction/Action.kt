@@ -7,8 +7,8 @@ import io.sailex.ai.npc.client.model.context.WorldContext
  */
 data class Action(
     val action: ActionType,
-    val message: String,
-    val targetType: String,
-    val targetId: String,
+    val message: String?,
+    val targetId: String?,
+    val targetType: String?,
     val targetPosition: WorldContext.Position,
 )

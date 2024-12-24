@@ -1,7 +1,7 @@
 package io.sailex.ai.npc.client.npc;
 
 import static io.sailex.ai.npc.client.AiNPCClient.client;
-import static io.sailex.ai.npc.client.util.ActionParser.actionToJson;
+import static io.sailex.ai.npc.client.npc.NPCInteraction.*;
 
 import baritone.api.IBaritone;
 import baritone.api.pathing.goals.GoalBlock;
@@ -15,10 +15,11 @@ import io.sailex.ai.npc.client.model.context.WorldContext;
 import io.sailex.ai.npc.client.model.database.Resources;
 import io.sailex.ai.npc.client.model.interaction.Action;
 import io.sailex.ai.npc.client.model.interaction.ActionType;
-import io.sailex.ai.npc.client.model.interaction.Actions;
+import io.sailex.ai.npc.client.model.interaction.Skill;
 import io.sailex.ai.npc.client.util.ClientWorldUtil;
 import java.util.List;
 import java.util.concurrent.*;
+import java.util.stream.Collectors;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.network.ClientPlayerInteractionManager;
@@ -44,6 +45,8 @@ public class NPCController {
 	private final ExecutorService executorService;
 	private final BlockingQueue<Action> actionQueue = new LinkedBlockingQueue<>();
 
+	private final List<ActionType> unblockableActions = List.of(ActionType.STOP, ActionType.CHAT);
+
 	private final ClientPlayerEntity npc;
 	private final ILLMClient llmClient;
 	private final ContextGenerator contextGenerator;
@@ -62,8 +65,8 @@ public class NPCController {
 		this.repositoryFactory = repositoryFactory;
 		this.executorService = Executors.newFixedThreadPool(3);
 		this.baritone = baritone;
-		handleInitMessage();
 		onClientTick();
+		handleInitMessage();
 	}
 
 	/**
@@ -75,7 +78,7 @@ public class NPCController {
 		executorService.submit(() -> {
 			Resources resources = repositoryFactory.getRelevantResources(eventPrompt);
 			String relevantResources = NPCInteraction.formatResources(
-					resources.getActionResources(),
+					resources.getSkillResources(),
 					resources.getRequirements(),
 					resources.getConversations(),
 					contextGenerator.getRelevantBlockData(resources.getBlocks()));
@@ -90,14 +93,16 @@ public class NPCController {
 		});
 	}
 
-	private void offerActions(Actions actions) {
-		actions.getActions().forEach(action -> {
-			if (action.getAction().equals(ActionType.STOP) || action.getAction().equals(ActionType.CHAT)) {
+	private void offerActions(Skill skill) {
+		skill.getActions().forEach(action -> {
+			if (unblockableActions.contains(action.getAction())) {
 				executeAction(action);
 				return;
 			}
 			actionQueue.add(action);
 		});
+		saveSkill(skill);
+		saveConversation(skill);
 	}
 
 	private void pollAction() {
@@ -119,10 +124,9 @@ public class NPCController {
 			case STOP -> cancelActions();
 			default -> LOGGER.warn("Action type not recognized in: {}", actionType);
 		}
-		saveAction(action);
 	}
 
-	private void handleInitMessage() {
+	public void handleInitMessage() {
 		handleEvent(Instructions.getDefaultInstruction(npc.getName().getString()));
 		baritone.getCommandManager().execute("explore");
 	}
@@ -166,11 +170,9 @@ public class NPCController {
 		// ? if <=1.21.1 {
 
 		// ? if <=1.20.4 {
-		Identifier identifier = new Identifier(recipeId);
+		/*Identifier identifier = new Identifier(recipeId);*/
 		// ?} else {
-		/*Identifier identifier = Identifier.of(recipeId);
-
-		*/
+		Identifier identifier = Identifier.of(recipeId);
 		// ?}
 
 		RecipeEntry<?> recipe = client.world.getRecipeManager().get(identifier).orElse(null);
@@ -229,17 +231,21 @@ public class NPCController {
 		baritone.getCommandManager().execute("cancel");
 	}
 
-	private void saveAction(Action action) {
-		ActionType type = action.getAction();
-		String message = action.getMessage();
-		if (type.equals(ActionType.CHAT)) {
-			repositoryFactory
-					.getConversationRepository()
-					.insert(npc.getName().getString(), message, llmClient.generateEmbedding(List.of(message)));
-			return;
-		}
+	private void saveConversation(Skill skill) {
+		String message = skill.getActions().stream()
+				.filter(action -> action.getAction().equals(ActionType.CHAT))
+				.map(Action::getMessage)
+				.collect(Collectors.joining("; "));
 		repositoryFactory
-				.getActionsRepository()
-				.insert(type.toString(), message, llmClient.generateEmbedding(List.of(message)), actionToJson(action));
+				.getConversationRepository()
+				.insert(npc.getName().getString(), message, llmClient.generateEmbedding(List.of(message)));
+	}
+
+	private void saveSkill(Skill skill) {
+		if (skillHasMessages(skill)) return;
+		String message = getMessages(skill);
+		repositoryFactory
+				.getSkillRepository()
+				.insert(getTypes(skill), message, llmClient.generateEmbedding(List.of(message)), skillToJson(skill));
 	}
 }

@@ -1,16 +1,16 @@
 package io.sailex.ai.npc.client.database.repositories
 
 import io.sailex.ai.npc.client.database.SqliteClient
-import io.sailex.ai.npc.client.model.database.ActionResource
+import io.sailex.ai.npc.client.model.database.SkillResource
 import io.sailex.ai.npc.client.model.database.Resource
 import io.sailex.ai.npc.client.util.VectorUtil
 
-class ActionsRepository(
+class SkillRepository(
     val sqliteClient: SqliteClient,
 ) : ARepository() {
     override fun createTable() {
         val sql = """
-            CREATE TABLE IF NOT EXISTS actions (
+            CREATE TABLE IF NOT EXISTS skills (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     name TEXT NOT NULL,
                     description TEXT,
@@ -30,7 +30,7 @@ class ActionsRepository(
     ) {
         val statement =
             sqliteClient.buildPreparedStatement(
-                "INSERT INTO actions (name, description, description_embedding, example) VALUES (?, ?, ?, )",
+                "INSERT INTO skills (name, description, description_embedding, example) VALUES (?, ?, ?, ?)",
             )
         statement.setString(1, name)
         statement.setString(2, description)
@@ -40,13 +40,13 @@ class ActionsRepository(
     }
 
     override fun selectAll(): List<Resource> {
-        val sql = "SELECT * FROM actions"
+        val sql = "SELECT * FROM skills"
         val result = sqliteClient.select(sql)
-        val actionResources = arrayListOf<ActionResource>()
+        val skillResources = arrayListOf<SkillResource>()
 
         while (result.next()) {
-            val actionResource =
-                ActionResource(
+            val skillResource =
+                SkillResource(
                     result.getInt("id"),
                     result.getString("name"),
                     result.getString("description"),
@@ -54,8 +54,8 @@ class ActionsRepository(
                     result.getString("example"),
                     result.getString("created_at"),
                 )
-            actionResources.add(actionResource)
+            skillResources.add(skillResource)
         }
-        return actionResources
+        return skillResources
     }
 }

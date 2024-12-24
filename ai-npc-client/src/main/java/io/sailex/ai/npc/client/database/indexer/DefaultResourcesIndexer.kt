@@ -2,13 +2,10 @@ package io.sailex.ai.npc.client.database.indexer
 
 import io.sailex.ai.npc.client.AiNPCClient.client
 import io.sailex.ai.npc.client.config.ResourceLoader.getAllResourcesContent
-import io.sailex.ai.npc.client.database.repositories.ActionsRepository
+import io.sailex.ai.npc.client.database.repositories.SkillRepository
 import io.sailex.ai.npc.client.database.repositories.BlockRepository
 import io.sailex.ai.npc.client.database.repositories.RecipesRepository
 import io.sailex.ai.npc.client.llm.ILLMClient
-import io.sailex.ai.npc.client.util.ActionParser.parseSingleAction
-import io.sailex.ai.npc.client.util.ClientWorldUtil.getMiningLevel
-import io.sailex.ai.npc.client.util.ClientWorldUtil.getToolNeeded
 import io.sailex.ai.npc.client.util.LogUtil
 
 import net.minecraft.recipe.Ingredient
@@ -18,13 +15,14 @@ import net.minecraft.registry.Registries
 
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
+import java.util.concurrent.CompletableFuture
 
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 class DefaultResourcesIndexer(
     val recipesRepository: RecipesRepository,
-    val actionsRepository: ActionsRepository,
+    val skillRepository: SkillRepository,
     val blockRepository: BlockRepository,
     val llmClient: ILLMClient
 ) {
@@ -32,53 +30,51 @@ class DefaultResourcesIndexer(
     val executorService: ExecutorService = Executors.newFixedThreadPool(6)
 
     fun indexAll() {
-        indexExampleActions()
+        indexExampleSkills()
         indexBlocks()
-        //? if <1.21.2
-        indexRecipes()
-        executorService.shutdown()
     }
 
     /**
      * Indexes the actions set in resources/actions-examples dir
      */
-    private fun indexExampleActions() {
-        logger.info("Indexing all example Actions")
-        getAllResourcesContent("actions-examples").forEach {
-            executorService.submit {
-                val action = parseSingleAction(it.value)
-                actionsRepository.insert(
+    private fun indexExampleSkills() {
+        logger.info("Indexing all example Skills")
+        getAllResourcesContent("skill-examples").forEach {
+            indexAsync {
+                val message = "standard template to mine, move, drop, cancel, craft and chat actions"
+                skillRepository.insert(
                     it.key,
-                    action.message,
-                    llmClient.generateEmbedding(listOf(action.message)),
+                    message,
+                    llmClient.generateEmbedding(listOf(message)),
                     it.value
                 )
             }
         }
     }
 
+    /**
+     * Indexes all blocks - identifier, name
+     */
     private fun indexBlocks() {
         logger.info("Indexing all Blocks")
-        Registries.BLOCK.forEach { block -> {
-            executorService.submit {
-                val name = block.translationKey.toString()
-                val blockState = block.stateManager.defaultState
+        val blocks = Registries.BLOCK
+        blocks.forEach {
+            indexAsync {
+                val name = it.translationKey.toString()
                 blockRepository.insert(
-                    Registries.BLOCK.getId(block).namespace,
+                    Registries.BLOCK.getId(it).path,
                     name,
-                    llmClient.generateEmbedding(listOf(name)),
-                    getMiningLevel(blockState),
-                    getToolNeeded(blockState)
+                    llmClient.generateEmbedding(listOf(name))
                 )
             }
-        }}
+        }
     }
 
     /**
      * Indexes the requirements/recipes of the game in db
      */
     //? if <1.21.2 {
-    private fun indexRecipes() {
+    fun indexRecipes() {
         val world = client.world
         if (world == null) {
             LogUtil.error("Could not get 'recipes', cause the client world is null")
@@ -88,7 +84,7 @@ class DefaultResourcesIndexer(
 
         logger.info("Indexing all Recipes")
         recipes.forEach {
-            executorService.submit {
+            indexAsync {
                 val recipeValue = it.value
                 val recipeName = it.id.path
                 recipesRepository.insert(
@@ -117,4 +113,15 @@ class DefaultResourcesIndexer(
         return idString.substring(idString.indexOf("'"), idString.lastIndexOf("'"))
     }
     //?}
+
+    private fun indexAsync(function:() -> Unit) {
+        CompletableFuture.runAsync(function, executorService).exceptionally {
+            logger.error("Error while running async indexing task", it)
+            null
+        }
+    }
+
+    fun shutdownExecutor() {
+        executorService.shutdown()
+    }
 }

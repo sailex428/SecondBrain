@@ -2,15 +2,15 @@
   {
     "action": "CHAT",
     "message": "Im walking to you and drop you my diamond ore.",
-    "targetId": null,
     "targetType": null,
-    "targetPosition": null
+    "targetId": null,
+    "targetPosition": {}
   },
   {
     "action": "MOVE",
     "message": "I will move to the location 120 70 334.",
-    "targetId": null,
     "targetType": null,
+    "targetId": null,
     "targetPosition": {
       "x": 120,
       "y": 70,
@@ -20,8 +20,8 @@
   {
     "action": "DROP",
     "message": "I will drop you my diamond ore.",
-    "targetId": null,
     "targetType": "diamond_ore",
-    "targetPosition": null
+    "targetId": null,
+    "targetPosition": {}
   }
 ]

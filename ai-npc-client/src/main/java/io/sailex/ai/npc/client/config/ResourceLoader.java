@@ -1,7 +1,7 @@
 package io.sailex.ai.npc.client.config;
 
+import io.sailex.ai.npc.client.util.LogUtil;
 import java.io.*;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -31,8 +31,8 @@ public class ResourceLoader {
 							}
 						}));
 			}
-		} catch (IOException | URISyntaxException e) {
-			LOGGER.error("Error reading resources: {}", e.getMessage());
+		} catch (Exception e) {
+			LogUtil.error("Error reading resources: " + e.getMessage());
 		}
 		return contentMap;
 	}

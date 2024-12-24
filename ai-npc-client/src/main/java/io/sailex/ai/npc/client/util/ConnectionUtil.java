@@ -28,8 +28,9 @@ public class ConnectionUtil {
 				new ServerInfo("server", serverName, ServerInfo.ServerType.OTHER),
 				false
 				/*? if >=1.21.1 {*/
-				/*, null
-				 */
+				,
+				null
+
 				/*?}*/
 				);
 	}

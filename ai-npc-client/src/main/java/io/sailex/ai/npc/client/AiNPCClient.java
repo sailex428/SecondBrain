@@ -42,10 +42,25 @@ public class AiNPCClient implements ClientModInitializer {
 	 */
 	@Override
 	public void onInitializeClient() {
-		waitForClientToLoad();
+		ILLMClient llmClient = initLLMClient();
+
+		RepositoryFactory repositoryFactory = new RepositoryFactory(llmClient);
+		repositoryFactory.initRepositories();
+
+		DefaultResourcesIndexer defaultResourcesIndexer = new DefaultResourcesIndexer(
+				repositoryFactory.getRecipesRepository(),
+				repositoryFactory.getSkillRepository(),
+				repositoryFactory.getBlockRepository(),
+				llmClient);
+		defaultResourcesIndexer.indexAll();
+
+		waitForClientToLoad(llmClient, repositoryFactory, defaultResourcesIndexer);
 	}
 
-	private void waitForClientToLoad() {
+	private void waitForClientToLoad(
+			ILLMClient llmClient,
+			RepositoryFactory repositoryFactory,
+			DefaultResourcesIndexer defaultResourcesIndexer) {
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
 			if (client.isFinishedLoading() && !connected) {
 				client.getSoundManager().stopAll();
@@ -56,22 +71,23 @@ public class AiNPCClient implements ClientModInitializer {
 		ClientTickEvents.END_WORLD_TICK.register(world -> {
 			if (!npcInitialized && connected) {
 				LOGGER.info("Initializing NPC");
-				initializeNpc();
+				initializeNpc(llmClient, repositoryFactory);
 				npcInitialized = true;
+
+				// recipes are only after world init loaded
+				// ? if <1.21.2
+				defaultResourcesIndexer.indexRecipes();
+				defaultResourcesIndexer.shutdownExecutor();
 			}
 		});
 	}
 
-	private void initializeNpc() {
+	private void initializeNpc(ILLMClient llmClient, RepositoryFactory repositoryFactory) {
 		ClientPlayerEntity npcEntity = client.player;
 		if (npcEntity == null) {
 			LOGGER.error("NPC entity is null");
 			return;
 		}
-		ILLMClient llmClient = initLLMClient();
-		RepositoryFactory repositoryFactory = new RepositoryFactory(llmClient);
-		repositoryFactory.initRepositories();
-		indexDefaultResources(llmClient, repositoryFactory);
 
 		IBaritone baritone = BaritoneAPI.getProvider().getPrimaryBaritone();
 		ContextGenerator contextGenerator = new ContextGenerator(npcEntity, baritone);
@@ -100,14 +116,5 @@ public class AiNPCClient implements ClientModInitializer {
 			throw new IllegalArgumentException("Invalid LLM type: " + npcType);
 		}
 		return llmService;
-	}
-
-	private void indexDefaultResources(ILLMClient llmClient, RepositoryFactory repositoryFactory) {
-		DefaultResourcesIndexer defaultResourcesIndexer = new DefaultResourcesIndexer(
-				repositoryFactory.getRecipesRepository(),
-				repositoryFactory.getActionsRepository(),
-				repositoryFactory.getBlockRepository(),
-				llmClient);
-		defaultResourcesIndexer.indexAll();
 	}
 }

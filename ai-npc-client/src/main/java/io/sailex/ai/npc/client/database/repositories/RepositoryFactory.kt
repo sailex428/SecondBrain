@@ -2,7 +2,7 @@ package io.sailex.ai.npc.client.database.repositories
 
 import io.sailex.ai.npc.client.database.SqliteClient
 import io.sailex.ai.npc.client.llm.ILLMClient
-import io.sailex.ai.npc.client.model.database.ActionResource
+import io.sailex.ai.npc.client.model.database.SkillResource
 import io.sailex.ai.npc.client.model.database.Block
 import io.sailex.ai.npc.client.model.database.Conversation
 import io.sailex.ai.npc.client.model.database.Recipe
@@ -13,14 +13,14 @@ class RepositoryFactory(
 ) {
     val sqliteClient = SqliteClient()
     val recipesRepository = RecipesRepository(sqliteClient)
-    val actionsRepository = ActionsRepository(sqliteClient)
+    val skillRepository = SkillRepository(sqliteClient)
     val conversationRepository = ConversationRepository(sqliteClient)
     val blockRepository = BlockRepository(sqliteClient)
 
     fun initRepositories() {
         sqliteClient.initDatabase("actions")
         recipesRepository.init()
-        actionsRepository.init()
+        skillRepository.init()
         conversationRepository.init()
         blockRepository.init()
     }
@@ -28,7 +28,7 @@ class RepositoryFactory(
     fun getRelevantResources(prompt: String): Resources {
         val promptEmbedding = llmClient.generateEmbedding(listOf(prompt))
         return Resources(
-            actionsRepository.getMostRelevantResources(promptEmbedding).filterIsInstance<ActionResource>(),
+            skillRepository.getMostRelevantResources(promptEmbedding).filterIsInstance<SkillResource>(),
             recipesRepository.getMostRelevantResources(promptEmbedding).filterIsInstance<Recipe>(),
             conversationRepository.getMostRelevantResources(promptEmbedding).filterIsInstance<Conversation>(),
             blockRepository.getMostRelevantResources(promptEmbedding).filterIsInstance<Block>(),
