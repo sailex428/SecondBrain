@@ -1,4 +1,4 @@
-package io.sailex.ai.npc.client.database.indexer
+package io.sailex.ai.npc.client.database.index
 
 import io.sailex.ai.npc.client.AiNPCClient.client
 import io.sailex.ai.npc.client.config.ResourceLoader.getAllResourcesContent

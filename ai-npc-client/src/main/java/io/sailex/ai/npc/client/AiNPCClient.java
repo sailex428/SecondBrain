@@ -5,7 +5,7 @@ import baritone.api.IBaritone;
 import io.sailex.ai.npc.client.config.Config;
 import io.sailex.ai.npc.client.constant.ConfigConstants;
 import io.sailex.ai.npc.client.context.ContextGenerator;
-import io.sailex.ai.npc.client.database.indexer.DefaultResourcesIndexer;
+import io.sailex.ai.npc.client.database.index.DefaultResourcesIndexer;
 import io.sailex.ai.npc.client.database.repositories.RepositoryFactory;
 import io.sailex.ai.npc.client.listeners.EventListenerRegisterer;
 import io.sailex.ai.npc.client.llm.ILLMClient;

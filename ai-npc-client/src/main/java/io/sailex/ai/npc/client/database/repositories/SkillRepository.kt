@@ -46,10 +46,9 @@ class SkillRepository(
                 SkillResource(
                     result.getInt("id"),
                     result.getString("name"),
-                    result.getString("description"),
-                    VectorUtil.convertToDoubles(result.getBytes("description_embedding")),
                     result.getString("example"),
-                    result.getString("created_at"),
+                    VectorUtil.convertToDoubles(result.getBytes("example_embedding")),
+                    result.getString("created_at")
                 )
             skillResources.add(skillResource)
         }

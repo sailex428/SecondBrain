@@ -91,8 +91,8 @@ public class NPCInteraction {
 		return formatList(
 				skills,
 				skill -> String.format(
-						"- Action name: %s : %s, example Json format/content for that action: %s",
-						skill.getName(), skill.getDescription(), skill.getExample()));
+						"- Action name: %s, example Json format/content for that action: %s",
+						skill.getName(), skill.getExample()));
 	}
 
 	private static String formatRecipes(List<Recipe> recipes) {
