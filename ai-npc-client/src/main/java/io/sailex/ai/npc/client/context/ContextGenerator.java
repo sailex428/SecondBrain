@@ -120,6 +120,7 @@ public class ContextGenerator {
 						BlockState blockState = world.getBlockState(pos);
 						String blockType =
 								blockState.getBlock().getName().getString().toLowerCase();
+						if (blockType.contains("air")) continue;
 						WorldContext.BlockData currentBlockData = buildBlockData(blockType, blockState, pos);
 
 						if (!nearestBlocks.containsKey(blockType)

@@ -9,15 +9,15 @@ public enum ActionType {
 	MINE, // Gathering resources
 	CRAFT, // Creating items
 	DROP, // Dropping items
-	USE, // Using items
-	STORE, // Putting items away
-	RETRIEVE, // Getting items e.g. kill entities
-	EQUIP, // Equipping items
-	UNEQUIP, // Removing equipped items
-	ATTACK, // Combat actions
-	TRADE, // Trading with Villagers
-	BUILD, // Construction actions
-	REPAIR, // Fixing items
-	INTERACT, // General interactions
+	//USE, // Using items
+	//STORE, // Putting items away
+	//RETRIEVE, // Getting items e.g. kill entities
+	//EQUIP, // Equipping items
+	//UNEQUIP, // Removing equipped items
+	//ATTACK, // Combat actions
+	//TRADE, // Trading with Villagers
+	//BUILD, // Construction actions
+	//REPAIR, // Fixing items
+	//INTERACT, // General interactions
 	STOP // Cancelling actions
 }
