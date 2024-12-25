@@ -35,8 +35,7 @@ class OllamaClientTest {
 
 		OllamaChatResponseModel model = new OllamaChatResponseModel();
 		model.setMessage(new OllamaChatMessage(OllamaChatMessageRole.SYSTEM, expectedResponse));
-		when(ollamaAPI.chat(any(OllamaChatRequest.class)))
-				.thenReturn(new OllamaChatResult(model, new ArrayList<>()));
+		when(ollamaAPI.chat(any(OllamaChatRequest.class))).thenReturn(new OllamaChatResult(model, new ArrayList<>()));
 
 		String response = ollamaClient.generateResponse(userPrompt, systemPrompt);
 

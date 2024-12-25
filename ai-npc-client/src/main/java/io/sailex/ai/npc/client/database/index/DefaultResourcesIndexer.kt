@@ -1,5 +1,6 @@
 package io.sailex.ai.npc.client.database.index
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import io.sailex.ai.npc.client.AiNPCClient.client
 import io.sailex.ai.npc.client.config.ResourceLoader.getAllResourcesContent
 import io.sailex.ai.npc.client.database.repositories.SkillRepository
@@ -9,9 +10,9 @@ import io.sailex.ai.npc.client.llm.ILLMClient
 import io.sailex.ai.npc.client.util.LogUtil
 
 import net.minecraft.recipe.Ingredient
-import net.minecraft.recipe.Recipe
 import net.minecraft.recipe.RecipeEntry
 import net.minecraft.registry.Registries
+import net.minecraft.util.collection.DefaultedList
 
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
@@ -28,6 +29,7 @@ class DefaultResourcesIndexer(
 ) {
     val logger: Logger = LogManager.getLogger(this.javaClass)
     val executorService: ExecutorService = Executors.newFixedThreadPool(6)
+    val mapper = ObjectMapper()
 
     fun indexAll() {
         indexExampleSkills()
@@ -41,10 +43,11 @@ class DefaultResourcesIndexer(
         logger.info("Indexing all example Skills")
         getAllResourcesContent("skill-examples").forEach {
             indexAsync {
+                val cleanedJson = removeWhiteSpaces(it.value)
                 skillRepository.insert(
                     it.key,
-                    it.value,
-                    llmClient.generateEmbedding(listOf(it.value)),
+                    cleanedJson,
+                    llmClient.generateEmbedding(listOf(cleanedJson)),
                 )
             }
         }
@@ -82,22 +85,24 @@ class DefaultResourcesIndexer(
 
         logger.info("Indexing all Recipes")
         recipes.forEach {
+            val recipeValue = it.value
+            val ingredients = recipeValue.ingredients
+            if (ingredients.isEmpty()) return@forEach
             indexAsync {
-                val recipeValue = it.value
                 val recipeName = it.id.path
                 recipesRepository.insert(
                     recipeValue.type.toString(),
                     recipeName,
                     llmClient.generateEmbedding(listOf(recipeName)),
                     recipeValue.createIcon().name.string,
-                    getItemNeeded(recipeValue)
+                    getItemNeeded(ingredients)
                 )
             }
         }
     }
 
-    private fun getItemNeeded(recipe: Recipe<*>): String {
-        return recipe.ingredients.filter {
+    private fun getItemNeeded(ingredients: DefaultedList<Ingredient>): String {
+        return ingredients.filter {
             getItemId(it) != null
         }.joinToString(",") {
             "${getItemId(it)}=${it.matchingStacks.size}"
@@ -110,7 +115,7 @@ class DefaultResourcesIndexer(
             return null
         }
         val idString = ingredient.matchingStacks[0].name.toString()
-        return idString.substring(idString.indexOf("'"), idString.lastIndexOf("'"))
+        return idString.substring(idString.indexOf("'") + 1, idString.lastIndexOf("'"))
     }
     //?}
 
@@ -119,6 +124,11 @@ class DefaultResourcesIndexer(
             logger.error("Error while running async indexing task", it)
             null
         }
+    }
+
+    //TODO: maybe use gson?
+    private fun removeWhiteSpaces(content: String): String {
+        return mapper.writeValueAsString(mapper.readTree(content))
     }
 
     fun shutdownExecutor() {

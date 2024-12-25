@@ -75,7 +75,7 @@ public class AiNPCClient implements ClientModInitializer {
 				npcInitialized = true;
 
 				// recipes are only after world init loaded
-				//? if <1.21.2
+				// ? if <1.21.2
 				defaultResourcesIndexer.indexRecipes();
 				defaultResourcesIndexer.shutdownExecutor();
 			}

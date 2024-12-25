@@ -75,25 +75,28 @@ public class NPCController {
 	 * @param eventPrompt the NPC event
 	 */
 	public void handleEvent(String eventPrompt) {
-		CompletableFuture.runAsync(() -> {
-			Resources resources = repositoryFactory.getRelevantResources(eventPrompt);
-			String relevantResources = NPCInteraction.formatResources(
-					resources.getSkillResources(),
-					resources.getRequirements(),
-					resources.getConversations(),
-					contextGenerator.getRelevantBlockData(resources.getBlocks()));
-			String context = NPCInteraction.formatContext(contextGenerator.getContext());
+		CompletableFuture.runAsync(
+						() -> {
+							Resources resources = repositoryFactory.getRelevantResources(eventPrompt);
+							String relevantResources = NPCInteraction.formatResources(
+									resources.getSkillResources(),
+									resources.getRequirements(),
+									resources.getConversations(),
+									contextGenerator.getRelevantBlockData(resources.getBlocks()));
+							String context = NPCInteraction.formatContext(contextGenerator.getContext());
 
-			String systemPrompt = NPCInteraction.buildSystemPrompt(context, relevantResources);
+							String systemPrompt = NPCInteraction.buildSystemPrompt(context, relevantResources);
 
-			LOGGER.info("User prompt: {}, System prompt: {}", eventPrompt, systemPrompt);
+							LOGGER.info("User prompt: {}, System prompt: {}", eventPrompt, systemPrompt);
 
-			String generatedResponse = llmClient.generateResponse(eventPrompt, systemPrompt);
-			offerActions(NPCInteraction.parseResponse(generatedResponse));
-		}, executorService).exceptionally(e -> {
-			LOGGER.error("Error occured handling event", e);
-			return null;
-		});
+							String generatedResponse = llmClient.generateResponse(eventPrompt, systemPrompt);
+							offerActions(NPCInteraction.parseResponse(generatedResponse));
+						},
+						executorService)
+				.exceptionally(e -> {
+					LOGGER.error("Error occured handling event", e);
+					return null;
+				});
 	}
 
 	private void offerActions(Skill skill) {
@@ -170,13 +173,14 @@ public class NPCController {
 			LOGGER.warn("Could not craft item {} cause client world is null", recipeId);
 			return;
 		}
-		//? if <=1.21.1 {
+		// ? if <=1.21.1 {
 
-		//? if <=1.20.4 {
+		// ? if <=1.20.4 {
 		Identifier identifier = new Identifier(recipeId);
-		//?} else {
+		// ?} else {
 		/*Identifier identifier = Identifier.of(recipeId);
-		*///?}
+		 */
+		// ?}
 
 		RecipeEntry<?> recipe = client.world.getRecipeManager().get(identifier).orElse(null);
 		ClientPlayerInteractionManager interactionManager = client.interactionManager;
@@ -185,7 +189,7 @@ public class NPCController {
 		} else {
 			LOGGER.warn("Could not find recipe with id: {}", recipeId);
 		}
-		//?}
+		// ?}
 	}
 
 	private void lookAtPlayer() {

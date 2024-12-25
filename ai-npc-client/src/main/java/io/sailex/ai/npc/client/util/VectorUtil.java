@@ -4,8 +4,6 @@ import java.nio.ByteBuffer;
 
 public class VectorUtil {
 
-	private static final double THRESHOLD = 0.5;
-
 	private VectorUtil() {}
 
 	public static double cosineSimilarity(double[] vec1, double[] vec2) {
@@ -21,12 +19,13 @@ public class VectorUtil {
 		return dotProduct / (Math.sqrt(norm1) * Math.sqrt(norm2));
 	}
 
-	public static boolean isSimilar(double angle) {
-		return angle < THRESHOLD;
-	}
-
 	public static double[] convertToDoubles(byte[] bytes) {
-		return new double[bytes.length / 8];
+		double[] embedding = new double[bytes.length / 8];
+		ByteBuffer buffer = ByteBuffer.wrap(bytes);
+		for (int i = 0; i < embedding.length; i++) {
+			embedding[i] = buffer.getDouble();
+		}
+		return embedding;
 	}
 
 	public static byte[] convertToBytes(double[] embedding) {

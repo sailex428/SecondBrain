@@ -3,12 +3,10 @@ package io.sailex.ai.npc.client.npc;
 import com.google.gson.*;
 import io.sailex.ai.npc.client.model.context.WorldContext;
 import io.sailex.ai.npc.client.model.database.*;
-import io.sailex.ai.npc.client.model.interaction.Action;
 import io.sailex.ai.npc.client.model.interaction.Skill;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
@@ -190,22 +188,6 @@ public class NPCInteraction {
 
 	private static <T> String formatList(List<T> list, Function<T, String> formatter) {
 		return list.stream().map(formatter).collect(Collectors.joining("\n"));
-	}
-
-	public static boolean skillHasMessages(Skill skill) {
-		for (Action action : skill.getActions()) {
-			if (action.getMessage() != null) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	public static String getMessages(Skill skill) {
-		return skill.getActions().stream()
-				.map(Action::getMessage)
-				.filter(Objects::isNull)
-				.collect(Collectors.joining(";"));
 	}
 
 	public static String getTypes(Skill skill) {
