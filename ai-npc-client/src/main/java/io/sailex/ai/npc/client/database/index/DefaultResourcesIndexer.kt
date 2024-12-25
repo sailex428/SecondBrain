@@ -97,7 +97,9 @@ class DefaultResourcesIndexer(
     }
 
     private fun getItemNeeded(recipe: Recipe<*>): String {
-        return recipe.ingredients.joinToString(",") {
+        return recipe.ingredients.filter {
+            getItemId(it) != null
+        }.joinToString(",") {
             "${getItemId(it)}=${it.matchingStacks.size}"
         }
     }

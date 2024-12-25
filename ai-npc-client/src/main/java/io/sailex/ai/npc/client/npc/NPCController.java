@@ -75,7 +75,7 @@ public class NPCController {
 	 * @param eventPrompt the NPC event
 	 */
 	public void handleEvent(String eventPrompt) {
-		executorService.submit(() -> {
+		CompletableFuture.runAsync(() -> {
 			Resources resources = repositoryFactory.getRelevantResources(eventPrompt);
 			String relevantResources = NPCInteraction.formatResources(
 					resources.getSkillResources(),
@@ -90,6 +90,9 @@ public class NPCController {
 
 			String generatedResponse = llmClient.generateResponse(eventPrompt, systemPrompt);
 			offerActions(NPCInteraction.parseResponse(generatedResponse));
+		}, executorService).exceptionally(e -> {
+			LOGGER.error("Error occured handling event", e);
+			return null;
 		});
 	}
 
