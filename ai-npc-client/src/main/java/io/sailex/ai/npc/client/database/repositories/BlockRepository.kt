@@ -49,6 +49,7 @@ class BlockRepository(
                 )
             blocks.add(block)
         }
+        result.close()
         return blocks
     }
 }

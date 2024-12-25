@@ -45,7 +45,9 @@ public class SqliteClient {
 	 * @param sql the SQL query
 	 */
 	public ResultSet select(String sql) {
-		try (Statement statement = connection.createStatement()) {
+		try {
+			Statement statement = connection.createStatement();
+			statement.closeOnCompletion();
 			return statement.executeQuery(sql);
 		} catch (SQLException e) {
 			LOGGER.error("Error selecting rule: {}", e.getMessage());

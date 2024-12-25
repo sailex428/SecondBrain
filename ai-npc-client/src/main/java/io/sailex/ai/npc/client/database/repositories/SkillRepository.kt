@@ -52,6 +52,7 @@ class SkillRepository(
                 )
             skillResources.add(skillResource)
         }
+        result.close()
         return skillResources
     }
 }

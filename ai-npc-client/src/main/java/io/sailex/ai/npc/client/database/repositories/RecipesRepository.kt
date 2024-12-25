@@ -73,6 +73,7 @@ class RecipesRepository(
                 )
             recipes.add(requirement)
         }
+        result.close()
         return recipes
     }
 

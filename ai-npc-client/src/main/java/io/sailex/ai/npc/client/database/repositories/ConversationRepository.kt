@@ -61,6 +61,7 @@ class ConversationRepository(
                 )
             conversations.add(conversation)
         }
+        result.close()
         return conversations
     }
 }
