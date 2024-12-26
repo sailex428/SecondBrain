@@ -13,7 +13,7 @@ class ChatMessageListener(
             }
             val chatMessage =
                 String.format(
-                    "%S : %S has written the message: %S",
+                    "%s : %s has written the message: %s",
                     receptionTimestamp.toString(),
                     sender?.name ?: "Server Console",
                     message.string,

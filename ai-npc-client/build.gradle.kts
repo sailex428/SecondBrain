@@ -17,6 +17,8 @@ var jarName = ("ai-npc-$mcVersion-v$modVersion-fabric-beta").toString()
 val javaVersion = if (stonecutter.eval(mcVersion, ">=1.20.6")) JavaVersion.VERSION_21 else JavaVersion.VERSION_17
 
 repositories {
+    maven { url = uri("https://maven.shedaniel.me/") }
+    maven { url = uri("https://maven.terraformersmc.com/releases/") }
     flatDir {
         dirs("libs")
         dirs("../../libs")
@@ -53,12 +55,14 @@ dependencies {
     include(modRuntimeOnly("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.18.2")!!)
     include(modRuntimeOnly("com.fasterxml:classmate:1.7.0")!!)
     include(modRuntimeOnly("com.github.victools:jsonschema-generator:4.37.0")!!)
-
     include(modRuntimeOnly("com.github.victools:jsonschema-module-jackson:4.36.0")!!)
     include(modRuntimeOnly("io.github.sashirestela:slimvalidator:1.2.2")!!)
     include(modRuntimeOnly("io.github.sashirestela:cleverclient:1.4.4")!!)
-
     include(modImplementation("io.github.sashirestela:simple-openai:3.9.0")!!)
+
+    //deps for singleplayer usage
+    include(modRuntimeOnly("me.shedaniel.cloth:cloth-config-fabric:${property("deps.cloth_config")}")!!)
+    include(modRuntimeOnly("com.dimitrodam.customlan:custom-lan:${property("deps.custom_lan")}")!!)
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.11.3")
     testImplementation("org.mockito:mockito-core:5.14.2")

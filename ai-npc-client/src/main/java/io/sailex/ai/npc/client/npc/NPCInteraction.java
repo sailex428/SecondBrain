@@ -128,7 +128,8 @@ public class NPCInteraction {
 			Nearest Entities:
 			%s
 
-			You should:
+			Instructions:
+			1. When responding to a player's request, break down the actions into distinct steps: MOVE, MINE, DROP, CHAT, etc.
 			1. Create/Choose a skill/actions you want to execute (MINE, MOVE, DROP, CRAFT, CANCEL)
 			2. Check if the actions of skill are possible (correct tools, resources in range)
 			3. Inform player of your skill/intentions via CHAT action
