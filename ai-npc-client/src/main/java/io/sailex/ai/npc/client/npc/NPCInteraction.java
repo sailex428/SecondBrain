@@ -66,16 +66,16 @@ public class NPCInteraction {
 			List<WorldContext.BlockData> blocks) {
 		return String.format(
 				"""
-				Actions: (example) skill that you have done before:
-				%s,
+				Skills: (example) skill that you have done before:
+				%s;
 				Recipes: recipes for items that the player request to craft:
-				%s,
+				%s;
 				Blocks: relevant blocks data that matches the player message:
-				%s,
+				%s;
 				Conversations: previous dialogues between you and the players:
 				%s
 				""",
-				formatSkills(skills), formatRecipes(recipes), formatConversation(conversations), formatBlocks(blocks));
+				formatSkills(skills), formatRecipes(recipes), formatBlocks(blocks), formatConversation(conversations));
 	}
 
 	private static String formatConversation(List<Conversation> conversations) {
@@ -97,14 +97,14 @@ public class NPCInteraction {
 		return formatList(
 				recipes,
 				recipe -> String.format(
-						"- Requirement name: %s, %s, needed items: %s",
-						recipe.getItemsNeeded(), recipe.getTableNeeded(), formatBlocksNeeded(recipe.getItemsNeeded())));
+						"- Item to craft: %s, table needed: %s, needed items (recipe): %s",
+						recipe.getName(), recipe.getTableNeeded(), formatItemsNeeded(recipe.getItemsNeeded())));
 	}
 
-	private static String formatBlocksNeeded(Map<String, Integer> blocksNeeded) {
+	private static String formatItemsNeeded(Map<String, Integer> itemsNeeded) {
 		return formatList(
-				new ArrayList<>(blocksNeeded.entrySet()),
-				entry -> String.format("Block: %s, needed amount: %s", entry.getKey(), entry.getValue()));
+				new ArrayList<>(itemsNeeded.entrySet()),
+				entry -> String.format("- Item: %s, needed amount: %s", entry.getKey(), entry.getValue()));
 	}
 
 	/**
@@ -129,9 +129,9 @@ public class NPCInteraction {
 			%s
 
 			You should:
-			1. Check if the action is possible (correct tools, resources in range)
-			2. Move to nearest appropriate resource if the player request for that
-			3. Inform player of your skill/intentions
+			1. Create/Choose a skill/actions you want to execute (MINE, MOVE, DROP, CRAFT, CANCEL)
+			2. Check if the actions of skill are possible (correct tools, resources in range)
+			3. Inform player of your skill/intentions via CHAT action
 			""",
 				formatBlocks(context.nearbyBlocks()),
 				formatNPCState(context.npcState()),
@@ -183,7 +183,7 @@ public class NPCInteraction {
 	}
 
 	private static String formatPosition(WorldContext.Position position) {
-		return String.format("Coordinates: x: %s y: %s, z: %s", position.x(), position.y(), position.z());
+		return String.format("coordinates: x: %s y: %s, z: %s", position.x(), position.y(), position.z());
 	}
 
 	private static <T> String formatList(List<T> list, Function<T, String> formatter) {

@@ -33,6 +33,7 @@ public class ContextGenerator {
 	private static final int CHUNK_SCAN_RADIUS = 2;
 	private static final int VERTICAL_SCAN_RANGE = 16;
 	private static final int ENTITY_SCAN_RADIUS = 16;
+	private static final int MAX_NUMBER_BLOCKS_CONTEXT = 10;
 
 	private final ClientPlayerEntity npcEntity;
 	private final World world;
@@ -115,6 +116,7 @@ public class ContextGenerator {
 		for (int x = 0; x < 16; x++) {
 			for (int z = 0; z < 16; z++) {
 				for (int y = baseY; y < maxY; y++) {
+					if (nearestBlocks.size() > MAX_NUMBER_BLOCKS_CONTEXT) return;
 					pos.set(chunk.getStartX() + x, y, chunk.getStartZ() + z);
 					if (isAccessible(pos)) {
 						BlockState blockState = world.getBlockState(pos);

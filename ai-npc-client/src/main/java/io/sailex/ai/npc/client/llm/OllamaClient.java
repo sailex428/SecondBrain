@@ -6,7 +6,6 @@ import io.github.ollama4j.models.chat.OllamaChatMessageRole;
 import io.github.ollama4j.models.chat.OllamaChatRequest;
 import io.github.ollama4j.models.chat.OllamaChatRequestBuilder;
 import io.github.ollama4j.types.OllamaModelType;
-import io.sailex.ai.npc.client.constant.Instructions;
 import io.sailex.ai.npc.client.exception.OllamaNotReachableException;
 import io.sailex.ai.npc.client.model.interaction.Skill;
 import io.sailex.ai.npc.client.util.LogUtil;
@@ -69,8 +68,7 @@ public class OllamaClient extends ALLMClient implements ILLMClient {
 						() -> {
 							try {
 								OllamaChatRequest requestModel = builder.withMessage(
-												OllamaChatMessageRole.SYSTEM,
-												systemPrompt + Instructions.STRUCTURE_INSTRUCTIONS)
+												OllamaChatMessageRole.SYSTEM, systemPrompt)
 										.withMessage(OllamaChatMessageRole.USER, userPrompt)
 										.withResponseClass(Skill.class)
 										.build();

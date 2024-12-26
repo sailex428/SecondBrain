@@ -7,7 +7,7 @@
     "targetPosition": {}
   },
   {
-    "action": "mine",
+    "action": "MINE",
     "message": "I will mine the dark oak log.",
     "targetType": null,
     "targetId": null,
