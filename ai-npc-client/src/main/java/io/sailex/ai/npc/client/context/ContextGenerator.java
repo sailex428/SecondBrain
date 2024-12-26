@@ -33,7 +33,7 @@ public class ContextGenerator {
 	private static final int CHUNK_SCAN_RADIUS = 2;
 	private static final int VERTICAL_SCAN_RANGE = 16;
 	private static final int ENTITY_SCAN_RADIUS = 16;
-	private static final int MAX_NUMBER_BLOCKS_CONTEXT = 10;
+	private static final int MAX_NUMBER_BLOCKS_CONTEXT = 7;
 
 	private final ClientPlayerEntity npcEntity;
 	private final World world;

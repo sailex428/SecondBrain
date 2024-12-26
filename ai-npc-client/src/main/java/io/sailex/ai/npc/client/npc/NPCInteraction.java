@@ -1,6 +1,7 @@
 package io.sailex.ai.npc.client.npc;
 
 import com.google.gson.*;
+import io.sailex.ai.npc.client.constant.Instructions;
 import io.sailex.ai.npc.client.model.context.WorldContext;
 import io.sailex.ai.npc.client.model.database.*;
 import io.sailex.ai.npc.client.model.interaction.Skill;
@@ -33,9 +34,11 @@ public class NPCInteraction {
 		return String.format(
 				"""
 			Context from the minecraft world: %s,
-			relevant Resources: %s
+			relevant Resources: %s,
+			Instructions:
+			%s
 			""",
-				context, relevantResources);
+				context, relevantResources, Instructions.getFORMATTING_INSTRUCTION());
 	}
 
 	/**
@@ -127,12 +130,6 @@ public class NPCInteraction {
 
 			Nearest Entities:
 			%s
-
-			Instructions:
-			1. When responding to a player's request, break down the actions into distinct steps: MOVE, MINE, DROP, CHAT, etc.
-			1. Create/Choose a skill/actions you want to execute (MINE, MOVE, DROP, CRAFT, CANCEL)
-			2. Check if the actions of skill are possible (correct tools, resources in range)
-			3. Inform player of your skill/intentions via CHAT action
 			""",
 				formatBlocks(context.nearbyBlocks()),
 				formatNPCState(context.npcState()),

@@ -10,5 +10,5 @@ data class Action(
     val message: String?,
     val targetId: String?,
     val targetType: String?,
-    val targetPosition: WorldContext.Position,
+    val targetPosition: WorldContext.Position
 )
