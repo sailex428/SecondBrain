@@ -12,5 +12,6 @@ import lombok.Getter;
 @Getter
 public class Skill {
 
+	private String name;
 	private List<Action> actions;
 }

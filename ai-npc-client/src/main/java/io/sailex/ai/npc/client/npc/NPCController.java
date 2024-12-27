@@ -45,8 +45,6 @@ public class NPCController {
 	private final ExecutorService executorService;
 	private final BlockingQueue<Action> actionQueue = new LinkedBlockingQueue<>();
 
-	private final List<ActionType> unblockableActions = List.of(ActionType.STOP, ActionType.CHAT);
-
 	private final ClientPlayerEntity npc;
 	private final ILLMClient llmClient;
 	private final ContextGenerator contextGenerator;
@@ -94,14 +92,14 @@ public class NPCController {
 						},
 						executorService)
 				.exceptionally(e -> {
-					LOGGER.error("Error occured handling event", e);
+					LOGGER.error("Error occurred handling event", e);
 					return null;
 				});
 	}
 
 	private void offerActions(Skill skill) {
 		skill.getActions().forEach(action -> {
-			if (unblockableActions.contains(action.getAction())) {
+			if (action.getAction().equals(ActionType.STOP)) {
 				executeAction(action);
 				return;
 			}
@@ -115,6 +113,9 @@ public class NPCController {
 		Action nextAction = actionQueue.poll();
 		if (nextAction == null) {
 			return;
+		}
+		if (baritone.getExploreProcess().isActive()) {
+			cancelBaritone();
 		}
 		executeAction(nextAction);
 	}
@@ -178,15 +179,12 @@ public class NPCController {
 			return;
 		}
 		// ? if <=1.21.1 {
-
 		// ? if <=1.20.4 {
 		Identifier identifier = new Identifier(recipeId);
 		// ?} else {
 		/*Identifier identifier = Identifier.of(recipeId);
-
-		*/
+		 */
 		// ?}
-
 		RecipeEntry<?> recipe = client.world.getRecipeManager().get(identifier).orElse(null);
 		ClientPlayerInteractionManager interactionManager = client.interactionManager;
 		if (recipe != null && interactionManager != null) {
@@ -207,7 +205,7 @@ public class NPCController {
 
 	private void cancelActions() {
 		actionQueue.clear();
-		cancelExploring();
+		cancelBaritone();
 	}
 
 	private void autoRespawn() {
@@ -220,17 +218,10 @@ public class NPCController {
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
 			lookAtPlayer();
 			autoRespawn();
-			handleBaritoneState();
-		});
-	}
-
-	private void handleBaritoneState() {
-		if (!baritoneIsActive()) {
-			if (baritone.getExploreProcess().isActive()) {
-				cancelExploring();
+			if (!baritoneIsActive()) {
+				pollAction();
 			}
-			pollAction();
-		}
+		});
 	}
 
 	private boolean baritoneIsActive() {
@@ -239,7 +230,7 @@ public class NPCController {
 				|| baritone.getMineProcess().isActive();
 	}
 
-	private void cancelExploring() {
+	private void cancelBaritone() {
 		baritone.getCommandManager().execute("cancel");
 	}
 
@@ -257,6 +248,6 @@ public class NPCController {
 		String skillJson = skillToJson(skill);
 		repositoryFactory
 				.getSkillRepository()
-				.insert(getTypes(skill), skillJson, llmClient.generateEmbedding(List.of(skillJson)));
+				.insert(skill.getName(), skillJson, llmClient.generateEmbedding(List.of(skillJson)));
 	}
 }

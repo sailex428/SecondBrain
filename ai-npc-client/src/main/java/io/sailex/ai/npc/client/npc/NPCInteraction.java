@@ -188,12 +188,6 @@ public class NPCInteraction {
 		return list.stream().map(formatter).collect(Collectors.joining("\n"));
 	}
 
-	public static String getTypes(Skill skill) {
-		return skill.getActions().stream()
-				.map(action -> action.getAction().toString())
-				.collect(Collectors.joining(";"));
-	}
-
 	public static String skillToJson(Skill skill) {
 		return GSON.toJson(skill);
 	}
