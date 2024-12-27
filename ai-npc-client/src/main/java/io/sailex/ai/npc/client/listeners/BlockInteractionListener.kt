@@ -1,7 +1,7 @@
 package io.sailex.ai.npc.client.listeners
 
 import io.sailex.ai.npc.client.model.NPC
-import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents
+import net.fabricmc.fabric.api.event.client.player.ClientPlayerBlockBreakEvents
 import net.fabricmc.fabric.api.event.player.UseBlockCallback
 import net.minecraft.util.ActionResult
 
@@ -12,18 +12,16 @@ class BlockInteractionListener(
     npc: NPC,
 ) : AEventListener(npc) {
     override fun register() {
-        PlayerBlockBreakEvents.AFTER.register { _, player, pos, state, _ ->
+        ClientPlayerBlockBreakEvents.AFTER.register { _, player, pos, state ->
             if (player.uuid != npc.id) {
                 return@register
             }
             val blockBreakMessage =
                 String.format(
-                    "You broke the block %S at %S",
+                    "You broke the block %s at %s",
                     state.block.name.string,
                     pos.toShortString(),
                 )
-
-            logger.info(blockBreakMessage)
             handleMessage(blockBreakMessage)
         }
 
@@ -31,11 +29,9 @@ class BlockInteractionListener(
             if (player.uuid == npc.id) {
                 val blockInteractionMessage =
                     String.format(
-                        "You used block at %S",
+                        "You used block at %s",
                         hitResult.blockPos,
                     )
-
-                logger.info(blockInteractionMessage)
                 handleMessage(blockInteractionMessage)
             }
             return@register ActionResult.PASS

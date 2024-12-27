@@ -7,11 +7,12 @@ import org.apache.logging.log4j.Logger
 abstract class AEventListener(
     val npc: NPC,
 ) : IEventListener {
-    protected val logger: Logger = LogManager.getLogger()
+    private val logger: Logger = LogManager.getLogger()
 
     abstract override fun register()
 
     protected fun handleMessage(message: String) {
+        logger.info(message)
         npc.npcController.handleEvent(message)
     }
 }

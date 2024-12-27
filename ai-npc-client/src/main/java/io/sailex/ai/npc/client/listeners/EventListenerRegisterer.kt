@@ -18,8 +18,9 @@ class EventListenerRegisterer(
     fun registerListeners(sqliteClient: SqliteClient) {
         listOf<IEventListener>(
             BlockInteractionListener(npc),
-            EntityListener(npc),
+            EntityLoadListener(npc),
             ChatMessageListener(npc),
+            CombatEventListener(npc),
         ).forEach { listener -> listener.register() }
 
         registerStoppingListener(sqliteClient)

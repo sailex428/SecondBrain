@@ -75,7 +75,7 @@ public class AiNPCClient implements ClientModInitializer {
 				npcInitialized = true;
 
 				// recipes are only after world init loaded
-				//? if <1.21.2
+				// ? if <1.21.2
 				defaultResourcesIndexer.indexRecipes();
 				defaultResourcesIndexer.shutdownExecutor();
 			}
@@ -90,6 +90,7 @@ public class AiNPCClient implements ClientModInitializer {
 		}
 
 		IBaritone baritone = BaritoneAPI.getProvider().getPrimaryBaritone();
+		BaritoneAPI.getSettings().sprintInWater.value = true;
 		ContextGenerator contextGenerator = new ContextGenerator(npcEntity);
 		NPCController controller =
 				new NPCController(npcEntity, llmClient, contextGenerator, repositoryFactory, baritone);
