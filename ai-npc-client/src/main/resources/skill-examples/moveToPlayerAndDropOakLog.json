@@ -1,0 +1,27 @@
+[
+  {
+    "action": "CHAT",
+    "message": "Im walking to you and drop you my oak log.",
+    "targetType": null,
+    "targetId": null,
+    "targetPosition": {}
+  },
+  {
+    "action": "MOVE",
+    "message": "I will move to you, sailex.",
+    "targetType": null,
+    "targetId": null,
+    "targetPosition": {
+      "x": 120,
+      "y": 70,
+      "z": 334
+    }
+  },
+  {
+    "action": "DROP",
+    "message": "I will drop you my oak log.",
+    "targetType": "oak_log",
+    "targetId": null,
+    "targetPosition": {}
+  }
+]

@@ -13,7 +13,7 @@
   "environment": "*",
   "entrypoints": {
     "main": [
-      "io.sailex.aiNpcLauncher.AiNPCLauncher"
+      "io.sailex.ai.npc.launcher.AiNPCLauncher"
     ]
   },
 

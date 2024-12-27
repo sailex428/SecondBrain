@@ -2,9 +2,9 @@ import me.modmuss50.mpp.ReleaseType
 import net.fabricmc.loom.task.RemapJarTask
 
 plugins {
-    id("fabric-loom") version "1.8-SNAPSHOT"
+    id("fabric-loom")
     id("maven-publish")
-    id("me.modmuss50.mod-publish-plugin") version "0.8.1"
+    id("me.modmuss50.mod-publish-plugin")
 }
 
 version =  rootProject.extra["mod.version"] as String
@@ -12,6 +12,8 @@ var modVersion = rootProject.property("mod.version").toString()
 var mcVersion = property("mc.version").toString()
 var fabricLoaderVersion = property("deps.fabric_loader").toString()
 var jarName = "ai-npc-launcher-$mcVersion-v$modVersion-fabric-beta"
+
+val lombokVersion = "1.18.34"
 
 repositories {
     flatDir {
@@ -23,10 +25,10 @@ dependencies {
     minecraft("com.mojang:minecraft:$mcVersion")
     mappings("net.fabricmc:yarn:${mcVersion}+build.${property("deps.yarn_build")}:v2")
     modImplementation("net.fabricmc:fabric-loader:$fabricLoaderVersion")
-    include(modImplementation("net.fabricmc.fabric-api:fabric-api:${property("deps.fapi")}+$mcVersion")!!)
+    modImplementation("net.fabricmc.fabric-api:fabric-api:${property("deps.fapi")}+$mcVersion")
 
-    compileOnly("org.projectlombok:lombok:1.18.34")
-    annotationProcessor("org.projectlombok:lombok:1.18.34")
+    compileOnly("org.projectlombok:lombok:$lombokVersion")
+    annotationProcessor("org.projectlombok:lombok:$lombokVersion")
 
     include(modImplementation("me.earth.headlessmc:headlessmc-launcher-repackaged:2.3.0")!!)
 }
@@ -75,6 +77,7 @@ tasks.processResources {
 }
 
 tasks.register<Jar>("repackageHeadlessmc") {
+    description = "removes asm from headlessmc-launcher jar"
     group = "project"
     from(zipTree("../../libs/headlessmc-launcher-2.3.0.jar")) {
         exclude("org/objectweb/asm/**")
@@ -100,19 +103,19 @@ publishing {
 
 publishMods {
     file.set(tasks.named<RemapJarTask>("remapJar").get().archiveFile)
-    changelog.set(providers.environmentVariable("CHANGELOG"))
-    type.set(ReleaseType.STABLE)
-    displayName.set("v$modVersion - [$mcVersion] AI-NPC-Launcher")
+    changelog.set(rootProject.file("CHANGELOG.md").readText())
     modLoaders.add("fabric")
+    type.set(ReleaseType.BETA)
+    version.set(modVersion)
 
     github {
-        accessToken.set(providers.environmentVariable("GITHUB_TOKEN"))
-        repository.set(providers.environmentVariable("GITHUB_REPOSITORY"))
-        commitish.set("main")
-        tagName.set("v$modVersion-$mcVersion-launcher")
+        accessToken.set(providers.gradleProperty("GITHUB_TOKEN"))
+        parent(project(":").tasks.named("publishGithub"))
     }
+
     modrinth {
-        accessToken.set(providers.environmentVariable("MODRINTH_TOKEN"))
+        displayName.set("v$modVersion [$mcVersion] AI NPC")
+        accessToken.set(providers.gradleProperty("MODRINTH_TOKEN"))
         projectId.set(property("publish.modrinth").toString())
         minecraftVersions.add(mcVersion)
         requires("fabric-api")

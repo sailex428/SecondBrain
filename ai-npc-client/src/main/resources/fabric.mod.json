@@ -10,13 +10,14 @@
   "environment": "client",
   "entrypoints": {
     "client": [
-      "io.sailex.aiNpc.client.AiNPCClient"
+      "io.sailex.ai.npc.client.AiNPCClient"
     ]
   },
   "mixins": [
-    "io.sailex.aiNpc.client.mixins.json"
+    "io.sailex.ai.npc.client.mixins.json"
   ],
   "depends": {
+    "fabric-language-kotlin": ">=1.13.0+kotlin.2.1.0",
     "fabricloader": ">=${loader_version}",
     "fabric": "*",
     "minecraft": "${mcDep}"
