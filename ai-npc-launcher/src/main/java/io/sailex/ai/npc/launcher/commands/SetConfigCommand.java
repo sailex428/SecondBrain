@@ -6,12 +6,18 @@ import static net.minecraft.server.command.CommandManager.literal;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
-import io.sailex.ai.npc.launcher.config.ModConfig;
+import io.sailex.ai.npc.launcher.config.LauncherConfig;
 import io.sailex.ai.npc.launcher.constants.ConfigConstants;
 import io.sailex.ai.npc.launcher.util.LogUtil;
 import net.minecraft.server.command.ServerCommandSource;
 
 public class SetConfigCommand {
+
+	private final LauncherConfig config;
+
+	public SetConfigCommand(LauncherConfig config) {
+		this.config = config;
+	}
 
 	public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
 		dispatcher.register(literal("setconfig")
@@ -35,7 +41,7 @@ public class SetConfigCommand {
 			return 0;
 		}
 
-		if (ModConfig.setProperty(propertyKey, propertyValue)) {
+		if (config.setProperty(propertyKey, propertyValue)) {
 			LogUtil.info("Saved property successfully!");
 			return 1;
 		}

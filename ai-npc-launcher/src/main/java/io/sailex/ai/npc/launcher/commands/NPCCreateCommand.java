@@ -7,7 +7,7 @@ import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
-import io.sailex.ai.npc.launcher.config.ModConfig;
+import io.sailex.ai.npc.launcher.config.LauncherConfig;
 import io.sailex.ai.npc.launcher.constants.ConfigConstants;
 import io.sailex.ai.npc.launcher.launcher.ClientLauncher;
 import io.sailex.ai.npc.launcher.util.LogUtil;
@@ -23,9 +23,11 @@ public class NPCCreateCommand {
 	private static final Set<String> allowedLLMTypes = Set.of("ollama", "openai");
 
 	private final ClientLauncher clientLauncher;
+	private final LauncherConfig config;
 
-	public NPCCreateCommand(ClientLauncher clientLauncher) {
+	public NPCCreateCommand(ClientLauncher clientLauncher, LauncherConfig config) {
 		this.clientLauncher = clientLauncher;
+		this.config = config;
 	}
 
 	public LiteralArgumentBuilder<ServerCommandSource> getCommand() {
@@ -51,7 +53,7 @@ public class NPCCreateCommand {
 
 		LogUtil.info("Creating NPC with name: " + name);
 
-		String type = ModConfig.getProperty(ConfigConstants.NPC_LLM_TYPE);
+		String type = config.getProperty(ConfigConstants.NPC_LLM_TYPE);
 
 		clientLauncher.launchAsync(name, type, getLlmModel(type), isOnline);
 		return 1;
@@ -71,9 +73,9 @@ public class NPCCreateCommand {
 
 	private String getLlmModel(String type) {
 		if (type.equals("ollama")) {
-			return ModConfig.getProperty(ConfigConstants.NPC_LLM_OLLAMA_MODEL);
+			return config.getProperty(ConfigConstants.NPC_LLM_OLLAMA_MODEL);
 		} else if (type.equals("openai")) {
-			return ModConfig.getProperty(ConfigConstants.NPC_LLM_OPENAI_MODEL);
+			return config.getProperty(ConfigConstants.NPC_LLM_OPENAI_MODEL);
 		} else {
 			throw new IllegalArgumentException("Invalid LLM type: " + type);
 		}

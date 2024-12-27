@@ -1,7 +1,6 @@
 package io.sailex.ai.npc.launcher.util;
 
 import io.sailex.ai.npc.launcher.AiNPCLauncher;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
@@ -55,8 +54,8 @@ public class LogUtil {
 	}
 
 	private static void log(MutableText formattedMessage) {
-		AiNPCLauncher.server.getPlayerManager().getPlayerList().stream()
-				.filter(PlayerEntity::isCreativeLevelTwoOp)
+		AiNPCLauncher.getServer().getPlayerManager().getPlayerList().stream()
+				.filter(player -> player.hasPermissionLevel(2))
 				.forEach(player -> player.sendMessage(formattedMessage, false));
 	}
 }

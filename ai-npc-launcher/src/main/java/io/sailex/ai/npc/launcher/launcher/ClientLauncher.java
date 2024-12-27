@@ -1,14 +1,12 @@
 package io.sailex.ai.npc.launcher.launcher;
 
-import io.sailex.ai.npc.launcher.config.ModConfig;
+import io.sailex.ai.npc.launcher.config.LauncherConfig;
 import io.sailex.ai.npc.launcher.constants.ConfigConstants;
 import io.sailex.ai.npc.launcher.constants.ModRepositories;
 import io.sailex.ai.npc.launcher.util.LogUtil;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import lombok.Getter;
 import me.earth.headlessmc.api.command.CommandException;
@@ -17,7 +15,6 @@ import me.earth.headlessmc.launcher.Launcher;
 import me.earth.headlessmc.launcher.LauncherBuilder;
 import me.earth.headlessmc.launcher.auth.AuthException;
 import me.earth.headlessmc.launcher.auth.LaunchAccount;
-import me.earth.headlessmc.launcher.auth.ValidatedAccount;
 import me.earth.headlessmc.launcher.command.FabricCommand;
 import me.earth.headlessmc.launcher.command.download.DownloadCommand;
 import me.earth.headlessmc.launcher.command.download.VersionInfo;
@@ -38,11 +35,15 @@ public class ClientLauncher {
 	private Launcher launcher;
 
 	private final ClientProcessManager npcClientProcesses;
+	private final LauncherConfig launcherConfig;
+	private final NPCAuth npcAuth;
 	private FileManager files;
 	private Version version;
 
-	public ClientLauncher(ClientProcessManager npcClientProcesses) {
+	public ClientLauncher(ClientProcessManager npcClientProcesses, LauncherConfig launcherConfig, NPCAuth npcAuth) {
 		this.npcClientProcesses = npcClientProcesses;
+		this.launcherConfig = launcherConfig;
+		this.npcAuth = npcAuth;
 	}
 
 	/**
@@ -56,7 +57,7 @@ public class ClientLauncher {
 	public void launchAsync(String npcName, String llmType, String llmModel, boolean isOnline) {
 		LaunchAccount account = getAccount(npcName, isOnline);
 		if (account == null) {
-			LogUtil.error("Account could not be found. Please login first using the /login command.");
+			LogUtil.error("Account could not be found. Please check your credentials!");
 			return;
 		}
 		CompletableFuture.runAsync(() -> launch(account, npcName, llmType, llmModel))
@@ -68,6 +69,7 @@ public class ClientLauncher {
 
 	private void launch(LaunchAccount account, String npcName, String llmType, String llmModel) {
 		try {
+			LogUtil.info("Setup launch options");
 			LaunchOptions options = LaunchOptions.builder()
 					.account(account)
 					.additionalJvmArgs(getJvmArgs(llmType, llmModel))
@@ -75,7 +77,7 @@ public class ClientLauncher {
 					.launcher(launcher)
 					.files(files)
 					.parseFlags(launcher, false)
-					.lwjgl(Boolean.parseBoolean(ModConfig.getProperty(ConfigConstants.NPC_IS_HEADLESS)))
+					.lwjgl(Boolean.parseBoolean(launcherConfig.getProperty(ConfigConstants.NPC_IS_HEADLESS)))
 					.prepare(false)
 					.build();
 
@@ -83,13 +85,13 @@ public class ClientLauncher {
 
 			if (process == null) {
 				launcher.getExitManager().exit(0);
-				LogUtil.error("Failed to launch the game.");
+				LogUtil.error("Failed to launch the game");
 			}
 
 			npcClientProcesses.addProcess(npcName, process);
-			LogUtil.info("Launching AI-NPC client.");
+			LogUtil.info("Launching AI-NPC client");
 		} catch (Exception e) {
-			LogUtil.error("Failed to setup or launch the game.");
+			LogUtil.error("Failed to setup or launch the game");
 		}
 	}
 
@@ -199,15 +201,19 @@ public class ClientLauncher {
 
 	private LaunchAccount getAccount(String npcName, boolean isOnline) {
 		if (!isOnline) {
-			LogUtil.info("Logging in offline.");
+			LogUtil.info("Logging in offline");
 			return new LaunchAccount("msa", npcName, UUID.randomUUID().toString(), "", "");
 		}
-		LogUtil.info("Looking for logged in account with name: " + npcName);
-		return launcher.getAccountManager().getAccounts().stream()
-				.map(ValidatedAccount::toLaunchAccount)
-				.filter(account -> account.getName().equals(npcName))
-				.findFirst()
-				.orElse(null);
+		LaunchAccount launchAccount = npcAuth.getSavedAccount(npcName);
+		if (launchAccount != null) {
+			LogUtil.info("Using saved account");
+			return launchAccount;
+		}
+
+		LogUtil.info("Logging in online");
+		if (!npcAuth.login()) return null;
+
+		return npcAuth.getSavedAccount(npcName);
 	}
 
 	private List<String> getJvmArgs(String llmType, String llmModel) {
@@ -219,28 +225,28 @@ public class ClientLauncher {
 			jvmArgs.addAll(List.of(
 					buildJvmArg(
 							ConfigConstants.NPC_LLM_OLLAMA_URL,
-							ModConfig.getProperty(ConfigConstants.NPC_LLM_OLLAMA_URL)),
+							launcherConfig.getProperty(ConfigConstants.NPC_LLM_OLLAMA_URL)),
 					buildJvmArg(ConfigConstants.NPC_LLM_OLLAMA_MODEL, llmModel)));
 		}
 
 		if (llmType.equals("openai")) {
-			String apiKey = ModConfig.getProperty(ConfigConstants.NPC_LLM_OPENAI_API_KEY);
+			String apiKey = launcherConfig.getProperty(ConfigConstants.NPC_LLM_OPENAI_API_KEY);
 			if (apiKey == null || apiKey.isEmpty()) {
 				LogUtil.error("OpenAI API key is missing.");
-				return null;
+				return Collections.emptyList();
 			}
 			jvmArgs.addAll(List.of(
 					buildJvmArg(ConfigConstants.NPC_LLM_OPENAI_MODEL, llmModel),
 					buildJvmArg(ConfigConstants.NPC_LLM_OPENAI_API_KEY, apiKey),
 					buildJvmArg(
 							ConfigConstants.NPC_LLM_OPENAI_BASE_URL,
-							ModConfig.getProperty(ConfigConstants.NPC_LLM_OPENAI_BASE_URL))));
+							launcherConfig.getProperty(ConfigConstants.NPC_LLM_OPENAI_BASE_URL))));
 		}
 		return jvmArgs;
 	}
 
 	private void addServerAddressJvmArg(List<String> jvmArgs) {
-		String serverPort = ModConfig.getProperty(ConfigConstants.NPC_SERVER_PORT);
+		String serverPort = launcherConfig.getProperty(ConfigConstants.NPC_SERVER_PORT);
 		jvmArgs.add(buildJvmArg(ConfigConstants.NPC_SERVER_IP, "localhost"));
 		jvmArgs.add(buildJvmArg(ConfigConstants.NPC_SERVER_PORT, serverPort));
 	}
