@@ -183,7 +183,8 @@ public class NPCController {
 		Identifier identifier = new Identifier(recipeId);
 		// ?} else {
 		/*Identifier identifier = Identifier.of(recipeId);
-		 */
+
+		*/
 		// ?}
 		RecipeEntry<?> recipe = client.world.getRecipeManager().get(identifier).orElse(null);
 		ClientPlayerInteractionManager interactionManager = client.interactionManager;
