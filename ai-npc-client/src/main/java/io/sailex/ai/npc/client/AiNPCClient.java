@@ -90,7 +90,7 @@ public class AiNPCClient implements ClientModInitializer {
 		}
 
 		IBaritone baritone = BaritoneAPI.getProvider().getPrimaryBaritone();
-		ContextGenerator contextGenerator = new ContextGenerator(npcEntity, baritone);
+		ContextGenerator contextGenerator = new ContextGenerator(npcEntity);
 		NPCController controller =
 				new NPCController(npcEntity, llmClient, contextGenerator, repositoryFactory, baritone);
 		NPC npc = new NPC(npcEntity.getUuid(), npcEntity, controller, contextGenerator, llmClient);

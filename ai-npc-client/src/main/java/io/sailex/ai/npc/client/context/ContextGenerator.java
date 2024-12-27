@@ -3,7 +3,6 @@ package io.sailex.ai.npc.client.context;
 import static io.sailex.ai.npc.client.util.ClientWorldUtil.getMiningLevel;
 import static io.sailex.ai.npc.client.util.ClientWorldUtil.getToolNeeded;
 
-import baritone.api.IBaritone;
 import io.sailex.ai.npc.client.model.context.WorldContext;
 import io.sailex.ai.npc.client.model.database.Block;
 import java.util.*;
@@ -33,15 +32,12 @@ public class ContextGenerator {
 	private static final int CHUNK_SCAN_RADIUS = 2;
 	private static final int VERTICAL_SCAN_RANGE = 16;
 	private static final int ENTITY_SCAN_RADIUS = 16;
-	private static final int MAX_NUMBER_BLOCKS_CONTEXT = 7;
 
 	private final ClientPlayerEntity npcEntity;
 	private final World world;
-	private final IBaritone baritone;
 
-	public ContextGenerator(ClientPlayerEntity npcEntity, IBaritone baritone) {
+	public ContextGenerator(ClientPlayerEntity npcEntity) {
 		this.npcEntity = npcEntity;
-		this.baritone = baritone;
 		this.world = npcEntity.getWorld();
 		this.service = Executors.newFixedThreadPool(3);
 	}
@@ -66,17 +62,12 @@ public class ContextGenerator {
 	 * @param blocks 	 relevant blocks from db
 	 * @return blockData list of relevant blockData (with position)
 	 */
-	public List<WorldContext.BlockData> getRelevantBlockData(List<Block> blocks) {
-		List<WorldContext.BlockData> blockDataList = new ArrayList<>();
-		for (Block block : blocks) {
-			List<BlockPos> blocksOccurrence = baritone.getWorldProvider()
-					.getCurrentWorld()
-					.getCachedWorld()
-					.getLocationsOf(block.getId(), 2, npcEntity.getBlockX(), npcEntity.getBlockY(), 4);
-			blocksOccurrence.forEach(
-					pos -> blockDataList.add(buildBlockData(block.getId(), world.getBlockState(pos), pos)));
-		}
-		return blockDataList;
+	public List<WorldContext.BlockData> getRelevantBlockData(
+			List<Block> blocks, List<WorldContext.BlockData> contextBlocks) {
+		return contextBlocks.stream()
+				.filter(blockData -> blocks.stream()
+						.anyMatch(block -> blockData.type().replaceAll(" ", "_").equals(block.getId())))
+				.toList();
 	}
 
 	private WorldContext.NPCState getNpcState() {
@@ -116,7 +107,6 @@ public class ContextGenerator {
 		for (int x = 0; x < 16; x++) {
 			for (int z = 0; z < 16; z++) {
 				for (int y = baseY; y < maxY; y++) {
-					if (nearestBlocks.size() > MAX_NUMBER_BLOCKS_CONTEXT) return;
 					pos.set(chunk.getStartX() + x, y, chunk.getStartZ() + z);
 					if (isAccessible(pos)) {
 						BlockState blockState = world.getBlockState(pos);

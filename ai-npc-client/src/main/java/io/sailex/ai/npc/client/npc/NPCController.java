@@ -76,14 +76,16 @@ public class NPCController {
 		CompletableFuture.runAsync(
 						() -> {
 							Resources resources = repositoryFactory.getRelevantResources(eventPrompt);
+							WorldContext worldContext = contextGenerator.getContext();
 							String relevantResources = NPCInteraction.formatResources(
 									resources.getSkillResources(),
 									resources.getRequirements(),
 									resources.getConversations(),
-									contextGenerator.getRelevantBlockData(resources.getBlocks()));
-							String context = NPCInteraction.formatContext(contextGenerator.getContext());
+									contextGenerator.getRelevantBlockData(
+											resources.getBlocks(), worldContext.nearbyBlocks()));
+							String formattedContext = NPCInteraction.formatContext(worldContext);
 
-							String systemPrompt = NPCInteraction.buildSystemPrompt(context, relevantResources);
+							String systemPrompt = NPCInteraction.buildSystemPrompt(formattedContext, relevantResources);
 
 							LOGGER.info("User prompt: {}, System prompt: {}", eventPrompt, systemPrompt);
 
@@ -184,6 +186,7 @@ public class NPCController {
 		// ?} else {
 		/*Identifier identifier = Identifier.of(recipeId);
 
+
 		*/
 		// ?}
 		RecipeEntry<?> recipe = client.world.getRecipeManager().get(identifier).orElse(null);
@@ -249,6 +252,6 @@ public class NPCController {
 		String skillJson = skillToJson(skill);
 		repositoryFactory
 				.getSkillRepository()
-				.insert(skill.getName(), skillJson, llmClient.generateEmbedding(List.of(skillJson)));
+				.insert(skill.getSkillName(), skillJson, llmClient.generateEmbedding(List.of(skillJson)));
 	}
 }

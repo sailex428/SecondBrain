@@ -163,7 +163,7 @@ public class NPCInteraction {
 
 	private static String formatBlocks(List<WorldContext.BlockData> blocks) {
 		return formatList(
-				blocks,
+				blocks.stream().limit(7).toList(),
 				block -> String.format(
 						"- Block %s is at %s can be mined with tool %s %s",
 						block.type(), formatPosition(block.position()), block.mineLevel(), block.toolNeeded()));
