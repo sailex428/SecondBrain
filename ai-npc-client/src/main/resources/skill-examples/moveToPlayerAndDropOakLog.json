@@ -1,14 +1,14 @@
 [
   {
     "action": "CHAT",
-    "message": "Im walking to you and drop you my diamond ore.",
+    "message": "Im walking to you and drop you my oak log.",
     "targetType": null,
     "targetId": null,
     "targetPosition": {}
   },
   {
     "action": "MOVE",
-    "message": "I will move to the location 120 70 334.",
+    "message": "I will move to you, sailex.",
     "targetType": null,
     "targetId": null,
     "targetPosition": {
@@ -19,8 +19,8 @@
   },
   {
     "action": "DROP",
-    "message": "I will drop you my diamond ore.",
-    "targetType": "diamond_ore",
+    "message": "I will drop you my oak log.",
+    "targetType": "oak_log",
     "targetId": null,
     "targetPosition": {}
   }
