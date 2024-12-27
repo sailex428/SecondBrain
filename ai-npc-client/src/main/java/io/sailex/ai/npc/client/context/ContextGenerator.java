@@ -10,7 +10,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.RegistryKey;
@@ -31,7 +30,7 @@ public class ContextGenerator {
 	private final ExecutorService service;
 	private static final int CHUNK_SCAN_RADIUS = 2;
 	private static final int VERTICAL_SCAN_RANGE = 16;
-	private static final int ENTITY_SCAN_RADIUS = 16;
+	private static final int ENTITY_SCAN_RADIUS = 24;
 
 	private final ClientPlayerEntity npcEntity;
 	private final World world;
@@ -146,10 +145,10 @@ public class ContextGenerator {
 				.getOtherEntities(npcEntity, npcEntity.getBoundingBox().expand(ENTITY_SCAN_RADIUS), entity -> true)
 				.stream()
 				.map(entity -> new WorldContext.EntityData(
-						entity.getType().toString(),
+						String.valueOf(entity.getId()),
+						entity.getName().getString(),
 						new WorldContext.Position((int) entity.getX(), (int) entity.getY(), (int) entity.getZ()),
-						entity.canHit(),
-						entity instanceof PlayerEntity))
+						entity.canHit()))
 				.toList();
 	}
 

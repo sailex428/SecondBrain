@@ -30,10 +30,7 @@ public class ConnectionUtil {
 				/*? if >=1.21.1 {*/
 				/*,
 				null
-
-
-				*/
-				/*?}*/
+				*//*?}*/
 				);
 	}
 }

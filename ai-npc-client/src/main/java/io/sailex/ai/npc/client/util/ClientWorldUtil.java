@@ -1,6 +1,8 @@
 package io.sailex.ai.npc.client.util;
 
 import net.minecraft.block.BlockState;
+import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.registry.tag.BlockTags;
 
@@ -11,6 +13,10 @@ public class ClientWorldUtil {
 	public static PlayerEntity getClosestPlayer(PlayerEntity player) {
 		return player.getWorld()
 				.getClosestPlayer(player.getX(), player.getY(), player.getZ(), 10, entity -> !entity.equals(player));
+	}
+
+	public static Entity getEntity(String targetId, ClientPlayerEntity player) {
+		return player.getWorld().getEntityById(Integer.parseInt(targetId));
 	}
 
 	public static String getMiningLevel(BlockState state) {

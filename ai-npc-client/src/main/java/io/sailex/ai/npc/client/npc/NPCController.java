@@ -24,6 +24,7 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.network.ClientPlayerInteractionManager;
 import net.minecraft.command.argument.EntityAnchorArgumentType;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
@@ -130,6 +131,7 @@ public class NPCController {
 			case MINE -> mine(action.getTargetPosition());
 			case DROP -> dropItem(action.getTargetType());
 			case CRAFT -> craftItem(action.getTargetType());
+			case ATTACK -> attack(action.getTargetId());
 			case STOP -> cancelActions();
 			default -> LOGGER.warn("Action type not recognized in: {}", actionType);
 		}
@@ -153,6 +155,20 @@ public class NPCController {
 		BetterBlockPos blockPos = new BetterBlockPos(targetPosition.x(), targetPosition.y(), targetPosition.z());
 		baritone.getSelectionManager().addSelection(blockPos, blockPos);
 		baritone.getBuilderProcess().clearArea(blockPos, blockPos);
+	}
+
+	private void attack(String targetId) {
+		if (targetId == null) {
+			LOGGER.warn("Target id is null, cannot attack");
+			return;
+		}
+		ClientPlayerInteractionManager interactionManager = client.interactionManager;
+		if (interactionManager != null) {
+			Entity targetEntity = ClientWorldUtil.getEntity(targetId, npc);
+			npc.lookAt(EntityAnchorArgumentType.EntityAnchor.EYES, targetEntity.getEyePos());
+			interactionManager.attackEntity(npc, targetEntity);
+			npc.swingHand(npc.getActiveHand());
+		}
 	}
 
 	private void dropItem(String targetItem) {
@@ -180,15 +196,13 @@ public class NPCController {
 			LOGGER.warn("Could not craft item {} cause client world is null", recipeId);
 			return;
 		}
-		// ? if <=1.21.1 {
-		// ? if <=1.20.4 {
+		//? if <=1.21.1 {
+		//? if <=1.20.4 {
 		Identifier identifier = new Identifier(recipeId);
-		// ?} else {
+		 
+		//?} else {
 		/*Identifier identifier = Identifier.of(recipeId);
-
-
-		*/
-		// ?}
+		*///?}
 		RecipeEntry<?> recipe = client.world.getRecipeManager().get(identifier).orElse(null);
 		ClientPlayerInteractionManager interactionManager = client.interactionManager;
 		if (recipe != null && interactionManager != null) {
@@ -196,7 +210,7 @@ public class NPCController {
 		} else {
 			LOGGER.warn("Could not find recipe with id: {}", recipeId);
 		}
-		// ?}
+		//?}
 	}
 
 	private void lookAtPlayer() {

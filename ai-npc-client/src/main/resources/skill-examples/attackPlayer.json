@@ -1,0 +1,16 @@
+[
+  {
+    "action": "CHAT",
+    "message": "I will attack the sailex428!",
+    "targetType": null,
+    "targetId": null,
+    "targetPosition": {}
+  },
+  {
+    "action": "ATTACK",
+    "message": "I will attack the sailex428!",
+    "targetType": null,
+    "targetId": "547930805",
+    "targetPosition": {}
+  }
+]
