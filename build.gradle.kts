@@ -56,7 +56,7 @@ publishMods {
         webhookUrl.set(providers.gradleProperty("DISCORD_WEBHOOK"))
         username.set("Update Bot")
         avatarUrl.set("https://www.sailex.me/img/sailex_head.png")
-        content.set(changelog.map { "## New version of AI-NPC is out! [1.0.8] \n$it" })
+        content.set(changelog.map { "## New version of AI-NPC is out! [1.0.9] \n$it" })
         setPlatformsAllFrom(project(":ai-npc-client"))
     }
 }

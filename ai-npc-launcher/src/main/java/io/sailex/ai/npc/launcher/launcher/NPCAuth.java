@@ -4,8 +4,6 @@ import io.sailex.ai.npc.launcher.AiNPCLauncher;
 import io.sailex.ai.npc.launcher.config.AuthConfig;
 import io.sailex.ai.npc.launcher.constants.ConfigConstants;
 import io.sailex.ai.npc.launcher.util.LogUtil;
-import java.awt.*;
-import java.net.URI;
 import java.util.Map;
 import lombok.Setter;
 import me.earth.headlessmc.launcher.auth.AuthException;
@@ -16,6 +14,7 @@ import net.raphimc.minecraftauth.MinecraftAuth;
 import net.raphimc.minecraftauth.step.java.session.StepFullJavaSession;
 import net.raphimc.minecraftauth.step.msa.StepCredentialsMsaCode;
 import net.raphimc.minecraftauth.step.msa.StepMsaDeviceCode;
+import org.apache.commons.lang3.SystemUtils;
 
 public class NPCAuth {
 
@@ -79,12 +78,20 @@ public class NPCAuth {
 		LogUtil.info("Go to", true);
 		LogUtil.info(msaDeviceCode.getDirectVerificationUri(), true);
 		try {
-			URI url = URI.create(msaDeviceCode.getDirectVerificationUri());
-			if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
-				Desktop.getDesktop().browse(url);
+			String url = msaDeviceCode.getDirectVerificationUri();
+			String os = SystemUtils.OS_NAME.toLowerCase();
+			ProcessBuilder processBuilder;
+			if (os.contains("win")) {
+				processBuilder = new ProcessBuilder("rundll32", "url.dll,FileProtocolHandler", url);
+			} else if (os.contains("mac")) {
+				processBuilder = new ProcessBuilder("open", url);
+			} else if (os.contains("nix") || os.contains("nux")) {
+				processBuilder = new ProcessBuilder("xdg-open", url);
 			} else {
-				new ProcessBuilder("open", url.toString()).start();
+				throw new UnsupportedOperationException(
+						"Unsupported operating system. Please open the link manually: " + url);
 			}
+			processBuilder.start();
 		} catch (Exception e) {
 			LogUtil.error("Failed to open the verification URL automatically" + e);
 		}
