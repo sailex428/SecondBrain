@@ -1,16 +1,32 @@
 package io.sailex.ai.npc.client.util;
 
 import net.minecraft.block.BlockState;
+import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.registry.tag.BlockTags;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class ClientWorldUtil {
+
+	private static final Logger LOGGER = LogManager.getLogger(ClientWorldUtil.class);
 
 	private ClientWorldUtil() {}
 
 	public static PlayerEntity getClosestPlayer(PlayerEntity player) {
 		return player.getWorld()
 				.getClosestPlayer(player.getX(), player.getY(), player.getZ(), 10, entity -> !entity.equals(player));
+	}
+
+	public static Entity getEntity(String targetId, ClientPlayerEntity player) {
+		try {
+			int id = Integer.parseInt(targetId);
+			return player.getWorld().getEntityById(id);
+		} catch (NumberFormatException e) {
+			LOGGER.warn("Could not convert targetId: {} to int", targetId);
+			return null;
+		}
 	}
 
 	public static String getMiningLevel(BlockState state) {

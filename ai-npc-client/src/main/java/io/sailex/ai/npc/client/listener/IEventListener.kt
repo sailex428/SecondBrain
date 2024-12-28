@@ -1,4 +1,4 @@
-package io.sailex.ai.npc.client.listeners
+package io.sailex.ai.npc.client.listener
 
 fun interface IEventListener {
     /**

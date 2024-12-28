@@ -1,4 +1,4 @@
-package io.sailex.ai.npc.client.listeners
+package io.sailex.ai.npc.client.listener
 
 import io.sailex.ai.npc.client.database.SqliteClient
 import io.sailex.ai.npc.client.model.NPC
@@ -18,8 +18,9 @@ class EventListenerRegisterer(
     fun registerListeners(sqliteClient: SqliteClient) {
         listOf<IEventListener>(
             BlockInteractionListener(npc),
-            EntityListener(npc),
+            EntityLoadListener(npc),
             ChatMessageListener(npc),
+            CombatEventListener(npc),
         ).forEach { listener -> listener.register() }
 
         registerStoppingListener(sqliteClient)

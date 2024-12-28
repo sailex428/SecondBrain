@@ -18,7 +18,7 @@ public record WorldContext(
 
 	public record BlockData(String type, Position position, String mineLevel, String toolNeeded) {}
 
-	public record EntityData(String type, Position position, boolean canHit, boolean isPlayer) {}
+	public record EntityData(String id, String name, Position position, boolean canHit) {}
 
 	public record ItemData(String type, int count, int damage, int slot) {}
 

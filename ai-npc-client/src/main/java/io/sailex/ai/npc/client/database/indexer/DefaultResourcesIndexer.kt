@@ -1,4 +1,4 @@
-package io.sailex.ai.npc.client.database.index
+package io.sailex.ai.npc.client.database.indexer
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.sailex.ai.npc.client.AiNPCClient.client
@@ -37,11 +37,14 @@ class DefaultResourcesIndexer(
     }
 
     /**
-     * Indexes the actions set in resources/actions-examples dir
+     * Indexes the skills set in resources/actions-examples dir
      */
     private fun indexExampleSkills() {
+        val exampleSkills = getAllResourcesContent("skill-examples")
+        if (isAlreadyIndexed(exampleSkills.size, skillRepository.selectCount())) return
+
         logger.info("Indexing all example Skills")
-        getAllResourcesContent("skill-examples").forEach {
+        exampleSkills.forEach {
             indexAsync {
                 val cleanedJson = removeWhiteSpaces(it.value)
                 skillRepository.insert(
@@ -57,8 +60,10 @@ class DefaultResourcesIndexer(
      * Indexes all blocks - identifier, name
      */
     private fun indexBlocks() {
-        logger.info("Indexing all Blocks")
         val blocks = Registries.BLOCK
+        if (isAlreadyIndexed(blocks.size(), blockRepository.selectCount())) return
+
+        logger.info("Indexing all Blocks")
         blocks.forEach {
             indexAsync {
                 val name = it.translationKey.toString()
@@ -81,13 +86,13 @@ class DefaultResourcesIndexer(
             LogUtil.error("Could not get 'recipes', cause the client world is null")
             return
         }
-        val recipes: Collection<RecipeEntry<*>> = world.recipeManager.values()
+        val recipes: Collection<RecipeEntry<*>> = world.recipeManager.values().filter { !it.value.ingredients.isEmpty() }
+        if (isAlreadyIndexed(recipes.size, recipesRepository.selectCount())) return
 
         logger.info("Indexing all Recipes")
         recipes.forEach {
             val recipeValue = it.value
             val ingredients = recipeValue.ingredients
-            if (ingredients.isEmpty()) return@forEach
             indexAsync {
                 val recipeName = it.id.path
                 recipesRepository.insert(
@@ -126,12 +131,17 @@ class DefaultResourcesIndexer(
         }
     }
 
+    fun shutdownExecutor() {
+        executorService.shutdown()
+    }
+
     //TODO: maybe use gson?
     private fun removeWhiteSpaces(content: String): String {
         return mapper.writeValueAsString(mapper.readTree(content))
     }
 
-    fun shutdownExecutor() {
-        executorService.shutdown()
+    private fun isAlreadyIndexed(expected: Int, indexed: Int): Boolean {
+        return indexed >= expected
     }
+
 }

@@ -173,11 +173,11 @@ public class NPCInteraction {
 		return formatList(
 				entities,
 				entity -> String.format(
-						"- Entity of type: %s %s, %s %s",
-						entity.type(),
-						entity.isPlayer() ? "is a Player" : "",
-						entity.canHit() ? "this entity can hit you" : "",
-						formatPosition(entity.position())));
+						"- Entity %s with targetId: %s at %s%s",
+						entity.name(),
+						entity.id(),
+						formatPosition(entity.position()),
+						entity.canHit() ? " can hit you" : ""));
 	}
 
 	private static String formatPosition(WorldContext.Position position) {

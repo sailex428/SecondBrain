@@ -24,6 +24,7 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.network.ClientPlayerInteractionManager;
 import net.minecraft.command.argument.EntityAnchorArgumentType;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
@@ -130,6 +131,7 @@ public class NPCController {
 			case MINE -> mine(action.getTargetPosition());
 			case DROP -> dropItem(action.getTargetType());
 			case CRAFT -> craftItem(action.getTargetType());
+			case ATTACK -> attack(action.getTargetId());
 			case STOP -> cancelActions();
 			default -> LOGGER.warn("Action type not recognized in: {}", actionType);
 		}
@@ -153,6 +155,20 @@ public class NPCController {
 		BetterBlockPos blockPos = new BetterBlockPos(targetPosition.x(), targetPosition.y(), targetPosition.z());
 		baritone.getSelectionManager().addSelection(blockPos, blockPos);
 		baritone.getBuilderProcess().clearArea(blockPos, blockPos);
+	}
+
+	private void attack(String targetId) {
+		if (targetId == null) {
+			LOGGER.warn("Target id is null, cannot attack");
+			return;
+		}
+		ClientPlayerInteractionManager interactionManager = client.interactionManager;
+		Entity targetEntity = ClientWorldUtil.getEntity(targetId, npc);
+		if (interactionManager != null && targetEntity != null) {
+			npc.lookAt(EntityAnchorArgumentType.EntityAnchor.EYES, targetEntity.getEyePos());
+			interactionManager.attackEntity(npc, targetEntity);
+			npc.swingHand(npc.getActiveHand());
+		}
 	}
 
 	private void dropItem(String targetItem) {
@@ -183,6 +199,7 @@ public class NPCController {
 		// ? if <=1.21.1 {
 		// ? if <=1.20.4 {
 		Identifier identifier = new Identifier(recipeId);
+
 		// ?} else {
 		/*Identifier identifier = Identifier.of(recipeId);
 
@@ -250,8 +267,10 @@ public class NPCController {
 
 	private void saveSkill(Skill skill) {
 		String skillJson = skillToJson(skill);
-		repositoryFactory
-				.getSkillRepository()
-				.insert(skill.getSkillName(), skillJson, llmClient.generateEmbedding(List.of(skillJson)));
+		if (skill.getSkillName() != null) {
+			repositoryFactory
+					.getSkillRepository()
+					.insert(skill.getSkillName(), skillJson, llmClient.generateEmbedding(List.of(skillJson)));
+		}
 	}
 }

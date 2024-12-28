@@ -18,7 +18,7 @@ class RepositoryFactory(
     val blockRepository = BlockRepository(sqliteClient)
 
     fun initRepositories() {
-        sqliteClient.initDatabase("actions")
+        sqliteClient.initDatabase("npc")
         recipesRepository.init()
         skillRepository.init()
         conversationRepository.init()

@@ -1,0 +1,27 @@
+[
+  {
+    "action": "CHAT",
+    "message": "I will attack the chicken!",
+    "targetType": null,
+    "targetId": null,
+    "targetPosition": {}
+  },
+  {
+    "action": "MOVE",
+    "message": "I move to the chickens over there.",
+    "targetType": null,
+    "targetId": null,
+    "targetPosition": {
+      "x": 654,
+      "y": 80,
+      "z": -345
+    }
+  },
+  {
+    "action": "ATTACK",
+    "message": "I will attack the chicken!",
+    "targetType": null,
+    "targetId": "123456789",
+    "targetPosition": {}
+  }
+]

@@ -6,8 +6,8 @@ import io.sailex.ai.npc.client.model.database.Resource
 import io.sailex.ai.npc.client.util.VectorUtil
 
 class BlockRepository(
-    val sqliteClient: SqliteClient,
-) : ARepository() {
+    sqliteClient: SqliteClient,
+) : ARepository(sqliteClient) {
     override fun createTable() {
         val sql = """
             CREATE TABLE IF NOT EXISTS blocks (
@@ -33,6 +33,10 @@ class BlockRepository(
         statement.setString(2, name)
         statement.setBytes(3, VectorUtil.convertToBytes(nameEmbedding))
         sqliteClient.insert(statement)
+    }
+
+    fun selectCount(): Int {
+        return super.selectCount("blocks")
     }
 
     override fun selectAll(): List<Resource> {

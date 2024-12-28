@@ -7,8 +7,8 @@ import io.sailex.ai.npc.client.util.VectorUtil
 import java.sql.ResultSet
 
 class RecipesRepository(
-    val sqliteClient: SqliteClient,
-) : ARepository() {
+    sqliteClient: SqliteClient,
+) : ARepository(sqliteClient) {
     override fun createTable() {
         val sql = """
             CREATE TABLE IF NOT EXISTS recipes (
@@ -40,6 +40,10 @@ class RecipesRepository(
         statement.setString(4, tableNeeded)
         statement.setString(5, itemsNeeded)
         sqliteClient.insert(statement)
+    }
+
+    fun selectCount(): Int {
+        return super.selectCount("recipes")
     }
 
     fun select(requirementIds: List<Int>): List<Resource> {
