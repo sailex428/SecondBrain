@@ -30,5 +30,6 @@ public class Instructions {
 				You could also use the copy the structure and just fill it with your data.
 				You should combine multiple actions (e.g., CHAT, MOVE, DROP) to fulfill the request.
 				e.g. for DROP you must specify just the block name in targetType. For CRAFT you need the whole id in targetType.
+				You can also do skills without CHAT messages.
 				""";
 }

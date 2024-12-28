@@ -15,8 +15,6 @@ public class SqliteClient {
 	private static final Logger LOGGER = LogManager.getLogger(SqliteClient.class);
 	private Connection connection;
 
-	private boolean isFirstInit = false;
-
 	/**
 	 * Create the database and tables.
 	 */
@@ -38,7 +36,6 @@ public class SqliteClient {
 		File sqlDbDir = new File(configDir, AiNPCClient.MOD_ID + "_db");
 		if (sqlDbDir.mkdirs()) {
 			LOGGER.info("Database directory created at: {}", sqlDbDir.getAbsolutePath());
-			isFirstInit = true;
 		}
 		return sqlDbDir.getAbsolutePath();
 	}
@@ -103,9 +100,5 @@ public class SqliteClient {
 		} catch (SQLException e) {
 			LOGGER.error("Error closing database connection: {}", e.getMessage());
 		}
-	}
-
-	public boolean isFirstInit() {
-		return isFirstInit;
 	}
 }

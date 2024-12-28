@@ -90,8 +90,8 @@ public class NPCController {
 
 							LOGGER.info("User prompt: {}, System prompt: {}", eventPrompt, systemPrompt);
 
-							//							String generatedResponse = llmClient.generateResponse(eventPrompt, systemPrompt);
-							//							offerActions(NPCInteraction.parseResponse(generatedResponse));
+							String generatedResponse = llmClient.generateResponse(eventPrompt, systemPrompt);
+							offerActions(NPCInteraction.parseResponse(generatedResponse));
 						},
 						executorService)
 				.exceptionally(e -> {
@@ -163,8 +163,8 @@ public class NPCController {
 			return;
 		}
 		ClientPlayerInteractionManager interactionManager = client.interactionManager;
-		if (interactionManager != null) {
-			Entity targetEntity = ClientWorldUtil.getEntity(targetId, npc);
+		Entity targetEntity = ClientWorldUtil.getEntity(targetId, npc);
+		if (interactionManager != null && targetEntity != null) {
 			npc.lookAt(EntityAnchorArgumentType.EntityAnchor.EYES, targetEntity.getEyePos());
 			interactionManager.attackEntity(npc, targetEntity);
 			npc.swingHand(npc.getActiveHand());
@@ -202,6 +202,7 @@ public class NPCController {
 
 		// ?} else {
 		/*Identifier identifier = Identifier.of(recipeId);
+
 
 		*/
 		// ?}

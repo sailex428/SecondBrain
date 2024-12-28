@@ -8,10 +8,10 @@ import net.minecraft.util.math.Vec3d;
 
 public interface PlayerDamageCallback {
 
-	Event<PlayerDamageCallback> EVENT =
-			EventFactory.createArrayBacked(PlayerDamageCallback.class, (listeners) -> (attacker, damageName, pos) -> {
+	Event<PlayerDamageCallback> EVENT = EventFactory.createArrayBacked(
+			PlayerDamageCallback.class, (listeners) -> (attacker, target, damageName, pos) -> {
 				for (PlayerDamageCallback listener : listeners) {
-					ActionResult result = listener.interact(attacker, damageName, pos);
+					ActionResult result = listener.interact(attacker, target, damageName, pos);
 
 					if (result != ActionResult.PASS) {
 						return result;
@@ -20,5 +20,5 @@ public interface PlayerDamageCallback {
 				return ActionResult.PASS;
 			});
 
-	ActionResult interact(Entity attacker, String damageName, Vec3d pos);
+	ActionResult interact(Entity attacker, Entity target, String damageName, Vec3d pos);
 }

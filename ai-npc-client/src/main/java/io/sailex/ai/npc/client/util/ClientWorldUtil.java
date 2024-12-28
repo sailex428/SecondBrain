@@ -5,8 +5,12 @@ import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.registry.tag.BlockTags;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class ClientWorldUtil {
+
+	private static final Logger LOGGER = LogManager.getLogger(ClientWorldUtil.class);
 
 	private ClientWorldUtil() {}
 
@@ -16,7 +20,13 @@ public class ClientWorldUtil {
 	}
 
 	public static Entity getEntity(String targetId, ClientPlayerEntity player) {
-		return player.getWorld().getEntityById(Integer.parseInt(targetId));
+		try {
+			int id = Integer.parseInt(targetId);
+			return player.getWorld().getEntityById(id);
+		} catch (NumberFormatException e) {
+			LOGGER.warn("Could not convert targetId: {} to int", targetId);
+			return null;
+		}
 	}
 
 	public static String getMiningLevel(BlockState state) {

@@ -26,8 +26,8 @@ class CombatEventListener(
             return@register ActionResult.PASS
         }
 
-        PlayerDamageCallback.EVENT.register { attacker, damageName, pos ->
-            if (attacker != null) {
+        PlayerDamageCallback.EVENT.register { attacker, target, damageName, pos ->
+            if (attacker != null && target.uuid == npc.id) {
                 val damageSourceMessage = String.format(
                     "You got damage of type %s by Attacker %s at %s", damageName, attacker.name.string, pos,
                 )
