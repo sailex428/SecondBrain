@@ -267,8 +267,10 @@ public class NPCController {
 
 	private void saveSkill(Skill skill) {
 		String skillJson = skillToJson(skill);
-		repositoryFactory
-				.getSkillRepository()
-				.insert(skill.getSkillName(), skillJson, llmClient.generateEmbedding(List.of(skillJson)));
+		if (skill.getSkillName() != null) {
+			repositoryFactory
+					.getSkillRepository()
+					.insert(skill.getSkillName(), skillJson, llmClient.generateEmbedding(List.of(skillJson)));
+		}
 	}
 }
