@@ -98,3 +98,11 @@ This project is licensed under the [LGPL-3.0](LICENSE.md).
 
 ## Disclaimer
 [DISCLAIMER](https://github.com/sailex428/AI-NPC-Launcher/blob/main/DISCLAIMER.md)
+
+## Credits
+This project utilizes components and draws inspiration from the following projects:
+
+- [HeadlessMC](https://github.com/3arthqu4ke/headlessmc)
+- [Baritone](https://github.com/cabaletta/baritone)
+
+Thank you to the developers of these open-source projects for their amazing work!
