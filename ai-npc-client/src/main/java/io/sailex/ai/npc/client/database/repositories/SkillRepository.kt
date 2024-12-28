@@ -6,8 +6,8 @@ import io.sailex.ai.npc.client.model.database.Resource
 import io.sailex.ai.npc.client.util.VectorUtil
 
 class SkillRepository(
-    val sqliteClient: SqliteClient,
-) : ARepository() {
+    sqliteClient: SqliteClient,
+) : ARepository(sqliteClient) {
     override fun createTable() {
         val sql = """
             CREATE TABLE IF NOT EXISTS skills (
@@ -34,6 +34,10 @@ class SkillRepository(
         statement.setString(2, example)
         statement.setBytes(3, VectorUtil.convertToBytes(exampleEmbedding))
         sqliteClient.insert(statement)
+    }
+
+    fun selectCount(): Int {
+        return super.selectCount("skills")
     }
 
     override fun selectAll(): List<Resource> {

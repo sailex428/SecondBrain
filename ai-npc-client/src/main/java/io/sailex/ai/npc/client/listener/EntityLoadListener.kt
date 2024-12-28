@@ -1,8 +1,7 @@
-package io.sailex.ai.npc.client.listeners
+package io.sailex.ai.npc.client.listener
 
 import io.sailex.ai.npc.client.model.NPC
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientEntityEvents
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents
 import net.minecraft.entity.player.PlayerEntity
 
 class EntityLoadListener(

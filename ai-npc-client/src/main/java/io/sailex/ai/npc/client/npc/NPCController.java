@@ -90,8 +90,8 @@ public class NPCController {
 
 							LOGGER.info("User prompt: {}, System prompt: {}", eventPrompt, systemPrompt);
 
-							String generatedResponse = llmClient.generateResponse(eventPrompt, systemPrompt);
-							offerActions(NPCInteraction.parseResponse(generatedResponse));
+							//							String generatedResponse = llmClient.generateResponse(eventPrompt, systemPrompt);
+							//							offerActions(NPCInteraction.parseResponse(generatedResponse));
 						},
 						executorService)
 				.exceptionally(e -> {
@@ -202,7 +202,8 @@ public class NPCController {
 
 		// ?} else {
 		/*Identifier identifier = Identifier.of(recipeId);
-		 */
+
+		*/
 		// ?}
 		RecipeEntry<?> recipe = client.world.getRecipeManager().get(identifier).orElse(null);
 		ClientPlayerInteractionManager interactionManager = client.interactionManager;

@@ -6,8 +6,8 @@ import io.sailex.ai.npc.client.model.database.Resource
 import io.sailex.ai.npc.client.util.VectorUtil
 
 class ConversationRepository(
-    val sqliteClient: SqliteClient,
-) : ARepository() {
+    sqliteClient: SqliteClient,
+) : ARepository(sqliteClient) {
     override fun createTable() {
         val sql = """
             CREATE TABLE IF NOT EXISTS conversations (

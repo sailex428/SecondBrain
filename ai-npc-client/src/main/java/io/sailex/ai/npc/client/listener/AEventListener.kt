@@ -1,4 +1,4 @@
-package io.sailex.ai.npc.client.listeners
+package io.sailex.ai.npc.client.listener
 
 import io.sailex.ai.npc.client.model.NPC
 import org.apache.logging.log4j.LogManager
