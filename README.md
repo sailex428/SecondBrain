@@ -21,7 +21,8 @@ A example video is coming soon!
 
 2. **Install the Mod**:
     - Place `AI-NPC Launcher` in your `mods` folder on your minecraft fabric server (from version 1.0.4).
-    **Single-Player:**
+
+   **Single-Player:**
     - Install [custom-lan](https://modrinth.com/mod/custom-lan) and [cloth-config](https://modrinth.com/mod/cloth-config).
     - Open LAN and set the port to `25565` in custom-lan settings.
     - **Offline NPC**: Set `online-mode` to `off` and `isOnline` to `false`.
