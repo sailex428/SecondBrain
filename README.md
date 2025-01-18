@@ -22,14 +22,14 @@ A example video is coming soon!
 2. **Install the Mod**:
     - Place `AI-NPC Launcher` in your `mods` folder on your minecraft fabric server (from version 1.0.4).
     **Single-Player:**
-    - Install [custom-lan](https://modrinth.com/mod/custom-lan) and [cloth-config](https://modrinth.com/mod/cloth-config).
+    - Install [custom-lan](https://modrinth.com/mod/custom-lan) and [cloth-modConfig](https://modrinth.com/mod/cloth-modConfig).
     - Open LAN and set the port to `25565` in custom-lan settings.
     - **Offline NPC**: Set `online-mode` to `off` and `isOnline` to `false`.
     - **Online NPC**: Set `online-mode` to `on` and `isOnline` to `true`. (At npc add command execution you must login with an mc account per device code login)
     
     **Multiplayer/Dedicated Server:**
     - **Offline NPC**: Set `online-mode` to `false` in `server.properties` and `isOnline` to `false`.
-    - **Online NPC**: Set `online-mode` to `true` in `server.properties` and `isOnline` to `true`. You must set an email and password in the config/ai-npc-launcher/auth.config to login with a mc account. Example: auth.credentials=test.123@gmail.com=P4ssw0rd For multiple accounts, split them with `;`. (After setting properties you need to restart the server)
+    - **Online NPC**: Set `online-mode` to `true` in `server.properties` and `isOnline` to `true`. You must set an email and password in the modConfig/ai-npc-launcher/auth.modConfig to login with a mc account. Example: auth.credentials=test.123@gmail.com=P4ssw0rd For multiple accounts, split them with `;`. (After setting properties you need to restart the server)
 
 3. **Launch Minecraft**:
     - Start a Minecraft client and connect to the server and youre ready!
@@ -65,7 +65,7 @@ A example video is coming soon!
    - Copy the api-key
    
 5. **Add the API Key to the Mod**:
-   - Set npc.llm.openai.api_key to the API key in the config/ai-npc-launcher/launcher-config.properties file.
+   - Set npc.llm.openai.api_key to the API key in the modConfig/ai-npc-launcher/launcher-modConfig.properties file.
    - Deprecated: This is unsecure: (Use `/setconfig npc.llm.openai.api_key <your_api_key>` in-game to set the key.)  
 
 ### **Option 2: Ollama (Local LLM)**  
