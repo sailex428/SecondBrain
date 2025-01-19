@@ -21,7 +21,7 @@ class RepositoryFactory(
     val blockRepository = BlockRepository(sqliteClient)
 
     fun initRepositories() {
-        executor.execute {
+        executor.submit {
             sqliteClient.initDatabase("skills")
             recipesRepository.init()
             skillRepository.init()

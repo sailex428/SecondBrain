@@ -3,6 +3,7 @@ package me.sailex.ai.npc.npc;
 import static me.sailex.ai.npc.npc.NPCInteraction.*;
 
 import baritone.api.IBaritone;
+import baritone.api.command.exception.CommandException;
 import baritone.api.pathing.goals.GoalBlock;
 import baritone.api.utils.BetterBlockPos;
 import me.sailex.ai.npc.constant.Instructions;
@@ -128,7 +129,7 @@ public class NPCController {
 			case CHAT -> chat(action.getMessage());
 			case MOVE -> move(action.getTargetPosition());
 			case MINE -> mine(action.getTargetPosition());
-			case DROP -> dropItem(0);
+			case DROP -> dropItem(action.getTargetType());
 			case CRAFT -> craftItem(action.getTargetType());
 			case ATTACK -> attack(action.getTargetId());
 			case STOP -> cancelActions();
@@ -138,7 +139,7 @@ public class NPCController {
 
 	public void handleInitMessage() {
 		handleEvent(Instructions.getDefaultInstruction(npc.getName().getString()));
-		baritone.getExploreProcess().explore(0, 0);
+		move(new WorldContext.Position(0, 90, 0));
 	}
 
 	private void chat(String message) {
@@ -168,8 +169,8 @@ public class NPCController {
 		}
 	}
 
-	private void dropItem(int slot) {
-		baritone.getCommandHelper().executeDrop(slot);
+	private void dropItem(String slot) {
+		//baritone.getCommandHelper().executeDrop(Integer.parseInt(slot));
 	}
 
 	private void craftItem(String recipeId) {
@@ -208,9 +209,9 @@ public class NPCController {
 
 	private void tick() {
 		ServerTickEvents.END_SERVER_TICK.register(server -> {
-			lookAtPlayer();
 			//autoRespawn();
 			if (!baritoneIsActive()) {
+				lookAtPlayer();
 				pollAction();
 			}
 		});
@@ -223,8 +224,12 @@ public class NPCController {
 	}
 
 	private void cancelBaritone() {
-		baritone.getCommandHelper().executeMoveStop();
-	}
+        try {
+            baritone.getCommandManager().execute(npc.getCommandSource(), "cancel");
+        } catch (CommandException e) {
+			LOGGER.error("Error executing automatone cancel command", e);
+        }
+    }
 
 	private void saveConversation(Skill skill) {
 		String message = skill.getActions().stream()
@@ -243,5 +248,9 @@ public class NPCController {
 					.getSkillRepository()
 					.insert(skill.getSkillName(), skillJson, llmClient.generateEmbedding(List.of(skillJson)));
 		}
+	}
+
+	public void stopService() {
+		executorService.shutdown();
 	}
 }
