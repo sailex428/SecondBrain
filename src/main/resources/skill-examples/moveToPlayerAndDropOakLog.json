@@ -20,7 +20,7 @@
   {
     "action": "DROP",
     "message": "I will drop you my oak log.",
-    "targetType": "oak_log",
+    "targetType": "0",
     "targetId": null,
     "targetPosition": {}
   }

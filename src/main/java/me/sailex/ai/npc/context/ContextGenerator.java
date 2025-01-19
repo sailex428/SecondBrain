@@ -6,8 +6,6 @@ import static me.sailex.ai.npc.util.WorldUtil.getToolNeeded;
 import me.sailex.ai.npc.model.context.WorldContext;
 import me.sailex.ai.npc.model.database.Block;
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
@@ -27,7 +25,6 @@ import org.apache.logging.log4j.Logger;
 public class ContextGenerator {
 
 	private static final Logger LOGGER = LogManager.getLogger(ContextGenerator.class);
-	private final ExecutorService service;
 	private static final int CHUNK_SCAN_RADIUS = 2;
 	private static final int VERTICAL_SCAN_RANGE = 16;
 	private static final int ENTITY_SCAN_RADIUS = 24;
@@ -38,7 +35,6 @@ public class ContextGenerator {
 	public ContextGenerator(ServerPlayerEntity npcEntity) {
 		this.npcEntity = npcEntity;
 		this.world = npcEntity.getWorld();
-		this.service = Executors.newFixedThreadPool(3);
 	}
 
 	/**
@@ -208,9 +204,5 @@ public class ContextGenerator {
 				new WorldContext.Position(pos.getX(), pos.getY(), pos.getZ()),
 				getMiningLevel(blockState),
 				getToolNeeded(blockState));
-	}
-
-	public void stopService() {
-		service.shutdown();
 	}
 }

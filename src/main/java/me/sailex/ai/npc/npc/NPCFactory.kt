@@ -31,7 +31,7 @@ class NPCFactory(
             repositoryFactory.skillRepository,
             repositoryFactory.blockRepository,
             llmClient)
-         resourcesIndexer.indexAll(server)
+        resourcesIndexer.indexAll(server)
 
         val contextGenerator = ContextGenerator(npcEntity)
         val baritone = BaritoneAPI.getProvider().getBaritone(npcEntity)
@@ -48,7 +48,7 @@ class NPCFactory(
         val npcToRemove = nameToNpc[npcName]
         if (npcToRemove != null) {
             npcToRemove.llmClient.stopService()
-            npcToRemove.contextGenerator.stopService()
+            npcToRemove.controller.stopService()
             nameToNpc.remove(npcName)
             return true
         }
