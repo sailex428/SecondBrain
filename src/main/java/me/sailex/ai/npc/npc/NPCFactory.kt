@@ -3,7 +3,6 @@ package me.sailex.ai.npc.npc
 import baritone.api.BaritoneAPI
 import me.sailex.ai.npc.config.ModConfig
 import me.sailex.ai.npc.constant.ConfigConstants
-import me.sailex.ai.npc.context.ContextGenerator
 import me.sailex.ai.npc.database.SqliteClient
 import me.sailex.ai.npc.database.indexer.DefaultResourcesIndexer
 import me.sailex.ai.npc.database.repositories.RepositoryFactory
@@ -33,12 +32,11 @@ class NPCFactory(
             llmClient)
         resourcesIndexer.indexAll(server)
 
-        val contextGenerator = ContextGenerator(npcEntity)
         val baritone = BaritoneAPI.getProvider().getBaritone(npcEntity)
-        val controller = NPCController(npcEntity, llmClient, contextGenerator, repositoryFactory, baritone)
+        val controller = NPCController(npcEntity, llmClient, repositoryFactory, baritone)
         controller.start()
 
-        val npc = NPC(npcEntity, contextGenerator, llmClient, controller)
+        val npc = NPC(npcEntity, llmClient, controller)
 
         val eventListenerRegisterer = EventListenerRegisterer(npc)
         eventListenerRegisterer.registerListeners()

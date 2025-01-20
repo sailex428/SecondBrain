@@ -20,7 +20,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 /**
- * Generates the context for the LLM based on the world state.
+ * Generates the context for the LLM based on the players world state.
  */
 public class ContextGenerator {
 
@@ -29,22 +29,14 @@ public class ContextGenerator {
 	private static final int VERTICAL_SCAN_RANGE = 16;
 	private static final int ENTITY_SCAN_RADIUS = 24;
 
-	private final ServerPlayerEntity npcEntity;
-	private final World world;
-
-	public ContextGenerator(ServerPlayerEntity npcEntity) {
-		this.npcEntity = npcEntity;
-		this.world = npcEntity.getWorld();
-	}
-
 	/**
 	 * Creates a world context of entities, blocks, and inventory for the NPC.
 	 *
 	 * @return the context of the NPC world
 	 */
-	public WorldContext getContext() {
+	public static WorldContext getContext(ServerPlayerEntity npcEntity) {
 		try {
-			return new WorldContext(getNpcState(), scanNearbyBlocks(), scanNearbyEntities(), getInventoryState());
+			return new WorldContext(getNpcState(npcEntity), scanNearbyBlocks(npcEntity), scanNearbyEntities(npcEntity), getInventoryState(npcEntity));
 		} catch (Exception e) {
 			LOGGER.error("Exception during context generation", e);
 			return null;
@@ -57,7 +49,7 @@ public class ContextGenerator {
 	 * @param blocks 	 relevant blocks from db
 	 * @return blockData list of relevant blockData (with position)
 	 */
-	public List<WorldContext.BlockData> getRelevantBlockData(
+	public static List<WorldContext.BlockData> getRelevantBlockData(
 			List<Block> blocks, List<WorldContext.BlockData> contextBlocks) {
 		return contextBlocks.stream()
 				.filter(blockData -> blocks.stream()
@@ -65,36 +57,37 @@ public class ContextGenerator {
 				.toList();
 	}
 
-	private WorldContext.NPCState getNpcState() {
+	private static WorldContext.NPCState getNpcState(ServerPlayerEntity npcEntity) {
 		return new WorldContext.NPCState(
 				new WorldContext.Position((int) npcEntity.getX(), (int) npcEntity.getY(), (int) npcEntity.getZ()),
 				npcEntity.getHealth(),
 				npcEntity.getHungerManager().getFoodLevel(),
 				npcEntity.isOnGround(),
 				npcEntity.isTouchingWater(),
-				getBiome());
+				getBiome(npcEntity));
 	}
 
-	private String getBiome() {
+	private static String getBiome(ServerPlayerEntity npcEntity) {
 		Optional<RegistryKey<Biome>> biomeKey =
 				npcEntity.getWorld().getBiome(npcEntity.getBlockPos()).getKey();
 		return biomeKey.map(biomeRegistryKey -> biomeRegistryKey.getValue().getPath())
 				.orElse("");
 	}
 
-	private List<WorldContext.BlockData> scanNearbyBlocks() {
+	private static List<WorldContext.BlockData> scanNearbyBlocks(ServerPlayerEntity npcEntity) {
 		Map<String, WorldContext.BlockData> nearestBlocks = new HashMap<>();
 		ChunkPos npcChunk = npcEntity.getChunkPos();
 
 		for (int chunkX = -CHUNK_SCAN_RADIUS; chunkX <= CHUNK_SCAN_RADIUS; chunkX++) {
 			for (int chunkZ = -CHUNK_SCAN_RADIUS; chunkZ <= CHUNK_SCAN_RADIUS; chunkZ++) {
-				scanChunk(new ChunkPos(npcChunk.x + chunkX, npcChunk.z + chunkZ), nearestBlocks);
+				scanChunk(new ChunkPos(npcChunk.x + chunkX, npcChunk.z + chunkZ), nearestBlocks, npcEntity);
 			}
 		}
 		return new ArrayList<>(nearestBlocks.values());
 	}
 
-	private void scanChunk(ChunkPos chunk, Map<String, WorldContext.BlockData> nearestBlocks) {
+	private static void scanChunk(ChunkPos chunk, Map<String, WorldContext.BlockData> nearestBlocks, ServerPlayerEntity npcEntity) {
+		World world = npcEntity.getWorld();
 		BlockPos.Mutable pos = new BlockPos.Mutable();
 		int baseY = Math.max(0, npcEntity.getBlockPos().getY() - VERTICAL_SCAN_RANGE);
 		int maxY = Math.min(world.getHeight(), npcEntity.getBlockPos().getY() + VERTICAL_SCAN_RANGE);
@@ -103,7 +96,7 @@ public class ContextGenerator {
 			for (int z = 0; z < 16; z++) {
 				for (int y = baseY; y < maxY; y++) {
 					pos.set(chunk.getStartX() + x, y, chunk.getStartZ() + z);
-					if (isAccessible(pos)) {
+					if (isAccessible(pos, world)) {
 						BlockState blockState = world.getBlockState(pos);
 						String blockType =
 								blockState.getBlock().getName().getString().toLowerCase();
@@ -111,7 +104,7 @@ public class ContextGenerator {
 						WorldContext.BlockData currentBlockData = buildBlockData(blockType, blockState, pos);
 
 						if (!nearestBlocks.containsKey(blockType)
-								|| isCloser(pos, nearestBlocks.get(blockType).position())) {
+								|| isCloser(pos, nearestBlocks.get(blockType).position(), npcEntity)) {
 							nearestBlocks.put(blockType, currentBlockData);
 						}
 					}
@@ -120,7 +113,7 @@ public class ContextGenerator {
 		}
 	}
 
-	private boolean isAccessible(BlockPos pos) {
+	private static boolean isAccessible(BlockPos pos, World world) {
 		for (Direction dir : Direction.values()) {
 			if (world.getBlockState(pos.offset(dir)).isAir()) {
 				return true;
@@ -129,15 +122,15 @@ public class ContextGenerator {
 		return false;
 	}
 
-	private boolean isCloser(BlockPos pos, WorldContext.Position otherPos) {
+	private static boolean isCloser(BlockPos pos, WorldContext.Position otherPos, ServerPlayerEntity npcEntity) {
 		double currentDistance = npcEntity.getBlockPos().getSquaredDistance(pos);
 		double otherDistance =
 				npcEntity.getBlockPos().getSquaredDistance(new BlockPos(otherPos.x(), otherPos.y(), otherPos.y()));
 		return currentDistance < otherDistance;
 	}
 
-	private List<WorldContext.EntityData> scanNearbyEntities() {
-		return world
+	private static List<WorldContext.EntityData> scanNearbyEntities(ServerPlayerEntity npcEntity) {
+		return npcEntity.getWorld()
 				.getOtherEntities(npcEntity, npcEntity.getBoundingBox().expand(ENTITY_SCAN_RADIUS), entity -> true)
 				.stream()
 				.map(entity -> new WorldContext.EntityData(
@@ -148,7 +141,7 @@ public class ContextGenerator {
 				.toList();
 	}
 
-	private WorldContext.InventoryState getInventoryState() {
+	private static WorldContext.InventoryState getInventoryState(ServerPlayerEntity npcEntity) {
 		PlayerInventory inventory = npcEntity.getInventory();
 
 		return new WorldContext.InventoryState(
@@ -160,7 +153,7 @@ public class ContextGenerator {
 				getInventoryItemsInHand(inventory));
 	}
 
-	private List<WorldContext.ItemData> getInventoryItemsInHand(PlayerInventory inventory) {
+	private static List<WorldContext.ItemData> getInventoryItemsInHand(PlayerInventory inventory) {
 		List<WorldContext.ItemData> items = new ArrayList<>();
 		ItemStack stack = inventory.getMainHandStack();
 
@@ -168,7 +161,7 @@ public class ContextGenerator {
 		return items;
 	}
 
-	private List<WorldContext.ItemData> getInventoryItemsInRange(PlayerInventory inventory, int start, int end) {
+	private static List<WorldContext.ItemData> getInventoryItemsInRange(PlayerInventory inventory, int start, int end) {
 		List<WorldContext.ItemData> items = new ArrayList<>();
 
 		for (int i = start; i < end; i++) {
@@ -178,7 +171,7 @@ public class ContextGenerator {
 		return items;
 	}
 
-	private List<WorldContext.ItemData> getArmorItems(PlayerInventory inventory) {
+	private static List<WorldContext.ItemData> getArmorItems(PlayerInventory inventory) {
 		List<WorldContext.ItemData> items = new ArrayList<>();
 
 		for (ItemStack stack : inventory.armor) {
@@ -187,18 +180,18 @@ public class ContextGenerator {
 		return items;
 	}
 
-	private void addItemData(ItemStack stack, List<WorldContext.ItemData> items, int slot) {
+	private static void addItemData(ItemStack stack, List<WorldContext.ItemData> items, int slot) {
 		if (!stack.isEmpty()) {
 			items.add(new WorldContext.ItemData(getBlockName(stack), stack.getCount(), stack.getDamage(), slot));
 		}
 	}
 
-	private String getBlockName(ItemStack stack) {
+	private static String getBlockName(ItemStack stack) {
 		String translationKey = stack.getItem().getTranslationKey();
 		return translationKey.substring(translationKey.lastIndexOf(".") + 1);
 	}
 
-	private WorldContext.BlockData buildBlockData(String blockType, BlockState blockState, BlockPos pos) {
+	private static WorldContext.BlockData buildBlockData(String blockType, BlockState blockState, BlockPos pos) {
 		return new WorldContext.BlockData(
 				blockType,
 				new WorldContext.Position(pos.getX(), pos.getY(), pos.getZ()),
