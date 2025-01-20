@@ -1,6 +1,5 @@
 package me.sailex.ai.npc.npc
 
-import me.sailex.ai.npc.context.ContextGenerator
 import me.sailex.ai.npc.llm.ILLMClient
 import net.minecraft.server.network.ServerPlayerEntity
 
@@ -9,7 +8,6 @@ import net.minecraft.server.network.ServerPlayerEntity
  */
 class NPC(
     val entity: ServerPlayerEntity,
-    val contextGenerator: ContextGenerator,
     val llmClient: ILLMClient,
     val controller: NPCController,
 )

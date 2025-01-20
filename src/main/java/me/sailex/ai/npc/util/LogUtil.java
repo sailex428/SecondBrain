@@ -50,7 +50,7 @@ public class LogUtil {
 	}
 
 	private static MutableText buildPrefix() {
-		return Text.literal("[AI-NPC] ").formatted(Formatting.DARK_PURPLE);
+		return Text.literal("[SecondBrain] ").formatted(Formatting.DARK_PURPLE);
 	}
 
 	private static void log(MutableText formattedMessage) {

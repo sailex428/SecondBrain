@@ -45,19 +45,18 @@ public class NPCController {
 
 	private final ServerPlayerEntity npc;
 	private final ILLMClient llmClient;
-	private final ContextGenerator contextGenerator;
 	private final RepositoryFactory repositoryFactory;
 	private final IBaritone baritone;
+
+	private boolean isFirstRequest = true;
 
 	public NPCController(
 			ServerPlayerEntity npc,
 			ILLMClient llmClient,
-			ContextGenerator contextGenerator,
 			RepositoryFactory repositoryFactory,
 			IBaritone baritone) {
 		this.npc = npc;
 		this.llmClient = llmClient;
-		this.contextGenerator = contextGenerator;
 		this.repositoryFactory = repositoryFactory;
 		this.baritone = baritone;
 		this.executorService = Executors.newFixedThreadPool(3);
@@ -77,12 +76,12 @@ public class NPCController {
 		CompletableFuture.runAsync(
 						() -> {
 							Resources resources = repositoryFactory.getRelevantResources(eventPrompt);
-							WorldContext worldContext = contextGenerator.getContext();
+							WorldContext worldContext = ContextGenerator.getContext(npc);
 							String relevantResources = NPCInteraction.formatResources(
 									resources.getSkillResources(),
 									resources.getRequirements(),
 									resources.getConversations(),
-									contextGenerator.getRelevantBlockData(
+									ContextGenerator.getRelevantBlockData(
 											resources.getBlocks(), worldContext.nearbyBlocks()));
 							String formattedContext = NPCInteraction.formatContext(worldContext);
 
@@ -117,8 +116,9 @@ public class NPCController {
 		if (nextAction == null) {
 			return;
 		}
-		if (baritone.getExploreProcess().isActive()) {
+		if (isFirstRequest) {
 			cancelBaritone();
+			isFirstRequest = false;
 		}
 		executeAction(nextAction);
 	}
@@ -143,6 +143,7 @@ public class NPCController {
 	}
 
 	private void chat(String message) {
+
 		npc.getServer().getPlayerManager().broadcast(Text.of(message), false);
 	}
 
