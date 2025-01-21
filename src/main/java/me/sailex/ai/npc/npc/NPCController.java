@@ -25,6 +25,7 @@ import net.minecraft.command.argument.EntityAnchorArgumentType;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.recipe.RecipeEntry;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
@@ -143,8 +144,12 @@ public class NPCController {
 	}
 
 	private void chat(String message) {
-
-		npc.getServer().getPlayerManager().broadcast(Text.of(message), false);
+		MinecraftServer server = npc.getServer();
+		if (server != null) {
+			server.getPlayerManager().broadcast(Text.of(message), false);
+			return;
+		}
+		LOGGER.error("There must be some big issues lol.");
 	}
 
 	private void move(WorldContext.Position targetPosition) {
