@@ -142,7 +142,7 @@ public class NPCController {
 	}
 
 	public void dropAll(int slot) {
-		baritone.getCommandHelper().executeDropStack(slot); //slot
+		baritone.getCommandHelper().executeDropAll(slot); //slot
 	}
 
 	public void craftItem(String recipeId) {
