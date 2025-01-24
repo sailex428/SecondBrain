@@ -108,7 +108,7 @@ class OpenAiFunctionManager(
         val slot: Int = 0
 
         override fun execute(): Any? {
-            controller.drop(slot)
+            controller.dropAll(slot)
             return "drops all items from slot $slot"
         }
     }

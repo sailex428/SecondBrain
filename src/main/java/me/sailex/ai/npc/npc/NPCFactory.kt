@@ -11,6 +11,7 @@ import me.sailex.ai.npc.llm.ILLMClient
 import me.sailex.ai.npc.llm.LLMType
 import me.sailex.ai.npc.llm.OllamaClient
 import me.sailex.ai.npc.llm.OpenAiClient
+import me.sailex.ai.npc.llm.function_calling.OpenAiFunctionManager
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 
@@ -27,6 +28,7 @@ class NPCFactory(
 
         val baritone = BaritoneAPI.getProvider().getBaritone(npcEntity)
         val controller = NPCController(npcEntity, llmClient, repositoryFactory, baritone)
+        llmClient.setFunctionManager(OpenAiFunctionManager(controller, npcEntity))
 
         val npc = NPC(npcEntity, llmClient, controller)
 
