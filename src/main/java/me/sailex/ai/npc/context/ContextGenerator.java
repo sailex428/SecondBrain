@@ -57,7 +57,7 @@ public class ContextGenerator {
 				.toList();
 	}
 
-	private static WorldContext.NPCState getNpcState(ServerPlayerEntity npcEntity) {
+	public static WorldContext.NPCState getNpcState(ServerPlayerEntity npcEntity) {
 		return new WorldContext.NPCState(
 				new WorldContext.Position((int) npcEntity.getX(), (int) npcEntity.getY(), (int) npcEntity.getZ()),
 				npcEntity.getHealth(),
@@ -74,7 +74,7 @@ public class ContextGenerator {
 				.orElse("");
 	}
 
-	private static List<WorldContext.BlockData> scanNearbyBlocks(ServerPlayerEntity npcEntity) {
+	public static List<WorldContext.BlockData> scanNearbyBlocks(ServerPlayerEntity npcEntity) {
 		Map<String, WorldContext.BlockData> nearestBlocks = new HashMap<>();
 		ChunkPos npcChunk = npcEntity.getChunkPos();
 
@@ -129,19 +129,18 @@ public class ContextGenerator {
 		return currentDistance < otherDistance;
 	}
 
-	private static List<WorldContext.EntityData> scanNearbyEntities(ServerPlayerEntity npcEntity) {
+	public static List<WorldContext.EntityData> scanNearbyEntities(ServerPlayerEntity npcEntity) {
 		return npcEntity.getWorld()
 				.getOtherEntities(npcEntity, npcEntity.getBoundingBox().expand(ENTITY_SCAN_RADIUS), entity -> true)
 				.stream()
 				.map(entity -> new WorldContext.EntityData(
 						String.valueOf(entity.getId()),
 						entity.getName().getString(),
-						new WorldContext.Position((int) entity.getX(), (int) entity.getY(), (int) entity.getZ()),
-						entity.canHit()))
+						new WorldContext.Position((int) entity.getX(), (int) entity.getY(), (int) entity.getZ())))
 				.toList();
 	}
 
-	private static WorldContext.InventoryState getInventoryState(ServerPlayerEntity npcEntity) {
+	public static WorldContext.InventoryState getInventoryState(ServerPlayerEntity npcEntity) {
 		PlayerInventory inventory = npcEntity.getInventory();
 
 		return new WorldContext.InventoryState(

@@ -1,18 +1,16 @@
 package me.sailex.ai.npc.listener
 
 import me.sailex.ai.npc.npc.NPC
-import org.apache.logging.log4j.LogManager
-import org.apache.logging.log4j.Logger
+import me.sailex.ai.npc.util.LogUtil
 
 abstract class AEventListener(
     protected val npc: NPC
 ) : IEventListener {
-    private val logger: Logger = LogManager.getLogger()
 
     abstract override fun register()
 
-    protected fun handleMessage(message: String) {
-        logger.info(message)
-        npc.controller.handleEvent(message)
+    protected fun handleMessage(userPrompt: String, systemPrompt: String) {
+        LogUtil.info("userPrompt: $userPrompt; systemPrompt: $systemPrompt", true)
+        npc.controller.onEvent(userPrompt, systemPrompt)
     }
 }

@@ -56,6 +56,11 @@ public class OllamaClient extends ALLMClient implements ILLMClient {
 		}
 	}
 
+	@Override
+	public void callFunctions(String userPrompt, String systemPrompt) {
+		//idk if i ever support this
+	}
+
 	/**
 	 * Generate response from Ollama.
 	 *
