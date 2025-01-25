@@ -23,4 +23,8 @@ public abstract class ALLMClient implements ILLMClient {
 	public void checkServiceIsReachable() {
 		// To be implemented by the child classes
 	}
+
+	@Override
+	public void stopService() {}
+
 }

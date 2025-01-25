@@ -24,10 +24,10 @@ public class SecondBrain implements ModInitializer {
 		ModConfig config = new ModConfig();
 		SqliteClient sqlite = new SqliteClient();
 
-		NPCFactory npcFactory = new NPCFactory(config, sqlite);
-
 		RepositoryFactory repositoryFactory = new RepositoryFactory(sqlite);
 		repositoryFactory.initRepositories();
+
+		NPCFactory npcFactory = new NPCFactory(config, repositoryFactory);
 
 		CommandManager commandManager = new CommandManager(config, npcFactory);
 		commandManager.registerAll();

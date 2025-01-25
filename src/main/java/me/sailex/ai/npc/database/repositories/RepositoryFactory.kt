@@ -11,11 +11,13 @@ class RepositoryFactory(
 ) {
     private val executor = Executors.newSingleThreadExecutor()
     val conversationRepository = ConversationRepository(sqliteClient)
+    val recipesRepository = RecipesRepository(sqliteClient)
 
     fun initRepositories() {
         CompletableFuture.runAsync({
             sqliteClient.initDatabase(SecondBrain.MOD_ID)
             conversationRepository.init()
+            recipesRepository.init()
         }, executor).exceptionally( {
             LogUtil.error("Failed to init sql database", true)
             return@exceptionally null

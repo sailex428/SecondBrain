@@ -28,4 +28,6 @@ public interface ILLMClient {
 	void checkServiceIsReachable();
 
 	void setFunctionManager(IFunctionManager functionManager);
+
+	void stopService();
 }

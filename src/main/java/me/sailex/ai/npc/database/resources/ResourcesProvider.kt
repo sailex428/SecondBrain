@@ -6,6 +6,7 @@ import me.sailex.ai.npc.llm.ILLMClient
 import me.sailex.ai.npc.model.database.Conversation
 import me.sailex.ai.npc.model.database.Recipe
 import me.sailex.ai.npc.util.LogUtil
+import me.sailex.ai.npc.util.VectorUtil.cosineSimilarity
 
 import net.minecraft.recipe.Ingredient
 import net.minecraft.recipe.RecipeEntry
@@ -23,8 +24,7 @@ class ResourcesProvider(
 ) {
     private val executorService: ExecutorService = Executors.newSingleThreadExecutor()
 
-    val recipes = arrayListOf<Recipe>()
-        private set
+    private val recipes = arrayListOf<Recipe>()
     private val conversations = arrayListOf<Conversation>()
 
     /**
@@ -36,6 +36,14 @@ class ResourcesProvider(
             loadConversations(npcName)
             loadRecipes(server)
         }
+    }
+
+    fun getRelevantRecipes(itemName: String): List<Recipe> {
+        val promptEmbedding = llmClient.generateEmbedding(listOf(itemName))
+        return recipes.map { recipe -> Pair(recipe, cosineSimilarity(promptEmbedding, recipe.embedding)) }
+            .sortedByDescending { it.second }
+            .take(7)
+            .map { it.first }
     }
 
     fun getLatestConversations(npcName: String): List<Conversation> {

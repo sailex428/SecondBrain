@@ -79,6 +79,7 @@ public class OllamaClient extends ALLMClient implements ILLMClient {
 				.join();
 	}
 
+	@Override
 	public void stopService() {
 		this.service.shutdown();
 	}
