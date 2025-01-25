@@ -49,7 +49,7 @@ class OpenAiFunctionManager(
         val message: String = ""
 
         override fun execute(): Any? {
-            controller.chat(message)
+            controller.addAction({ controller.chat(message) }, false)
             return "chat message $message"
         }
 
@@ -67,7 +67,10 @@ class OpenAiFunctionManager(
         val z: Int = 0
 
         override fun execute(): Any? {
-            controller.move(WorldContext.Position(x, y, z))
+            controller.addAction(
+                { controller.move(WorldContext.Position(x, y, z)) },
+                false
+            )
             return "move to $x, $y, $z"
         }
     }
@@ -84,7 +87,10 @@ class OpenAiFunctionManager(
         val z: Int = 0
 
         override fun execute(): Any? {
-            controller.mine(WorldContext.Position(x, y, z))
+            controller.addAction(
+                { controller.mine(WorldContext.Position(x, y, z)) },
+                false
+            )
             return "mine block at $x, $y, $z"
         }
     }
@@ -96,7 +102,7 @@ class OpenAiFunctionManager(
         val slot: Int = 0
 
         override fun execute(): Any? {
-            controller.drop(slot)
+            controller.addAction({ controller.drop(slot) }, false)
             return "drops one item from slot $slot"
         }
     }
@@ -108,7 +114,7 @@ class OpenAiFunctionManager(
         val slot: Int = 0
 
         override fun execute(): Any? {
-            controller.dropAll(slot)
+            controller.addAction({ controller.dropAll(slot) }, false)
             return "drops all items from slot $slot"
         }
     }
@@ -120,14 +126,14 @@ class OpenAiFunctionManager(
         val entityId: Int = 0
 
         override fun execute(): Any? {
-            controller.attack(entityId)
+            controller.addAction({ controller.attack(entityId) }, false)
             return "tries to attack the entity $entityId"
         }
     }
 
     inner class Stop(): Functional {
         override fun execute(): Any? {
-            controller.cancelActions()
+            controller.addAction({ controller.cancelActions() }, true)
             return "stop all actions"
         }
     }
