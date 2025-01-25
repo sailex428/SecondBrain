@@ -58,6 +58,14 @@ class ResourcesProvider(
             Timestamp(System.currentTimeMillis())))
     }
 
+    fun saveResources() {
+        executorService.submit {
+            LogUtil.info("Saving resources into db...", true)
+            recipes.forEach { recipesRepository::insert }
+            conversations.forEach { conversationRepository::insert }
+        }
+    }
+
     private fun loadConversations(npcName: String) {
         this.conversations.addAll(conversationRepository.selectByName(npcName))
     }
@@ -92,10 +100,9 @@ class ResourcesProvider(
         )
     }
 
-    private fun getItemNeeded(ingredients: DefaultedList<Ingredient>): Map<String, Int> {
-        return ingredients
-            .filter { it.matchingStacks.isNullOrEmpty() }
-            .associate { getItemId(it)!! to it.matchingStacks.size }
+    private fun getItemNeeded(ingredients: DefaultedList<Ingredient>): String {
+        return ingredients.filter { it.matchingStacks.isNullOrEmpty() }
+            .joinToString(",") { "${getItemId(it)}=${it.matchingStacks.size}" }
     }
 
     private fun getItemId(ingredient: Ingredient): String {

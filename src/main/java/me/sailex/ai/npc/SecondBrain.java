@@ -5,6 +5,7 @@ import me.sailex.ai.npc.config.ModConfig;
 import lombok.Getter;
 import me.sailex.ai.npc.database.SqliteClient;
 import me.sailex.ai.npc.database.repositories.RepositoryFactory;
+import me.sailex.ai.npc.database.resources.ResourcesProvider;
 import me.sailex.ai.npc.npc.NPCFactory;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
@@ -17,7 +18,7 @@ import net.minecraft.server.MinecraftServer;
 public class SecondBrain implements ModInitializer {
 
 	public static final String MOD_ID = "second-brain";
-	public static MinecraftServer server;
+	public static MinecraftServer server; //only for logUtil
 
 	@Override
 	public void onInitialize() {
@@ -33,5 +34,9 @@ public class SecondBrain implements ModInitializer {
 		commandManager.registerAll();
 
 		ServerLifecycleEvents.SERVER_STARTED.register((server) -> SecondBrain.server = server);
+		ServerLifecycleEvents.SERVER_STOPPING.register((server) -> {
+			ResourcesProvider resourcesProvider = npcFactory.getResourcesProvider();
+			if (resourcesProvider != null) resourcesProvider.saveResources();
+		});
 	}
 }

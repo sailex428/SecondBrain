@@ -21,6 +21,7 @@ class NPCFactory(
 ) {
     private val nameToNpc = mutableMapOf<String, NPC>()
     var resourcesProvider: ResourcesProvider? = null
+        private set
 
     fun createNpc(server: MinecraftServer, npcEntity: ServerPlayerEntity, llmType: String, llmModel: String) {
         val llmClient = initLlmClient(llmType, llmModel)

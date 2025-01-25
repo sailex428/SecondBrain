@@ -16,19 +16,19 @@ public class NPCInteraction {
 
 	private NPCInteraction() {}
 
-	private static String formatConversation(List<Conversation> conversations) {
+	public static String formatConversation(List<Conversation> conversations) {
 		return formatList(
 				conversations,
 				conversation ->
 						String.format("- Message: %s at %s", conversation.getMessage(), conversation.getTimestamp()));
 	}
 
-	private static String formatRecipes(List<Recipe> recipes) {
+	public static String formatRecipes(List<Recipe> recipes) {
 		return formatList(
 				recipes,
 				recipe -> String.format(
 						"- Item to craft: %s, table needed: %s, needed items (recipe): %s",
-						recipe.getName(), recipe.getTableNeeded(), formatItemsNeeded(recipe.getItemsNeeded())));
+						recipe.getName(), recipe.getTableNeeded(), recipe.getItemsNeeded()));
 	}
 
 	private static String formatItemsNeeded(Map<String, Integer> itemsNeeded) {

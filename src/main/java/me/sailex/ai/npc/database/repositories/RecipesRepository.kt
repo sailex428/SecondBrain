@@ -23,22 +23,18 @@ class RecipesRepository(
     }
 
     fun insert(
-        type: String,
-        name: String,
-        nameEmbedding: DoubleArray,
-        tableNeeded: String,
-        itemsNeeded: String,
+        recipe: Recipe
     ) {
         val statement =
             sqliteClient.buildPreparedStatement(
                 "INSERT INTO recipes (type, name, name_embedding, table_needed, items_needed) VALUES (?, ?, ?, ?, ?)" +
                     " ON CONFLICT(name) DO UPDATE SET items_needed = excluded.items_needed",
             )
-        statement.setString(1, type)
-        statement.setString(2, name)
-        statement.setBytes(3, VectorUtil.convertToBytes(nameEmbedding))
-        statement.setString(4, tableNeeded)
-        statement.setString(5, itemsNeeded)
+        statement.setString(1, recipe.type)
+        statement.setString(2, recipe.name)
+        statement.setBytes(3, VectorUtil.convertToBytes(recipe.embedding))
+        statement.setString(4, recipe.tableNeeded)
+        statement.setString(5, recipe.itemsNeeded)
         sqliteClient.insert(statement)
     }
 
@@ -73,17 +69,11 @@ class RecipesRepository(
                     result.getString("name"),
                     VectorUtil.convertToDoubles(result.getBytes("name_embedding")),
                     result.getString("table_needed"),
-                    parseItemsNeededToMap(result.getString("items_needed")),
+                    result.getString("items_needed"),
                 )
             recipes.add(requirement)
         }
         result.close()
         return recipes
     }
-
-    private fun parseItemsNeededToMap(itemsNeeded: String): Map<String, Int> =
-        itemsNeeded
-            .split(",")
-            .map { it.split("=") }
-            .associate { it[0] to it[1].toInt() }
 }

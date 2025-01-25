@@ -161,7 +161,7 @@ class OpenAiFunctionManager(
         val itemName: String = ""
 
         override fun execute(): Any? {
-            return resourcesProvider.getRelevantRecipes(itemName)
+            return NPCInteraction.formatRecipes(resourcesProvider.getRelevantRecipes(itemName))
         }
     }
 
