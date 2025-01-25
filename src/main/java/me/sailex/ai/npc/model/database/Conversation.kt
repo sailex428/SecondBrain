@@ -1,9 +1,10 @@
 package me.sailex.ai.npc.model.database
 
+import java.sql.Timestamp
+
 data class Conversation(
-    val id: Int,
     val npcName: String,
     val message: String,
     override val embedding: DoubleArray,
-    val timeStamp: String,
+    val timestamp: Timestamp,
 ) : Resource

@@ -2,7 +2,6 @@ package me.sailex.ai.npc.listener
 
 import me.sailex.ai.npc.npc.NPC
 import net.fabricmc.fabric.api.message.v1.ServerMessageEvents
-import org.apache.commons.lang3.StringUtils
 
 class ChatMessageListener(
     npc: NPC
@@ -15,12 +14,11 @@ class ChatMessageListener(
             }
             val chatMessage =
                 String.format(
-                    "%s : %s has written the message: %s",
-                    message.timestamp.toString(),
+                    "%s has written the message: %s",
                     sender?.name ?: "Server Console",
                     message.content.string,
                 )
-            handleMessage(chatMessage, StringUtils.EMPTY,)
+            handleMessage(sender?.name?.string ?: "system", chatMessage)
         }
     }
 }

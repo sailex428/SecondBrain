@@ -1,15 +1,12 @@
 package me.sailex.ai.npc.llm;
 
 import io.github.sashirestela.openai.SimpleOpenAI;
-import io.github.sashirestela.openai.common.ResponseFormat;
 import io.github.sashirestela.openai.common.function.FunctionCall;
 import io.github.sashirestela.openai.common.tool.ToolCall;
 import io.github.sashirestela.openai.domain.chat.ChatMessage;
 import io.github.sashirestela.openai.domain.chat.ChatRequest;
 import io.github.sashirestela.openai.domain.embedding.EmbeddingFloat;
 import io.github.sashirestela.openai.domain.embedding.EmbeddingRequest;
-import me.sailex.ai.npc.exception.EmptyResponseException;
-import me.sailex.ai.npc.model.interaction.Skill;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,27 +30,29 @@ public class OpenAiClient extends ALLMClient implements ILLMClient {
 			String apiKey,
 			String baseUrl
 	) {
-		super();
 		this.openAiModel = openAiModel;
 		this.openAiService =
 				SimpleOpenAI.builder().apiKey(apiKey).baseUrl(baseUrl).build();
 	}
 
 	/**
-	 * Executes functions that are called by openai
+	 * Executes functions that are called by openai based on the prompt
 	 *
-	 * @param userPrompt 	the prompt from the user
-	 * @param systemPrompt	the prompt from the system/game
+	 * @param source the source of the prompt e.g. system
+	 * @param prompt the prompt
 	 */
 	@Override
-	public void callFunctions(String userPrompt, String systemPrompt) {
+	public void callFunctions(String source, String prompt) {
 		try {
-            ChatMessage.ResponseMessage responseMessage;
 			List<ChatMessage> messages = new ArrayList<>();
-			messages.add(ChatMessage.SystemMessage.of(systemPrompt));
-			messages.add(ChatMessage.UserMessage.of(userPrompt));
+			if (source.equals("system")) {
+				messages.add(ChatMessage.SystemMessage.of(prompt));
+			} else {
+				messages.add(ChatMessage.UserMessage.of(prompt));
+			}
+            ChatMessage.ResponseMessage responseMessage;
 
-			//execute functions until llm doesnt call them anymore
+			//execute functions until llm doesnt call anyOfThem anymore
             do {
                 ChatRequest chatRequest = ChatRequest.builder()
                         .model(openAiModel)
@@ -67,7 +66,7 @@ public class OpenAiClient extends ALLMClient implements ILLMClient {
             } while (!responseMessage.getToolCalls().isEmpty());
 
         } catch (Exception e) {
-			LOGGER.error("Could not execute functions for prompt: {}", userPrompt, e);
+			LOGGER.error("Could not execute functions for prompt: {}", prompt, e);
 		}
 	}
 
@@ -78,41 +77,6 @@ public class OpenAiClient extends ALLMClient implements ILLMClient {
 			String result = functionManager.getFunctionExecutor().execute(function);
 			messages.add(ChatMessage.ToolMessage.of(result, toolCall.getId()));
 		});
-	}
-
-	/**
-	 * {@code @Deprecated}
-	 * Generate response with openai
-	 *
-	 * @param userPrompt   the user prompt
-	 * @param systemPrompt the system prompt
-	 * @return the llm response
-	 */
-	@Override
-	public String generateResponse(String userPrompt, String systemPrompt) {
-		try {
-			ChatRequest chatRequest = ChatRequest.builder()
-					.model(openAiModel)
-					.message(ChatMessage.SystemMessage.of(systemPrompt))
-					.message(ChatMessage.UserMessage.of(userPrompt))
-					.responseFormat(ResponseFormat.jsonSchema(ResponseFormat.JsonSchema.builder()
-							.name("Actions")
-							.schemaClass(Skill.class)
-							.build()))
-					.build();
-
-			String chatResponse =
-					openAiService.chatCompletions().create(chatRequest).join().firstContent();
-
-			LOGGER.info("Generated response from openai: {}", chatResponse);
-			if (!chatResponse.isBlank()) {
-				return chatResponse;
-			}
-			throw new EmptyResponseException("Empty response from openai");
-		} catch (Exception e) {
-			LOGGER.error("Could not generate response for prompt: {}", userPrompt, e);
-			return null;
-		}
 	}
 
 	@Override

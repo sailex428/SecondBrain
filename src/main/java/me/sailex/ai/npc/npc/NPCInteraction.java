@@ -1,9 +1,8 @@
 package me.sailex.ai.npc.npc;
 
-import com.google.gson.*;
 import me.sailex.ai.npc.model.context.WorldContext;
 import me.sailex.ai.npc.model.database.*;
-import me.sailex.ai.npc.model.interaction.Skill;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -11,26 +10,17 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
- * Generates prompts and parses responses for communication between the NPC and the LLM.
+ * Stringifies resources for better communication with the LLM.
  */
 public class NPCInteraction {
 
 	private NPCInteraction() {}
-	private static final Gson GSON = new Gson();
 
 	private static String formatConversation(List<Conversation> conversations) {
 		return formatList(
 				conversations,
 				conversation ->
-						String.format("- Messages: %s at %s", conversation.getMessage(), conversation.getTimeStamp()));
-	}
-
-	private static String formatSkills(List<SkillResource> skills) {
-		return formatList(
-				skills,
-				skill -> String.format(
-						"- Action name: %s, example Json format/content for that action: %s",
-						skill.getName(), skill.getExample()));
+						String.format("- Message: %s at %s", conversation.getMessage(), conversation.getTimestamp()));
 	}
 
 	private static String formatRecipes(List<Recipe> recipes) {
@@ -104,13 +94,5 @@ public class NPCInteraction {
 
 	private static <T> String formatList(List<T> list, Function<T, String> formatter) {
 		return list.stream().map(formatter).collect(Collectors.joining("\n"));
-	}
-
-	public static String skillToJson(Skill skill) {
-		return GSON.toJson(skill);
-	}
-
-	public static Skill parseSkill(String actions) throws JsonSyntaxException {
-		return GSON.fromJson(actions, Skill.class);
 	}
 }

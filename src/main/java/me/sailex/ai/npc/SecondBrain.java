@@ -4,6 +4,7 @@ import me.sailex.ai.npc.commands.CommandManager;
 import me.sailex.ai.npc.config.ModConfig;
 import lombok.Getter;
 import me.sailex.ai.npc.database.SqliteClient;
+import me.sailex.ai.npc.database.repositories.RepositoryFactory;
 import me.sailex.ai.npc.npc.NPCFactory;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
@@ -22,7 +23,12 @@ public class SecondBrain implements ModInitializer {
 	public void onInitialize() {
 		ModConfig config = new ModConfig();
 		SqliteClient sqlite = new SqliteClient();
+
 		NPCFactory npcFactory = new NPCFactory(config, sqlite);
+
+		RepositoryFactory repositoryFactory = new RepositoryFactory(sqlite);
+		repositoryFactory.initRepositories();
+
 		CommandManager commandManager = new CommandManager(config, npcFactory);
 		commandManager.registerAll();
 
