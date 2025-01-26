@@ -30,7 +30,7 @@ A example video is coming soon!
     
     **Multiplayer/Dedicated Server:**
     - **Offline NPC**: Set `online-mode` to `false` in `server.properties` and `isOnline` to `false`.
-    - **Online NPC**: Set `online-mode` to `true` in `server.properties` and `isOnline` to `true`. You must set an email and password in the config/ai-npc-launcher/auth.config to login with a mc account. Example: auth.credentials=test.123@gmail.com=P4ssw0rd For multiple accounts, split them with `;`. (After setting properties you need to restart the server)
+    - **Online NPC**: Set `online-mode` to `true` in `server.properties` and `isOnline` to `true`. You must set an email and password in the modConfig/ai-npc-launcher/auth.modConfig to login with a mc account. Example: auth.credentials=test.123@gmail.com=P4ssw0rd For multiple accounts, split them with `;`. (After setting properties you need to restart the server)
 
 3. **Launch Minecraft**:
     - Start a Minecraft client and connect to the server and youre ready!
@@ -66,7 +66,7 @@ A example video is coming soon!
    - Copy the api-key
    
 5. **Add the API Key to the Mod**:
-   - Set npc.llm.openai.api_key to the API key in the config/ai-npc-launcher/launcher-config.properties file.
+   - Set npc.llm.openai.api_key to the API key in the modConfig/ai-npc-launcher/launcher-modConfig.properties file.
    - Deprecated: This is unsecure: (Use `/setconfig npc.llm.openai.api_key <your_api_key>` in-game to set the key.)  
 
 ### **Option 2: Ollama (Local LLM)**  
