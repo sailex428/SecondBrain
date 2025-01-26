@@ -4,7 +4,6 @@ import static me.sailex.ai.npc.util.WorldUtil.getMiningLevel;
 import static me.sailex.ai.npc.util.WorldUtil.getToolNeeded;
 
 import me.sailex.ai.npc.model.context.WorldContext;
-import me.sailex.ai.npc.model.database.Block;
 import java.util.*;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.PlayerInventory;
@@ -41,20 +40,6 @@ public class ContextGenerator {
 			LOGGER.error("Exception during context generation", e);
 			return null;
 		}
-	}
-
-	/**
-	 * Searches for block by id in the world and create BlockData
-	 *
-	 * @param blocks 	 relevant blocks from db
-	 * @return blockData list of relevant blockData (with position)
-	 */
-	public static List<WorldContext.BlockData> getRelevantBlockData(
-			List<Block> blocks, List<WorldContext.BlockData> contextBlocks) {
-		return contextBlocks.stream()
-				.filter(blockData -> blocks.stream()
-						.anyMatch(block -> blockData.type().replaceAll(" ", "_").equals(block.getId())))
-				.toList();
 	}
 
 	public static WorldContext.NPCState getNpcState(ServerPlayerEntity npcEntity) {
