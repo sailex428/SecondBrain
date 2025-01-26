@@ -16,6 +16,7 @@ val mcVersion = property("mc.version").toString()
 val fabricLoaderVersion = property("deps.fabric_loader").toString()
 val stage = rootProject.extra["deps.stage"].toString()
 val jarName = ("second-brain-$mcVersion-v$version-$stage").toString()
+val automatone = rootProject.extra["deps.automatone"].toString()
 
 val javaVersion = if (stonecutter.eval(mcVersion, ">=1.20.6")) JavaVersion.VERSION_21 else JavaVersion.VERSION_17
 
@@ -112,13 +113,15 @@ tasks.processResources {
     inputs.property("version", version)
     inputs.property("mcDep", mcVersion)
     inputs.property("loader_version", fabricLoaderVersion)
+    inputs.property("automatone", automatone)
     filteringCharset = "UTF-8"
 
     filesMatching("fabric.mod.json") {
         expand(
             "version" to version,
             "mcDep" to mcVersion,
-            "loader_version" to fabricLoaderVersion
+            "loader_version" to fabricLoaderVersion,
+            "automatone" to automatone
         )
     }
 }

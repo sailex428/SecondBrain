@@ -21,6 +21,6 @@
     "fabricloader": ">=${loader_version}",
     "fabric": "*",
     "minecraft": "${mcDep}",
-    "automatone": "0.12.1"
+    "automatone": "${automatone}"
   }
 }

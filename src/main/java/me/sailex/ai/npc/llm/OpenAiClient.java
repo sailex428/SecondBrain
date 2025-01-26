@@ -48,6 +48,7 @@ public class OpenAiClient extends ALLMClient implements ILLMClient {
             ChatMessage.ResponseMessage responseMessage;
 
 			//execute functions until llm doesnt call anyOfThem anymore
+			int i = 0;
             do {
                 ChatRequest chatRequest = ChatRequest.builder()
                         .model(openAiModel)
@@ -57,8 +58,12 @@ public class OpenAiClient extends ALLMClient implements ILLMClient {
                 responseMessage = openAiService.chatCompletions().create(chatRequest).join().firstMessage();
                 messages.add(responseMessage);
 
-                executeFunctionCalls(responseMessage.getToolCalls(), messages);
-            } while (!responseMessage.getToolCalls().isEmpty());
+				List<ToolCall> toolCalls = responseMessage.getToolCalls();
+				if (toolCalls != null) {
+                	executeFunctionCalls(toolCalls, messages);
+				}
+				i++;
+            } while (responseMessage.getToolCalls() != null || i > 5);
 
         } catch (Exception e) {
 			LOGGER.error("Could not execute functions for prompt: {}", prompt, e);
