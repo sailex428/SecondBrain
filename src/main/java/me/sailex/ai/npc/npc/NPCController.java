@@ -1,20 +1,17 @@
 package me.sailex.ai.npc.npc;
 
-import static me.sailex.ai.npc.npc.NPCInteraction.*;
-
 import baritone.api.IBaritone;
 import baritone.api.command.exception.CommandException;
 import baritone.api.pathing.goals.GoalBlock;
 import baritone.api.utils.BetterBlockPos;
 import me.sailex.ai.npc.constant.Instructions;
-import me.sailex.ai.npc.context.ContextGenerator;
 import me.sailex.ai.npc.database.repositories.RepositoryFactory;
 import me.sailex.ai.npc.llm.ILLMClient;
 import me.sailex.ai.npc.model.context.WorldContext;
-import me.sailex.ai.npc.model.database.Resources;
 import me.sailex.ai.npc.model.interaction.Action;
 import me.sailex.ai.npc.model.interaction.ActionType;
 import me.sailex.ai.npc.model.interaction.Skill;
+import me.sailex.ai.npc.util.LogUtil;
 import me.sailex.ai.npc.util.WorldUtil;
 import java.util.List;
 import java.util.concurrent.*;
@@ -25,25 +22,24 @@ import net.minecraft.command.argument.EntityAnchorArgumentType;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.recipe.RecipeEntry;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Controller for managing NPC actions and events.
- * Handles the NPC events (actions in-game) and executes the actions generated from the llm accordingly.
+ * Request the NPC events (actions in-game) and executes the actions called from the llm accordingly.
  *
  * @author sailex
  */
 public class NPCController {
 
-	private static final Logger LOGGER = LogManager.getLogger(NPCController.class);
 	private final ExecutorService executorService;
-	private final BlockingQueue<Action> actionQueue = new LinkedBlockingQueue<>();
+	private final BlockingQueue<Runnable> actionQueue = new LinkedBlockingQueue<>();
 
-	private final ServerPlayerEntity npc;
+	private final ServerPlayerEntity npcEntity;
 	private final ILLMClient llmClient;
 	private final RepositoryFactory repositoryFactory;
 	private final IBaritone baritone;
@@ -51,136 +47,111 @@ public class NPCController {
 	private boolean isFirstRequest = true;
 
 	public NPCController(
-			ServerPlayerEntity npc,
+			ServerPlayerEntity npcEntity,
 			ILLMClient llmClient,
 			RepositoryFactory repositoryFactory,
-			IBaritone baritone) {
-		this.npc = npc;
+			IBaritone baritone
+	) {
+		this.npcEntity = npcEntity;
 		this.llmClient = llmClient;
 		this.repositoryFactory = repositoryFactory;
 		this.baritone = baritone;
-		this.executorService = Executors.newFixedThreadPool(3);
-	}
+		this.executorService = Executors.newSingleThreadExecutor();
 
-	public void start() {
+		//start ticking + explore process
 		tick();
 		handleInitMessage();
 	}
 
 	/**
-	 * Handles the NPC events (actions in-game) and executes NPC actions.
+	 * Processes an event asynchronously by allowing call actions from the llm using the specified user and system prompts.
 	 *
-	 * @param eventPrompt the NPC event
+	 * @param userPrompt	prompt of a user e.g. chatmessage of a player
+	 * @param systemPrompt	system prompt
 	 */
-	public void handleEvent(String eventPrompt) {
-		CompletableFuture.runAsync(
-						() -> {
-							Resources resources = repositoryFactory.getRelevantResources(eventPrompt);
-							WorldContext worldContext = ContextGenerator.getContext(npc);
-							String relevantResources = NPCInteraction.formatResources(
-									resources.getSkillResources(),
-									resources.getRequirements(),
-									resources.getConversations(),
-									ContextGenerator.getRelevantBlockData(
-											resources.getBlocks(), worldContext.nearbyBlocks()));
-							String formattedContext = NPCInteraction.formatContext(worldContext);
-
-							String systemPrompt = NPCInteraction.buildSystemPrompt(formattedContext, relevantResources);
-
-							LOGGER.info("User prompt: {}, System prompt: {}", eventPrompt, systemPrompt);
-
-							String generatedResponse = llmClient.generateResponse(eventPrompt, systemPrompt);
-							offerActions(NPCInteraction.parseResponse(generatedResponse));
-						},
-						executorService)
+	public void onEvent(String userPrompt, String systemPrompt) {
+		CompletableFuture.runAsync(() -> llmClient.callFunctions(userPrompt, systemPrompt), executorService)
 				.exceptionally(e -> {
-					LOGGER.error("Error occurred handling event", e);
+					LogUtil.error("Unexpected error occurred handling event: " + e, true);
 					return null;
 				});
 	}
 
-	private void offerActions(Skill skill) {
-		skill.getActions().forEach(action -> {
-			if (action.getAction().equals(ActionType.STOP)) {
-				executeAction(action);
-				return;
-			}
-			actionQueue.add(action);
-		});
-		saveSkill(skill);
-		saveConversation(skill);
-	}
-
-	private void pollAction() {
-		Action nextAction = actionQueue.poll();
-		if (nextAction == null) {
+	/**
+	 * Adds an action to the Queue
+	 *
+	 * @param action 		action (npc capability)
+	 * @param isNonBlocking	whether action should direct executed
+	 */
+	public void addAction(Runnable action, boolean isNonBlocking) {
+		if (isNonBlocking) {
+			action.run();
 			return;
 		}
-		if (isFirstRequest) {
-			cancelBaritone();
-			isFirstRequest = false;
-		}
-		executeAction(nextAction);
+		actionQueue.add(action);
 	}
 
-	private void executeAction(Action action) {
-		ActionType actionType = action.getAction();
-		switch (actionType) {
-			case CHAT -> chat(action.getMessage());
-			case MOVE -> move(action.getTargetPosition());
-			case MINE -> mine(action.getTargetPosition());
-			case DROP -> dropItem(action.getTargetType());
-			case CRAFT -> craftItem(action.getTargetType());
-			case ATTACK -> attack(action.getTargetId());
-			case STOP -> cancelActions();
-			default -> LOGGER.warn("Action type not recognized in: {}", actionType);
-		}
+	private void takeAction() {
+        try {
+			if (isFirstRequest) {
+				cancelBaritone();
+				isFirstRequest = false;
+			}
+        	Runnable nextAction = actionQueue.take();
+			nextAction.run();
+        } catch (InterruptedException e) {
+			LogUtil.error("Error occurred running action!",true);
+        }
 	}
 
 	public void handleInitMessage() {
-		handleEvent(Instructions.getDefaultInstruction(npc.getName().getString()));
+		onEvent(StringUtils.EMPTY, Instructions.getDefaultInstruction(npcEntity.getName().getString()));
 		move(new WorldContext.Position(0, 90, 0));
 	}
 
-	private void chat(String message) {
-
-		npc.getServer().getPlayerManager().broadcast(Text.of(message), false);
+	public void chat(String message) {
+		MinecraftServer server = npcEntity.getServer();
+		if (server != null) {
+			server.getPlayerManager().broadcast(Text.of(message), false);
+			return;
+		}
+		LogUtil.error("There must be some very big issues lol.", true);
 	}
 
-	private void move(WorldContext.Position targetPosition) {
+	public void move(WorldContext.Position targetPosition) {
 		baritone.getCustomGoalProcess()
 				.setGoalAndPath(new GoalBlock(targetPosition.x(), targetPosition.y(), targetPosition.z()));
 	}
 
-	private void mine(WorldContext.Position targetPosition) {
+	public void mine(WorldContext.Position targetPosition) {
 		BetterBlockPos blockPos = new BetterBlockPos(targetPosition.x(), targetPosition.y(), targetPosition.z());
 		baritone.getBuilderProcess().clearArea(blockPos, blockPos);
 	}
 
-	private void attack(String targetId) {
-		if (targetId == null) {
-			LOGGER.warn("Target id is null, cannot attack");
-			return;
-		}
-		Entity targetEntity = WorldUtil.getEntity(targetId, npc);
+	public void attack(int entityId) {
+		Entity targetEntity = npcEntity.getWorld().getEntityById(entityId);
 		if (targetEntity != null) {
-			npc.lookAt(EntityAnchorArgumentType.EntityAnchor.EYES, targetEntity.getEyePos());
+			npcEntity.lookAt(EntityAnchorArgumentType.EntityAnchor.EYES, targetEntity.getEyePos());
 			baritone.getCommandHelper().executeAttack();
-			npc.swingHand(npc.getActiveHand());
+			npcEntity.swingHand(npcEntity.getActiveHand());
 		}
 	}
 
-	private void dropItem(String slot) {
-		//baritone.getCommandHelper().executeDrop(Integer.parseInt(slot));
+	public void drop(int slot) {
+		baritone.getCommandHelper().executeDrop(slot);
 	}
 
-	private void craftItem(String recipeId) {
+	public void dropAll(int slot) {
+		baritone.getCommandHelper().executeDropAll(slot); //slot
+	}
+
+	public void craftItem(String recipeId) {
 		//? if <=1.20.4 {
 		/*Identifier identifier = new Identifier(recipeId);*/
 		//?} else {
 		Identifier identifier = Identifier.of(recipeId);
 		//?}
-		RecipeEntry<?> recipe = npc.getServer().getRecipeManager().get(identifier).orElse(null);
+		RecipeEntry<?> recipe = npcEntity.getServer().getRecipeManager().get(identifier).orElse(null);
 //		ClientPlayerInteractionManager interactionManager = client.interactionManager;
 //		if (recipe != null && interactionManager != null) {
 //			interactionManager.clickRecipe(npc.currentScreenHandler.syncId, recipe, false);
@@ -191,20 +162,20 @@ public class NPCController {
 
 	private void lookAtPlayer() {
 		if (!actionQueue.isEmpty()) return;
-		PlayerEntity closestPlayer = WorldUtil.getClosestPlayer(npc);
+		PlayerEntity closestPlayer = WorldUtil.getClosestPlayer(npcEntity);
 		if (closestPlayer != null) {
-			npc.lookAt(EntityAnchorArgumentType.EntityAnchor.EYES, closestPlayer.getEyePos());
+			npcEntity.lookAt(EntityAnchorArgumentType.EntityAnchor.EYES, closestPlayer.getEyePos());
 		}
 	}
 
-	private void cancelActions() {
+	public void cancelActions() {
 		actionQueue.clear();
 		cancelBaritone();
 	}
 
 	private void autoRespawn() {
-		if (npc.isDead()) {
-			npc.requestRespawn();
+		if (npcEntity.isDead()) {
+			//just spawn a new playerEntity with the same profile ig
 		}
 	}
 
@@ -213,7 +184,7 @@ public class NPCController {
 			//autoRespawn();
 			if (!baritoneIsActive()) {
 				lookAtPlayer();
-				pollAction();
+				takeAction();
 			}
 		});
 	}
@@ -226,9 +197,9 @@ public class NPCController {
 
 	private void cancelBaritone() {
         try {
-            baritone.getCommandManager().execute(npc.getCommandSource(), "cancel");
+            baritone.getCommandManager().execute(npcEntity.getCommandSource(), "cancel");
         } catch (CommandException e) {
-			LOGGER.error("Error executing automatone cancel command", e);
+			LogUtil.error("Error executing automatone cancel command" + e, true);
         }
     }
 
@@ -239,16 +210,7 @@ public class NPCController {
 				.collect(Collectors.joining("; "));
 		repositoryFactory
 				.getConversationRepository()
-				.insert(npc.getName().getString(), message, llmClient.generateEmbedding(List.of(message)));
-	}
-
-	private void saveSkill(Skill skill) {
-		String skillJson = skillToJson(skill);
-		if (skill.getSkillName() != null) {
-			repositoryFactory
-					.getSkillRepository()
-					.insert(skill.getSkillName(), skillJson, llmClient.generateEmbedding(List.of(skillJson)));
-		}
+				.insert(npcEntity.getName().getString(), message, llmClient.generateEmbedding(List.of(message)));
 	}
 
 	public void stopService() {

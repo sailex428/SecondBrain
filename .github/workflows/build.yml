@@ -30,8 +30,6 @@ jobs:
         run: chmod +x ./gradlew
       - name: build
         run: gradle chiseledBuild
-      - name: repackageHeadlessmc
-        run: ./gradlew repackageHeadlessmc
       - name: capture build artifacts
         if: ${{ matrix.java == '21' }}
         uses: actions/upload-artifact@v4

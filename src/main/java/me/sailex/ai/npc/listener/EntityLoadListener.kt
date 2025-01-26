@@ -3,6 +3,7 @@ package me.sailex.ai.npc.listener
 import me.sailex.ai.npc.npc.NPC
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents
 import net.minecraft.entity.player.PlayerEntity
+import org.apache.commons.lang3.StringUtils
 
 class EntityLoadListener(
     npc: NPC
@@ -21,7 +22,7 @@ class EntityLoadListener(
                     entity.pos.y,
                     entity.pos.z,
                 )
-            handleMessage(entityLoadMessage)
+            handleMessage(StringUtils.EMPTY, entityLoadMessage)
         }
     }
 }

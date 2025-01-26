@@ -1,12 +1,22 @@
 package me.sailex.ai.npc.llm;
 
+import me.sailex.ai.npc.llm.function_calling.IFunctionManager;
+
 import java.util.List;
 
 /**
  * Interface for the LLM client
  */
 public interface ILLMClient {
-	
+
+	/**
+	 * Calls the functions defined in OpenAiFunctionExecutor based on the prompts
+	 *
+	 * @param userPrompt 	the prompt from the user
+	 * @param systemPrompt	the prompt from the system/game
+	 */
+	void callFunctions(String userPrompt, String systemPrompt);
+
 	/**
 	 * Generate a response to a user and system prompt
 	 *
@@ -33,4 +43,6 @@ public interface ILLMClient {
 	 * Check if the service is reachable
 	 */
 	void checkServiceIsReachable();
+
+	void setFunctionManager(IFunctionManager functionManager);
 }

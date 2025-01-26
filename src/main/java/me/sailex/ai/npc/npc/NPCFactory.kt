@@ -4,7 +4,6 @@ import baritone.api.BaritoneAPI
 import me.sailex.ai.npc.config.ModConfig
 import me.sailex.ai.npc.constant.ConfigConstants
 import me.sailex.ai.npc.database.SqliteClient
-import me.sailex.ai.npc.database.indexer.DefaultResourcesIndexer
 import me.sailex.ai.npc.database.repositories.RepositoryFactory
 import me.sailex.ai.npc.exception.InvalidLLMTypeException
 import me.sailex.ai.npc.listener.EventListenerRegisterer
@@ -12,6 +11,7 @@ import me.sailex.ai.npc.llm.ILLMClient
 import me.sailex.ai.npc.llm.LLMType
 import me.sailex.ai.npc.llm.OllamaClient
 import me.sailex.ai.npc.llm.OpenAiClient
+import me.sailex.ai.npc.llm.function_calling.OpenAiFunctionManager
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 
@@ -26,15 +26,9 @@ class NPCFactory(
         val repositoryFactory = RepositoryFactory(llmClient, sqliteClient)
         repositoryFactory.initRepositories()
 
-        val resourcesIndexer = DefaultResourcesIndexer(repositoryFactory.recipesRepository,
-            repositoryFactory.skillRepository,
-            repositoryFactory.blockRepository,
-            llmClient)
-        resourcesIndexer.indexAll(server)
-
         val baritone = BaritoneAPI.getProvider().getBaritone(npcEntity)
         val controller = NPCController(npcEntity, llmClient, repositoryFactory, baritone)
-        controller.start()
+        llmClient.setFunctionManager(OpenAiFunctionManager(controller, npcEntity))
 
         val npc = NPC(npcEntity, llmClient, controller)
 
