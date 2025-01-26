@@ -38,6 +38,7 @@ public class NPCController {
 	private final IBaritone baritone;
 	private final ILLMClient llmClient;
 	private final ResourcesProvider resourcesProvider;
+	private final String npcName;
 
 	private boolean isFirstRequest = true;
 
@@ -51,6 +52,7 @@ public class NPCController {
 		this.baritone = baritone;
 		this.llmClient = llmClient;
 		this.resourcesProvider = resourcesProvider;
+		this.npcName = npcEntity.getName().getString();
 		this.executorService = Executors.newSingleThreadExecutor();
 
 		//start ticking + explore process
@@ -68,7 +70,7 @@ public class NPCController {
 	public void onEvent(String source, String prompt) {
 		CompletableFuture.runAsync(() -> {
 					llmClient.callFunctions(source, prompt);
-					resourcesProvider.addConversation(prompt, npcEntity.getName().getString());
+					resourcesProvider.addConversation(prompt, npcName);
 				}, executorService)
 				.exceptionally(e -> {
 					LogUtil.error("Unexpected error occurred handling event: " + e, true);

@@ -44,12 +44,7 @@ public class OpenAiClient extends ALLMClient implements ILLMClient {
 	@Override
 	public void callFunctions(String source, String prompt) {
 		try {
-			List<ChatMessage> messages = new ArrayList<>();
-			if (source.equals("system")) {
-				messages.add(ChatMessage.SystemMessage.of(prompt));
-			} else {
-				messages.add(ChatMessage.UserMessage.of(prompt));
-			}
+			List<ChatMessage> messages = buildPromptMessage(source, prompt);
             ChatMessage.ResponseMessage responseMessage;
 
 			//execute functions until llm doesnt call anyOfThem anymore
@@ -68,6 +63,16 @@ public class OpenAiClient extends ALLMClient implements ILLMClient {
         } catch (Exception e) {
 			LOGGER.error("Could not execute functions for prompt: {}", prompt, e);
 		}
+	}
+
+	private List<ChatMessage> buildPromptMessage(String source, String prompt) {
+		List<ChatMessage> messages = new ArrayList<>();
+		if (source.equals("system")) {
+			messages.add(ChatMessage.SystemMessage.of(prompt));
+		} else {
+			messages.add(ChatMessage.UserMessage.of(prompt));
+		}
+		return messages;
 	}
 
 	private void executeFunctionCalls(List<ToolCall> toolCalls, List<ChatMessage> messages) {

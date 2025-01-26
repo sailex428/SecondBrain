@@ -31,6 +31,7 @@ class OpenAiFunctionManager(
             defineFunction("getBlocks", "Get all blocks next to the player", GetBlocks::class.java),
             defineFunction("getNpcState", "Get npc state (foodlevel, health, ...) and inventory items", GetNpcState::class.java),
             defineFunction("getRecipes", "Get all recipes that matches the specified item", GetRecipes::class.java),
+            defineFunction("getConversations", "Get latest conversation to get more context", GetConversations::class.java),
             defineFunction("stop", "Stop all running npc actions (Should only be used if expressly requested)", Stop::class.java)
         )
         functions.forEach(functionExecutor::enrollFunction)
@@ -171,4 +172,10 @@ class OpenAiFunctionManager(
         }
     }
 
+    inner class GetConversations(): Functional {
+        override fun execute(): Any? {
+            return NPCInteraction.formatConversation(
+                resourcesProvider.getLatestConversations(npcEntity.name.string))
+        }
+    }
 }
