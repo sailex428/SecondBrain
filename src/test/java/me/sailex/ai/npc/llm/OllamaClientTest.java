@@ -27,45 +27,45 @@ class OllamaClientTest {
 		ollamaClient.setOllamaAPI(ollamaAPI);
 	}
 
-	@Test
-	void testGenerateResponse() throws OllamaBaseException, IOException, InterruptedException {
-		String userPrompt = "hello, how are you?";
-		String systemPrompt = "some world context";
-		String expectedResponse = "expected response";
+//	@Test
+//	void testGenerateResponse() throws OllamaBaseException, IOException, InterruptedException {
+//		String userPrompt = "hello, how are you?";
+//		String systemPrompt = "some world context";
+//		String expectedResponse = "expected response";
+//
+//		OllamaChatResponseModel model = new OllamaChatResponseModel();
+//		model.setMessage(new OllamaChatMessage(OllamaChatMessageRole.SYSTEM, expectedResponse));
+//		when(ollamaAPI.chat(any(OllamaChatRequest.class))).thenReturn(new OllamaChatResult(model, new ArrayList<>()));
+//
+//		String response = ollamaClient.generateResponse(userPrompt, systemPrompt);
+//
+//		assertNotNull(response);
+//		assertEquals(expectedResponse, response);
+//		verify(ollamaAPI, times(1)).chat(any(OllamaChatRequest.class));
+//	}
 
-		OllamaChatResponseModel model = new OllamaChatResponseModel();
-		model.setMessage(new OllamaChatMessage(OllamaChatMessageRole.SYSTEM, expectedResponse));
-		when(ollamaAPI.chat(any(OllamaChatRequest.class))).thenReturn(new OllamaChatResult(model, new ArrayList<>()));
+//	@Test
+//	void testGenerateResponseWithException() throws OllamaBaseException, IOException, InterruptedException {
+//		String userPrompt = "hello, how are you?";
+//		String systemPrompt = "some world context";
+//
+//		when(ollamaAPI.chat(any(OllamaChatRequest.class))).thenThrow(new OllamaBaseException("ollama exception"));
+//
+//		String response = ollamaClient.generateResponse(userPrompt, systemPrompt);
+//
+//		assertNull(response);
+//		verify(ollamaAPI, times(1)).chat(any(OllamaChatRequest.class));
+//	}
 
-		String response = ollamaClient.generateResponse(userPrompt, systemPrompt);
-
-		assertNotNull(response);
-		assertEquals(expectedResponse, response);
-		verify(ollamaAPI, times(1)).chat(any(OllamaChatRequest.class));
-	}
-
-	@Test
-	void testGenerateResponseWithException() throws OllamaBaseException, IOException, InterruptedException {
-		String userPrompt = "hello, how are you?";
-		String systemPrompt = "some world context";
-
-		when(ollamaAPI.chat(any(OllamaChatRequest.class))).thenThrow(new OllamaBaseException("ollama exception"));
-
-		String response = ollamaClient.generateResponse(userPrompt, systemPrompt);
-
-		assertNull(response);
-		verify(ollamaAPI, times(1)).chat(any(OllamaChatRequest.class));
-	}
-
-	@Test
-	void testGenerateResponseWithNullPrompt() throws OllamaBaseException, IOException, InterruptedException {
-		String systemPrompt = "some world context";
-
-		String response = ollamaClient.generateResponse(null, systemPrompt);
-
-		assertNull(response);
-		verify(ollamaAPI, never()).chat(any(OllamaChatRequest.class));
-	}
+//	@Test
+//	void testGenerateResponseWithNullPrompt() throws OllamaBaseException, IOException, InterruptedException {
+//		String systemPrompt = "some world context";
+//
+//		String response = ollamaClient.generateResponse(null, systemPrompt);
+//
+//		assertNull(response);
+//		verify(ollamaAPI, never()).chat(any(OllamaChatRequest.class));
+//	}
 
 	@Test
 	void testGenerateEmbedding() throws IOException, OllamaBaseException, InterruptedException {

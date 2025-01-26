@@ -6,6 +6,7 @@ import io.github.sashirestela.openai.common.function.FunctionDef
 import io.github.sashirestela.openai.common.function.FunctionExecutor
 import io.github.sashirestela.openai.common.function.Functional
 import me.sailex.ai.npc.context.ContextGenerator
+import me.sailex.ai.npc.database.resources.ResourcesProvider
 import me.sailex.ai.npc.model.context.WorldContext
 import me.sailex.ai.npc.npc.NPCController
 import me.sailex.ai.npc.npc.NPCInteraction
@@ -13,7 +14,8 @@ import net.minecraft.server.network.ServerPlayerEntity
 
 class OpenAiFunctionManager(
     val controller: NPCController,
-    val npcEntity: ServerPlayerEntity
+    val npcEntity: ServerPlayerEntity,
+    val resourcesProvider: ResourcesProvider
 ): IFunctionManager {
     override var functionExecutor = FunctionExecutor()
 
@@ -28,6 +30,8 @@ class OpenAiFunctionManager(
             defineFunction("getEntities", "Get all entities next to the npc player", GetEntities::class.java),
             defineFunction("getBlocks", "Get all blocks next to the player", GetBlocks::class.java),
             defineFunction("getNpcState", "Get npc state (foodlevel, health, ...) and inventory items", GetNpcState::class.java),
+            defineFunction("getRecipes", "Get all recipes that matches the specified item", GetRecipes::class.java),
+            defineFunction("getConversations", "Get latest conversation to get more context", GetConversations::class.java),
             defineFunction("stop", "Stop all running npc actions (Should only be used if expressly requested)", Stop::class.java)
         )
         functions.forEach(functionExecutor::enrollFunction)
@@ -157,4 +161,21 @@ class OpenAiFunctionManager(
         }
     }
 
+    inner class GetRecipes(): Functional {
+
+        @JsonPropertyDescription("item for which a recipe is wanted")
+        @JsonProperty(required = true)
+        val itemName: String = ""
+
+        override fun execute(): Any? {
+            return NPCInteraction.formatRecipes(resourcesProvider.getRelevantRecipes(itemName))
+        }
+    }
+
+    inner class GetConversations(): Functional {
+        override fun execute(): Any? {
+            return NPCInteraction.formatConversation(
+                resourcesProvider.getLatestConversations(npcEntity.name.string))
+        }
+    }
 }

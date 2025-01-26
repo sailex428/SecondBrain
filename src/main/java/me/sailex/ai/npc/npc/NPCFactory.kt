@@ -3,8 +3,8 @@ package me.sailex.ai.npc.npc
 import baritone.api.BaritoneAPI
 import me.sailex.ai.npc.config.ModConfig
 import me.sailex.ai.npc.constant.ConfigConstants
-import me.sailex.ai.npc.database.SqliteClient
 import me.sailex.ai.npc.database.repositories.RepositoryFactory
+import me.sailex.ai.npc.database.resources.ResourcesProvider
 import me.sailex.ai.npc.exception.InvalidLLMTypeException
 import me.sailex.ai.npc.listener.EventListenerRegisterer
 import me.sailex.ai.npc.llm.ILLMClient
@@ -17,21 +17,31 @@ import net.minecraft.server.network.ServerPlayerEntity
 
 class NPCFactory(
     private val config: ModConfig,
-    private val sqliteClient: SqliteClient
+    private val repositoryFactory: RepositoryFactory
 ) {
     private val nameToNpc = mutableMapOf<String, NPC>()
+    var resourcesProvider: ResourcesProvider? = null
+        private set
 
     fun createNpc(server: MinecraftServer, npcEntity: ServerPlayerEntity, llmType: String, llmModel: String) {
         val llmClient = initLlmClient(llmType, llmModel)
-        val repositoryFactory = RepositoryFactory(llmClient, sqliteClient)
-        repositoryFactory.initRepositories()
+
+        if (this.resourcesProvider == null) {
+            this.resourcesProvider = ResourcesProvider(
+                repositoryFactory.conversationRepository,
+                repositoryFactory.recipesRepository,
+                llmClient
+            )
+            this.resourcesProvider?.loadResources(server, npcEntity.name.string)
+        }
 
         val baritone = BaritoneAPI.getProvider().getBaritone(npcEntity)
-        val controller = NPCController(npcEntity, llmClient, repositoryFactory, baritone)
-        llmClient.setFunctionManager(OpenAiFunctionManager(controller, npcEntity))
+        val controller = NPCController(npcEntity, baritone, llmClient, resourcesProvider)
+        llmClient.setFunctionManager(OpenAiFunctionManager(controller, npcEntity, resourcesProvider!!))
 
         val npc = NPC(npcEntity, llmClient, controller)
 
+        //start event listening
         val eventListenerRegisterer = EventListenerRegisterer(npc)
         eventListenerRegisterer.registerListeners()
     }

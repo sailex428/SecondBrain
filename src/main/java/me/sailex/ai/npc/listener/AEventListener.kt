@@ -9,8 +9,8 @@ abstract class AEventListener(
 
     abstract override fun register()
 
-    protected fun handleMessage(userPrompt: String, systemPrompt: String) {
-        LogUtil.info("userPrompt: $userPrompt; systemPrompt: $systemPrompt", true)
-        npc.controller.onEvent(userPrompt, systemPrompt)
+    protected fun handleMessage(source: String, prompt: String) {
+        LogUtil.info("source: $source; prompt: $prompt", true)
+        npc.controller.onEvent(source, prompt)
     }
 }

@@ -3,7 +3,6 @@ package me.sailex.ai.npc.listener
 import me.sailex.ai.npc.callback.PlayerDamageCallback
 import me.sailex.ai.npc.npc.NPC
 import net.minecraft.util.ActionResult
-import org.apache.commons.lang3.StringUtils
 
 class CombatEventListener(
     npc: NPC
@@ -31,7 +30,7 @@ class CombatEventListener(
                 val damageSourceMessage = String.format(
                     "You got damage of type %s by Attacker %s at %s", damageName, attacker.name.string, pos,
                 )
-                handleMessage(StringUtils.EMPTY, damageSourceMessage)
+                handleMessage("system", damageSourceMessage)
             }
             return@register ActionResult.PASS
         }

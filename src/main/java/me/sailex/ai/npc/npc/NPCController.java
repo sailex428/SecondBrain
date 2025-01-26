@@ -5,17 +5,12 @@ import baritone.api.command.exception.CommandException;
 import baritone.api.pathing.goals.GoalBlock;
 import baritone.api.utils.BetterBlockPos;
 import me.sailex.ai.npc.constant.Instructions;
-import me.sailex.ai.npc.database.repositories.RepositoryFactory;
+import me.sailex.ai.npc.database.resources.ResourcesProvider;
 import me.sailex.ai.npc.llm.ILLMClient;
 import me.sailex.ai.npc.model.context.WorldContext;
-import me.sailex.ai.npc.model.interaction.Action;
-import me.sailex.ai.npc.model.interaction.ActionType;
-import me.sailex.ai.npc.model.interaction.Skill;
 import me.sailex.ai.npc.util.LogUtil;
 import me.sailex.ai.npc.util.WorldUtil;
-import java.util.List;
 import java.util.concurrent.*;
-import java.util.stream.Collectors;
 
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.command.argument.EntityAnchorArgumentType;
@@ -40,22 +35,24 @@ public class NPCController {
 	private final BlockingQueue<Runnable> actionQueue = new LinkedBlockingQueue<>();
 
 	private final ServerPlayerEntity npcEntity;
-	private final ILLMClient llmClient;
-	private final RepositoryFactory repositoryFactory;
 	private final IBaritone baritone;
+	private final ILLMClient llmClient;
+	private final ResourcesProvider resourcesProvider;
+	private final String npcName;
 
 	private boolean isFirstRequest = true;
 
 	public NPCController(
 			ServerPlayerEntity npcEntity,
+			IBaritone baritone,
 			ILLMClient llmClient,
-			RepositoryFactory repositoryFactory,
-			IBaritone baritone
+			ResourcesProvider resourcesProvider
 	) {
 		this.npcEntity = npcEntity;
-		this.llmClient = llmClient;
-		this.repositoryFactory = repositoryFactory;
 		this.baritone = baritone;
+		this.llmClient = llmClient;
+		this.resourcesProvider = resourcesProvider;
+		this.npcName = npcEntity.getName().getString();
 		this.executorService = Executors.newSingleThreadExecutor();
 
 		//start ticking + explore process
@@ -64,13 +61,17 @@ public class NPCController {
 	}
 
 	/**
-	 * Processes an event asynchronously by allowing call actions from the llm using the specified user and system prompts.
+	 * Processes an event asynchronously by allowing call actions from the llm using the specified prompt.
+	 * Saves the prompt in conversation history.
 	 *
-	 * @param userPrompt	prompt of a user e.g. chatmessage of a player
-	 * @param systemPrompt	system prompt
+	 * @param source  source of the prompt
+	 * @param prompt  prompt of a user or system e.g. chatmessage of a player
 	 */
-	public void onEvent(String userPrompt, String systemPrompt) {
-		CompletableFuture.runAsync(() -> llmClient.callFunctions(userPrompt, systemPrompt), executorService)
+	public void onEvent(String source, String prompt) {
+		CompletableFuture.runAsync(() -> {
+					llmClient.callFunctions(source, prompt);
+					resourcesProvider.addConversation(prompt, npcName);
+				}, executorService)
 				.exceptionally(e -> {
 					LogUtil.error("Unexpected error occurred handling event: " + e, true);
 					return null;
@@ -202,16 +203,6 @@ public class NPCController {
 			LogUtil.error("Error executing automatone cancel command" + e, true);
         }
     }
-
-	private void saveConversation(Skill skill) {
-		String message = skill.getActions().stream()
-				.filter(action -> action.getAction().equals(ActionType.CHAT))
-				.map(Action::getMessage)
-				.collect(Collectors.joining("; "));
-		repositoryFactory
-				.getConversationRepository()
-				.insert(npcEntity.getName().getString(), message, llmClient.generateEmbedding(List.of(message)));
-	}
 
 	public void stopService() {
 		executorService.shutdown();

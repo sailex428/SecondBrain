@@ -15,29 +15,31 @@ class ConversationRepository(
                     npc_name TEXT NOT NULL,
                     conversation TEXT,
                     conversation_embedding BLOB,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         """
         sqliteClient.create(sql)
     }
 
     fun insert(
-        npcName: String,
-        conversation: String,
-        conversationEmbedding: DoubleArray,
+        conversation: Conversation
     ) {
         val statement =
             sqliteClient.buildPreparedStatement(
-                "INSERT INTO conversations (npc_name, conversation, conversation_embedding) VALUES (?, ?, ?)",
+                "INSERT INTO conversations (npc_name, conversation, conversation_embedding, timestamp) VALUES (?, ?, ?, ?)",
             )
-        statement.setString(1, npcName)
-        statement.setString(2, conversation)
-        statement.setBytes(3, VectorUtil.convertToBytes(conversationEmbedding))
+        statement.setString(1, conversation.npcName)
+        statement.setString(2, conversation.message)
+        statement.setBytes(3, VectorUtil.convertToBytes(conversation.embedding))
+        statement.setTimestamp(4, conversation.timestamp)
         sqliteClient.insert(statement)
     }
 
+    /**
+     * Selects latest two hundred conversations of a npc
+     */
     fun selectByName(npcName: String): List<Conversation> {
-        val sql = "SELECT * FROM conversation WHERE npc_name = %S"
+        val sql = "SELECT * FROM conversation WHERE npc_name = %s ORDER BY timestamp DESC LIMIT 200".format(npcName)
         return executeAndProcessConversations(sql)
     }
 
@@ -53,11 +55,10 @@ class ConversationRepository(
         while (result.next()) {
             val conversation =
                 Conversation(
-                    result.getInt("id"),
                     result.getString("npc_name"),
                     result.getString("conversation"),
                     VectorUtil.convertToDoubles(result.getBytes("conversation_embedding")),
-                    result.getString("created_at"),
+                    result.getTimestamp("timestamp"),
                 )
             conversations.add(conversation)
         }

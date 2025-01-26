@@ -7,7 +7,5 @@ interface IRepository {
 
     fun createTable()
 
-    fun getMostRelevantResources(promptEmbedding: DoubleArray): List<Resource>
-
     fun selectAll(): List<Resource>
 }
