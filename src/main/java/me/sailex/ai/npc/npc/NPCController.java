@@ -93,16 +93,12 @@ public class NPCController {
 	}
 
 	private void takeAction() {
-        try {
-			if (isFirstRequest) {
-				cancelBaritone();
-				isFirstRequest = false;
-			}
-        	Runnable nextAction = actionQueue.take();
-			nextAction.run();
-        } catch (InterruptedException e) {
-			LogUtil.error("Error occurred running action!",true);
-        }
+		if (isFirstRequest) {
+			cancelBaritone();
+			isFirstRequest = false;
+		}
+		Runnable nextAction = actionQueue.poll();
+		if (nextAction != null) nextAction.run();
 	}
 
 	public void handleInitMessage() {
@@ -176,6 +172,7 @@ public class NPCController {
 
 	private void autoRespawn() {
 		if (npcEntity.isDead()) {
+			stopService();
 			//just spawn a new playerEntity with the same profile ig
 		}
 	}

@@ -22,7 +22,7 @@ class ResourcesProvider(
     private val recipesRepository: RecipesRepository,
     private val llmClient: ILLMClient
 ) {
-    private val executorService: ExecutorService = Executors.newSingleThreadExecutor()
+    private var executorService: ExecutorService = Executors.newSingleThreadExecutor()
 
     private val recipes = arrayListOf<Recipe>()
     private val conversations = arrayListOf<Conversation>()
@@ -36,6 +36,7 @@ class ResourcesProvider(
             loadConversations(npcName)
             loadRecipes(server)
         }
+        executorService.shutdown()
     }
 
     fun getRelevantRecipes(itemName: String): List<Recipe> {
@@ -59,11 +60,13 @@ class ResourcesProvider(
     }
 
     fun saveResources() {
+        executorService = Executors.newSingleThreadExecutor()
         executorService.submit {
             LogUtil.info("Saving resources into db...", true)
             recipes.forEach { recipesRepository::insert }
             conversations.forEach { conversationRepository::insert }
         }
+        executorService.shutdown()
     }
 
     private fun loadConversations(npcName: String) {

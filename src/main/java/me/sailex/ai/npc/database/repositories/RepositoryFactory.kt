@@ -22,5 +22,6 @@ class RepositoryFactory(
             LogUtil.error("Failed to init sql database", true)
             return@exceptionally null
         } )
+        executor.shutdown()
     }
 }

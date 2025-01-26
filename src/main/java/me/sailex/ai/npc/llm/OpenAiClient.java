@@ -10,6 +10,7 @@ import io.github.sashirestela.openai.domain.embedding.EmbeddingRequest;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * OpenAI client for generating responses.
@@ -52,13 +53,18 @@ public class OpenAiClient extends ALLMClient implements ILLMClient {
             do {
                 ChatRequest chatRequest = ChatRequest.builder()
                         .model(openAiModel)
+						.tools(functionManager.getFunctionExecutor().getToolFunctions())
                         .messages(messages)
                         .build();
 
-                responseMessage = openAiService.chatCompletions().create(chatRequest).join().firstMessage();
+                responseMessage = openAiService
+						.chatCompletions()
+						.create(chatRequest)
+						.get(20, TimeUnit.SECONDS)
+						.firstMessage();
                 messages.add(responseMessage);
 
-				List<ToolCall> toolCalls = responseMessage.getToolCalls();
+					List<ToolCall> toolCalls = responseMessage.getToolCalls();
 				if (toolCalls != null) {
                 	executeFunctionCalls(toolCalls, messages);
 				}
@@ -98,7 +104,7 @@ public class OpenAiClient extends ALLMClient implements ILLMClient {
 							.model("text-embedding-3-small")
 							.input(prompt)
 							.build())
-					.join()
+					.get(20, TimeUnit.SECONDS)
 					.getData()
 					.stream()
 					.map(EmbeddingFloat::getEmbedding)

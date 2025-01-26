@@ -37,7 +37,7 @@ class NPCFactory(
 
         val baritone = BaritoneAPI.getProvider().getBaritone(npcEntity)
         val controller = NPCController(npcEntity, baritone, llmClient, resourcesProvider)
-        llmClient.setFunctionManager(OpenAiFunctionManager(controller, npcEntity, resourcesProvider!!))
+        llmClient.setFunctionManager(OpenAiFunctionManager(controller, resourcesProvider!!, npcEntity))
 
         val npc = NPC(npcEntity, llmClient, controller)
 
@@ -55,6 +55,10 @@ class NPCFactory(
             return true
         }
         return false
+    }
+
+    fun shutdownNpc() {
+        nameToNpc.values.forEach { it.controller.stopService() }
     }
 
     private fun initLlmClient(llmType: String, llmModel: String): ILLMClient {

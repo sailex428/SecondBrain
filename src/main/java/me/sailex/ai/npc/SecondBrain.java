@@ -37,6 +37,7 @@ public class SecondBrain implements ModInitializer {
 		ServerLifecycleEvents.SERVER_STOPPING.register((server) -> {
 			ResourcesProvider resourcesProvider = npcFactory.getResourcesProvider();
 			if (resourcesProvider != null) resourcesProvider.saveResources();
+			npcFactory.shutdownNpc();
 		});
 	}
 }
