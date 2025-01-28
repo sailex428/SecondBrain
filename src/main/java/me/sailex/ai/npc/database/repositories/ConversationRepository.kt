@@ -39,7 +39,7 @@ class ConversationRepository(
      * Selects latest two hundred conversations of a npc
      */
     fun selectByName(npcName: String): List<Conversation> {
-        val sql = "SELECT * FROM conversations WHERE npc_name = '%s' ORDER BY timestamp DESC LIMIT 200".format(npcName)
+        val sql = "SELECT * FROM conversations WHERE npc_name = '%s' ORDER BY timestamp DESC LIMIT 50".format(npcName)
         return executeAndProcessConversations(sql)
     }
 

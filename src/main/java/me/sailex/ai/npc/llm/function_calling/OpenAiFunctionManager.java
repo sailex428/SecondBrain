@@ -89,7 +89,7 @@ public class OpenAiFunctionManager implements IFunctionManager {
         @Override
         public Object execute() {
             controller.addAction(() -> controller.move(new WorldContext.Position(x, y, z)), false);
-            return "move to " + x + ", " + y + ", " + z;
+            return "moving to " + x + ", " + y + ", " + z;
         }
     }
 
@@ -105,7 +105,7 @@ public class OpenAiFunctionManager implements IFunctionManager {
         @Override
         public Object execute() {
             controller.addAction(() -> controller.mine(new WorldContext.Position(x, y, z)), false);
-            return "mine block at " + x + ", " + y + ", " + z;
+            return "mining block at " + x + ", " + y + ", " + z;
         }
     }
 

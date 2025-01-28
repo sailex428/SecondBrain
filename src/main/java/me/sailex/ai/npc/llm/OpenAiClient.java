@@ -7,6 +7,7 @@ import io.github.sashirestela.openai.domain.chat.ChatMessage;
 import io.github.sashirestela.openai.domain.chat.ChatRequest;
 import io.github.sashirestela.openai.domain.embedding.EmbeddingFloat;
 import io.github.sashirestela.openai.domain.embedding.EmbeddingRequest;
+import me.sailex.ai.npc.model.database.Conversation;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,22 +40,26 @@ public class OpenAiClient extends ALLMClient implements ILLMClient {
 	/**
 	 * Executes functions that are called by openai based on the prompt
 	 *
-	 * @param source the source of the prompt e.g. system
-	 * @param prompt the prompt
+	 * @param source 		 the source of the prompt e.g. system
+	 * @param prompt 		 the prompt
+	 * @param conversations  latest conversations of history
 	 */
 	@Override
-	public void callFunctions(String source, String prompt) {
+	public void callFunctions(String source, String prompt, List<String> conversations) {
 		try {
-			List<ChatMessage> messages = buildPromptMessage(source, prompt);
-            ChatMessage.ResponseMessage responseMessage;
+			List<ChatMessage> currentMessages = new ArrayList<>();
+			conversations.forEach(conversation ->
+					currentMessages.add(ChatMessage.SystemMessage.of(conversation)));
+			currentMessages.addAll(buildPromptMessage(source, prompt));
 
+            ChatMessage.ResponseMessage responseMessage;
 			//execute functions until llm doesnt call anyOfThem anymore
 			int i = 0;
             do {
                 ChatRequest chatRequest = ChatRequest.builder()
                         .model(openAiModel)
 						.tools(functionManager.getFunctionExecutor().getToolFunctions())
-                        .messages(messages)
+                        .messages(currentMessages)
                         .build();
 
                 responseMessage = openAiService
@@ -62,15 +67,14 @@ public class OpenAiClient extends ALLMClient implements ILLMClient {
 						.create(chatRequest)
 						.get(20, TimeUnit.SECONDS)
 						.firstMessage();
-                messages.add(responseMessage);
+                currentMessages.add(responseMessage);
 
 					List<ToolCall> toolCalls = responseMessage.getToolCalls();
 				if (toolCalls != null) {
-                	executeFunctionCalls(toolCalls, messages);
+                	executeFunctionCalls(toolCalls.getFirst(), currentMessages);
 				}
 				i++;
-            } while (responseMessage.getToolCalls() != null || i > 5);
-
+            } while (responseMessage.getToolCalls() != null || i > 5); //limit to 5 iteration, maybe llm do stupid things
         } catch (Exception e) {
 			LOGGER.error("Could not execute functions for prompt: {}", prompt, e);
 		}
@@ -86,13 +90,11 @@ public class OpenAiClient extends ALLMClient implements ILLMClient {
 		return messages;
 	}
 
-	private void executeFunctionCalls(List<ToolCall> toolCalls, List<ChatMessage> messages) {
-		toolCalls.forEach(toolCall -> {
-			FunctionCall function = toolCall.getFunction();
-			LOGGER.info("Executed function: {}", function);
-			String result = functionManager.getFunctionExecutor().execute(function);
-			messages.add(ChatMessage.ToolMessage.of(result, toolCall.getId()));
-		});
+	private void executeFunctionCalls(ToolCall toolCall, List<ChatMessage> messages) {
+		FunctionCall function = toolCall.getFunction();
+		LOGGER.info("Executed function: {}", function);
+		String result = functionManager.getFunctionExecutor().execute(function);
+		messages.add(ChatMessage.ToolMessage.of(result, toolCall.getId()));
 	}
 
 	@Override

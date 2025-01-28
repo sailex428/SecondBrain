@@ -26,6 +26,8 @@ class ResourcesProvider(
 
     private val recipes = arrayListOf<Recipe>()
     private val conversations = arrayListOf<Conversation>()
+    val latestConversations = listOf<Conversation>()
+        private set
 
     /**
      * Loads conversations from db and recipes from mc into memory
@@ -47,9 +49,14 @@ class ResourcesProvider(
             .map { it.first }
     }
 
-    fun getLatestConversations(npcName: String): List<Conversation> {
+    fun getFormattedConversation(npcName: String): List<String> {
+        val conversations = getLatestConversations(npcName)
+        return conversations.map { convo -> "${convo.timestamp} : ${convo.message}" }.toList()
+    }
+
+    private fun getLatestConversations(npcName: String): List<Conversation> {
         val convos = this.conversations.filter { it.npcName == npcName }
-        return convos.subList((convos.size - 3).coerceAtLeast(0), convos.size)
+        return convos.subList((convos.size - 5).coerceAtLeast(0), convos.size)
     }
 
     fun addConversation(message: String, npcName: String) {
@@ -75,7 +82,7 @@ class ResourcesProvider(
 
     private fun loadRecipes(server: MinecraftServer) {
         val recipeEntries: Collection<RecipeEntry<*>> = server.recipeManager.values().filter {
-            !it.value.ingredients.isEmpty()
+            it.value.ingredients.isNotEmpty()
         }
 
         //if no new recipes are added by other mods, load from the db (avoid re-vectorize the names)

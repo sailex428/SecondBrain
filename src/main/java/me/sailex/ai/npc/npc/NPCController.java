@@ -69,7 +69,7 @@ public class NPCController {
 	 */
 	public void onEvent(String source, String prompt) {
 		CompletableFuture.runAsync(() -> {
-					llmClient.callFunctions(source, prompt);
+					llmClient.callFunctions(source, prompt, resourcesProvider.getFormattedConversation(npcName));
 					resourcesProvider.addConversation(prompt, npcName);
 				}, executorService)
 				.exceptionally(e -> {

@@ -19,7 +19,7 @@ public class CommandManager {
 	public void registerAll() {
 		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
 			new SetConfigCommand(config).register(dispatcher);
-			dispatcher.register(literal("npc")
+			dispatcher.register(literal("secondbrain")
 					.requires(source -> source.hasPermissionLevel(2))
 					.then(new NPCCreateCommand(npcFactory).getCommand())
 					.then(new NPCRemoveCommand(npcFactory).getCommand()));

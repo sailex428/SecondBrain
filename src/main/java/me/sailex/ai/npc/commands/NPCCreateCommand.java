@@ -22,12 +22,15 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @AllArgsConstructor
 public class NPCCreateCommand {
 
 	private static final String LLM_TYPE = "llm-type";
 	private static final String LLM_MODEL = "llm-model";
-	private static final String IS_ONLINE_COMMAND = "isOnline";
+	private final List<String> MODELS = List.of("gemma2", "llama3.2", "gpt-4o-mini");
 
 	private final NPCFactory npcFactory;
 
@@ -35,21 +38,25 @@ public class NPCCreateCommand {
 		return literal("add")
 				.requires(source -> source.hasPermissionLevel(2))
 				.then(argument("name", StringArgumentType.string())
-						.then(argument(IS_ONLINE_COMMAND, BoolArgumentType.bool())
-								.then(argument(LLM_TYPE, StringArgumentType.string())
-										.suggests((context, builder) -> {
-											for (LLMType llmType : LLMType.getEntries()) {
-												builder.suggest(llmType.name());
+						.then(argument(LLM_TYPE, StringArgumentType.string())
+								.suggests((context, builder) -> {
+									for (LLMType llmType : LLMType.getEntries()) {
+										builder.suggest(llmType.toString());
+									}
+									return builder.buildFuture();
+								})
+								.then(argument(LLM_MODEL, StringArgumentType.string())
+										.suggests(((context, builder) -> {
+											for (String model : MODELS) {
+												builder.suggest(model);
 											}
 											return builder.buildFuture();
-										})
-										.then(argument(LLM_MODEL, StringArgumentType.string())
-												.executes(this::createNpcWithLLM)))));
+										}))
+										.executes(this::createNpcWithLLM))));
 	}
 
 	private int createNpcWithLLM(CommandContext<ServerCommandSource> context) {
 		String name = StringArgumentType.getString(context, "name");
-		boolean isOnline = BoolArgumentType.getBool(context, IS_ONLINE_COMMAND);
 		String llmType = StringArgumentType.getString(context, LLM_TYPE);
 		String llmModel = StringArgumentType.getString(context, LLM_MODEL);
 
@@ -66,8 +73,8 @@ public class NPCCreateCommand {
 	}
 
 	private ServerPlayerEntity spawnNpc(ServerCommandSource source, String name) {
-		//
-		// BaritoneProvider.INSTANCE.getBaritone(source.getPlayer()).getCommandHelper().executeSpawn(name);
+		source.getServer().getCommandManager().executeWithPrefix(source, "player " + name + " spawn");
+		//BaritoneProvider.INSTANCE.getBaritone(source.getPlayer()).getCommandHelper().executeSpawn(name);
 		PlayerManager playerManager = source.getServer().getPlayerManager();
 		return playerManager.getPlayer(name);
 	}

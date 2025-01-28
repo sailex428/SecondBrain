@@ -12,7 +12,7 @@ public interface ILLMClient {
 	 * @param source the source of the prompt e.g. system
 	 * @param prompt the prompt
 	 */
-	void callFunctions(String source, String prompt);
+	void callFunctions(String source, String prompt, List<String> conversations);
 
 	/**
 	 * Generate an embedding for a given prompt
