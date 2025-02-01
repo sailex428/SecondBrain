@@ -170,14 +170,13 @@ public class NPCController {
 
 	private void autoRespawn() {
 		if (npcEntity.isDead()) {
-			stopService();
-			//just spawn a new playerEntity with the same profile ig
+			baritone.getCommandHelper().executeSpawn(npcEntity.getName().getString());
 		}
 	}
 
 	private void tick() {
 		ServerTickEvents.END_SERVER_TICK.register(server -> {
-			//autoRespawn();
+			autoRespawn();
 			if (!baritoneIsActive()) {
 				lookAtPlayer();
 				takeAction();
@@ -198,8 +197,4 @@ public class NPCController {
 			LogUtil.error("Error executing automatone cancel command" + e, true);
         }
     }
-
-	public void stopService() {
-		executorService.shutdown();
-	}
 }
