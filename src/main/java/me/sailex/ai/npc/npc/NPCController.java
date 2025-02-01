@@ -5,7 +5,7 @@ import baritone.api.command.exception.CommandException;
 import baritone.api.pathing.goals.GoalBlock;
 import baritone.api.utils.BetterBlockPos;
 import me.sailex.ai.npc.constant.Instructions;
-import me.sailex.ai.npc.database.resources.ResourcesProvider;
+import me.sailex.ai.npc.history.ConversationHistory;
 import me.sailex.ai.npc.llm.ILLMClient;
 import me.sailex.ai.npc.model.context.WorldContext;
 import me.sailex.ai.npc.util.LogUtil;
@@ -37,8 +37,7 @@ public class NPCController {
 	private final ServerPlayerEntity npcEntity;
 	private final IBaritone baritone;
 	private final ILLMClient llmClient;
-	private final ResourcesProvider resourcesProvider;
-	private final String npcName;
+	private final ConversationHistory history;
 
 	private boolean isFirstRequest = true;
 
@@ -46,13 +45,12 @@ public class NPCController {
 			ServerPlayerEntity npcEntity,
 			IBaritone baritone,
 			ILLMClient llmClient,
-			ResourcesProvider resourcesProvider
+			ConversationHistory history
 	) {
 		this.npcEntity = npcEntity;
 		this.baritone = baritone;
 		this.llmClient = llmClient;
-		this.resourcesProvider = resourcesProvider;
-		this.npcName = npcEntity.getName().getString();
+		this.history = history;
 		this.executorService = Executors.newSingleThreadExecutor();
 
 		//start ticking + explore process
@@ -69,8 +67,8 @@ public class NPCController {
 	 */
 	public void onEvent(String source, String prompt) {
 		CompletableFuture.runAsync(() -> {
-					llmClient.callFunctions(source, prompt, resourcesProvider.getFormattedConversation(npcName));
-					resourcesProvider.addConversation(prompt, npcName);
+					history.add(prompt);
+					llmClient.callFunctions(source, prompt, history);
 				}, executorService)
 				.exceptionally(e -> {
 					LogUtil.error("Unexpected error occurred handling event: " + e, true);

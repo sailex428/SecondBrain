@@ -193,8 +193,7 @@ public class OpenAiFunctionManager implements IFunctionManager {
     private static class GetConversations implements Functional {
         @Override
         public Object execute() {
-            return NPCInteraction.formatConversation(
-                    resourcesProvider.getLatestConversations(npcEntity.getName().getString()));
+            return NPCInteraction.formatConversation(resourcesProvider.getRelevantConversations(npcEntity.getName().getString()));
         }
     }
 }

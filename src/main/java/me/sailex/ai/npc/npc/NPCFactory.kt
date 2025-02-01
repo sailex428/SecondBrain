@@ -6,6 +6,7 @@ import me.sailex.ai.npc.constant.ConfigConstants
 import me.sailex.ai.npc.database.repositories.RepositoryFactory
 import me.sailex.ai.npc.database.resources.ResourcesProvider
 import me.sailex.ai.npc.exception.InvalidLLMTypeException
+import me.sailex.ai.npc.history.ConversationHistory
 import me.sailex.ai.npc.listener.EventListenerRegisterer
 import me.sailex.ai.npc.llm.ILLMClient
 import me.sailex.ai.npc.llm.LLMType
@@ -24,6 +25,7 @@ class NPCFactory(
         private set
 
     fun createNpc(server: MinecraftServer, npcEntity: ServerPlayerEntity, llmType: String, llmModel: String) {
+        val npcName = npcEntity.name.string
         val llmClient = initLlmClient(llmType, llmModel)
 
         if (this.resourcesProvider == null) {
@@ -32,11 +34,12 @@ class NPCFactory(
                 repositoryFactory.recipesRepository,
                 llmClient
             )
-            this.resourcesProvider?.loadResources(server, npcEntity.name.string)
+            this.resourcesProvider?.loadResources(server, npcName)
         }
 
         val baritone = BaritoneAPI.getProvider().getBaritone(npcEntity)
-        val controller = NPCController(npcEntity, baritone, llmClient, resourcesProvider)
+        val history = ConversationHistory(resourcesProvider!!, npcName)
+        val controller = NPCController(npcEntity, baritone, llmClient, history)
         llmClient.setFunctionManager(OpenAiFunctionManager(controller, resourcesProvider!!, npcEntity))
 
         val npc = NPC(npcEntity, llmClient, controller)
@@ -44,6 +47,8 @@ class NPCFactory(
         //start event listening
         val eventListenerRegisterer = EventListenerRegisterer(npc)
         eventListenerRegisterer.registerListeners()
+
+        nameToNpc.put(npcName, npc)
     }
 
     fun removeNpc(npcName: String): Boolean {

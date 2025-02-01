@@ -3,11 +3,6 @@ package me.sailex.ai.npc.commands;
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 
-import baritone.Baritone;
-import baritone.BaritoneProvider;
-import baritone.api.BaritoneAPI;
-import baritone.api.IBaritone;
-import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
@@ -22,7 +17,6 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @AllArgsConstructor
@@ -30,7 +24,7 @@ public class NPCCreateCommand {
 
 	private static final String LLM_TYPE = "llm-type";
 	private static final String LLM_MODEL = "llm-model";
-	private final List<String> MODELS = List.of("gemma2", "llama3.2", "gpt-4o-mini");
+	private static final List<String> MODELS = List.of("gemma2", "llama3.2", "gpt-4o-mini");
 
 	private final NPCFactory npcFactory;
 

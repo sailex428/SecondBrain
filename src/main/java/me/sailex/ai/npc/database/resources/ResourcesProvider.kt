@@ -5,6 +5,7 @@ import me.sailex.ai.npc.database.repositories.RecipesRepository
 import me.sailex.ai.npc.llm.ILLMClient
 import me.sailex.ai.npc.model.database.Conversation
 import me.sailex.ai.npc.model.database.Recipe
+import me.sailex.ai.npc.model.database.Resource
 import me.sailex.ai.npc.util.LogUtil
 import me.sailex.ai.npc.util.VectorUtil.cosineSimilarity
 
@@ -26,8 +27,6 @@ class ResourcesProvider(
 
     private val recipes = arrayListOf<Recipe>()
     private val conversations = arrayListOf<Conversation>()
-    val latestConversations = listOf<Conversation>()
-        private set
 
     /**
      * Loads conversations from db and recipes from mc into memory
@@ -42,28 +41,18 @@ class ResourcesProvider(
     }
 
     fun getRelevantRecipes(itemName: String): List<Recipe> {
-        val promptEmbedding = llmClient.generateEmbedding(listOf(itemName))
-        return recipes.map { recipe -> Pair(recipe, cosineSimilarity(promptEmbedding, recipe.embedding)) }
-            .sortedByDescending { it.second }
-            .take(7)
-            .map { it.first }
+        return getRelevantResources(itemName, recipes, 5).filterIsInstance<Recipe>()
     }
 
-    fun getFormattedConversation(npcName: String): List<String> {
-        val conversations = getLatestConversations(npcName)
-        return conversations.map { convo -> "${convo.timestamp} : ${convo.message}" }.toList()
+    fun getRelevantConversations(message: String): List<Conversation> {
+        return getRelevantResources(message, conversations, 2).filterIsInstance<Conversation>()
     }
 
-    private fun getLatestConversations(npcName: String): List<Conversation> {
-        val convos = this.conversations.filter { it.npcName == npcName }
-        return convos.subList((convos.size - 5).coerceAtLeast(0), convos.size)
-    }
-
-    fun addConversation(message: String, npcName: String) {
+    fun addConversation(npcName: String, timestamp: Timestamp, message: String) {
         this.conversations.add(Conversation(
             npcName, message,
             llmClient.generateEmbedding(listOf(message)),
-            Timestamp(System.currentTimeMillis())))
+            timestamp))
     }
 
     fun saveResources() {
@@ -74,6 +63,14 @@ class ResourcesProvider(
             conversations.forEach { conversationRepository::insert }
         }
         executorService.shutdown()
+    }
+
+    private fun getRelevantResources(prompt: String, resources: List<Resource>, maxTopElements: Int): List<Resource> {
+        val promptEmbedding = llmClient.generateEmbedding(listOf(prompt))
+        return resources.map { resource -> Pair(resource, cosineSimilarity(promptEmbedding, resource.embedding)) }
+            .sortedByDescending { it.second }
+            .take(maxTopElements)
+            .map { it.first }
     }
 
     private fun loadConversations(npcName: String) {
