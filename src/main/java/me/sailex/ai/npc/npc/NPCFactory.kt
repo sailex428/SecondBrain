@@ -63,7 +63,10 @@ class NPCFactory(
     }
 
     fun shutdownNpc() {
-        nameToNpc.values.forEach { it.controller.stopService() }
+        nameToNpc.values.forEach {
+            it.controller.stopService()
+            it.llmClient.stopService()
+        }
     }
 
     private fun initLlmClient(llmType: String, llmModel: String): ILLMClient {

@@ -137,9 +137,10 @@ public class NPCController {
 	}
 
 	public void dropAll(int slot) {
-		baritone.getCommandHelper().executeDropAll(slot); //slot
+		baritone.getCommandHelper().executeDropAll(slot);
 	}
 
+	//will be impl if all other things are tested with this function calling
 	public void craftItem(String recipeId) {
 		//? if <=1.20.4 {
 		/*Identifier identifier = new Identifier(recipeId);*/
@@ -197,4 +198,8 @@ public class NPCController {
 			LogUtil.error("Error executing automatone cancel command" + e, true);
         }
     }
+
+	public void stopService() {
+		executorService.shutdown();
+	}
 }
