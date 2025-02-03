@@ -45,11 +45,11 @@ public class OpenAiFunctionManager implements IFunctionManager {
                 defineFunction("drop", "Drop one item of the given inventory slot", Drop.class),
                 defineFunction("dropAll", "Drop all items of the given inventory slot", DropAll.class),
                 defineFunction("attack", "Attack the entity of the given entity id", Attack.class),
-                defineFunction("getEntities", "Get all entities next to the npc player", GetEntities.class),
+                defineFunction("getEntities", "Get all entities and players next to the npc player (you)", GetEntities.class),
                 defineFunction("getBlocks", "Get all blocks next to the player", GetBlocks.class),
                 defineFunction("getNpcState", "Get npc state (foodlevel, health, ...) and inventory items", GetNpcState.class),
                 defineFunction("getRecipes", "Get all recipes that matches the specified item", GetRecipes.class),
-                defineFunction("getConversations", "Get latest conversation to get more context", GetConversations.class),
+                defineFunction("getConversations", "Get a conversation to a specific topic from the past", GetConversations.class),
                 defineFunction("stop", "Stop all running npc actions (Should only be used if expressly requested)", Stop.class)
         );
         functions.forEach(functionExecutor::enrollFunction);
@@ -191,9 +191,14 @@ public class OpenAiFunctionManager implements IFunctionManager {
     }
 
     private static class GetConversations implements Functional {
+
+        @JsonPropertyDescription("Topic for which old conversations should be searched for")
+        @JsonProperty(required = true)
+        private String topic;
+
         @Override
         public Object execute() {
-            return NPCInteraction.formatConversation(resourcesProvider.getRelevantConversations(npcEntity.getName().getString()));
+            return NPCInteraction.formatConversation(resourcesProvider.getRelevantConversations(topic));
         }
     }
 }

@@ -8,14 +8,14 @@ class ChatMessageListener(
 ) : AEventListener(npc) {
 
     override fun register() {
-        ServerMessageEvents.CHAT_MESSAGE.register { message, sender, params ->
+        ServerMessageEvents.CHAT_MESSAGE.register { message, sender, _ ->
             if (sender.name.string.contains(npc.entity.name.string)) {
                 return@register
             }
             val chatMessage =
                 String.format(
                     "%s has written the message: %s",
-                    sender?.name ?: "Server Console",
+                    sender.name.string ?: "Server Console",
                     message.content.string,
                 )
             handleMessage(sender?.name?.string ?: "system", chatMessage)

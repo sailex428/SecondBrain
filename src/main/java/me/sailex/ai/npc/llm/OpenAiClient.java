@@ -12,6 +12,7 @@ import me.sailex.ai.npc.history.ConversationHistory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * OpenAI client for generating responses.
@@ -52,10 +53,11 @@ public class OpenAiClient extends ALLMClient implements ILLMClient {
 			history.getFormattedConversation().forEach(conversation ->
 					currentMessages.add(ChatMessage.SystemMessage.of(conversation)));
 			currentMessages.add(buildPromptMessage(source, prompt));
+			LOGGER.info("Current messages: {}", currentMessages);
 
             ChatMessage.ResponseMessage responseMessage;
-			//execute functions until llm doesnt call anyOfThem anymore, limit to 7 iteration, maybe llm do stupid things
-           	for (int i = 0; i < 7; i++) {
+			//execute functions until llm doesnt call anyOfThem anymore, limit to 4 iteration, maybe llm do stupid things
+           	for (int i = 0; i < 4; i++) {
                 ChatRequest chatRequest = ChatRequest.builder()
                         .model(openAiModel)
 						.tools(functionManager.getFunctionExecutor().getToolFunctions())
@@ -73,7 +75,9 @@ public class OpenAiClient extends ALLMClient implements ILLMClient {
 				if (toolCalls == null || toolCalls.isEmpty()) {
 					break;
 				}
-				executeFunctionCalls(toolCalls.getFirst(), currentMessages);
+				ToolCall toolCall = toolCalls.getFirst();
+				history.add(toolCall.getFunction().getName() + " - " + toolCall.getFunction().getArguments());
+				executeFunctionCalls(toolCall, currentMessages);
             }
         } catch (Exception e) {
 			LOGGER.error("Could not generate response / execute functions for prompt: {}", prompt, e);
@@ -91,7 +95,7 @@ public class OpenAiClient extends ALLMClient implements ILLMClient {
 
 	private void executeFunctionCalls(ToolCall toolCall, List<ChatMessage> messages) {
 		FunctionCall function = toolCall.getFunction();
-		LOGGER.info("Executed function: {}", function);
+		LOGGER.info("Executed function: {} : {}", function.getName(), function.getArguments());
 		String result = functionManager.getFunctionExecutor().execute(function);
 		messages.add(ChatMessage.ToolMessage.of(result, toolCall.getId()));
 	}

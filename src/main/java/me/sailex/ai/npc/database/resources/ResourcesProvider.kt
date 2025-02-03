@@ -45,7 +45,7 @@ class ResourcesProvider(
     }
 
     fun getRelevantConversations(message: String): List<Conversation> {
-        return getRelevantResources(message, conversations, 2).filterIsInstance<Conversation>()
+        return getRelevantResources(message, conversations, 3).filterIsInstance<Conversation>()
     }
 
     fun addConversation(npcName: String, timestamp: Timestamp, message: String) {

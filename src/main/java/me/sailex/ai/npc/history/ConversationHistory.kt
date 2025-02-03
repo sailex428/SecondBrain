@@ -8,7 +8,7 @@ class ConversationHistory(
     private val resourcesProvider: ResourcesProvider,
     private val npcName: String
 ) {
-    private val latestConversations = LinkedBlockingDeque<Pair<Timestamp, String>>(8) //timestamp to message
+    private val latestConversations = LinkedBlockingDeque<Pair<Timestamp, String>>(4) //timestamp to message
 
     fun add(message: String) {
         if (latestConversations.remainingCapacity() == 0) {
