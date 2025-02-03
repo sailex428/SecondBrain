@@ -65,7 +65,7 @@ dependencies {
     modImplementation("org.ladysnake.cardinal-components-api:cardinal-components-base:${property("cca_version")}")
     modImplementation("org.ladysnake.cardinal-components-api:cardinal-components-entity:${property("cca_version")}")
     modImplementation("org.ladysnake.cardinal-components-api:cardinal-components-world:${property("cca_version")}")
-    include(modRuntimeOnly("com.github.gnembon:fabric-carpet:${property("carpet_version")}")!!)
+    include(modImplementation("com.github.gnembon:fabric-carpet:${property("carpet_version")}")!!)
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.11.3")
     testImplementation("org.mockito:mockito-core:5.14.2")

@@ -3,6 +3,7 @@ package me.sailex.ai.npc.commands;
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 
+import carpet.patches.EntityPlayerMPFake;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
@@ -12,12 +13,18 @@ import me.sailex.ai.npc.llm.LLMType;
 import me.sailex.ai.npc.npc.NPCFactory;
 import me.sailex.ai.npc.util.LogUtil;
 
-import net.minecraft.server.PlayerManager;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
+
+import net.minecraft.world.GameMode;
+import net.minecraft.world.World;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CountDownLatch;
 
 @AllArgsConstructor
 public class NPCCreateCommand {
@@ -50,6 +57,10 @@ public class NPCCreateCommand {
 	}
 
 	private int createNpcWithLLM(CommandContext<ServerCommandSource> context) {
+		if (context.getSource().getPlayer() == null) {
+			context.getSource().sendFeedback(() -> LogUtil.formatError("Command must be executed as a Player!"), false);
+			return 0;
+		}
 		String name = StringArgumentType.getString(context, "name");
 		String llmType = StringArgumentType.getString(context, LLM_TYPE);
 		String llmModel = StringArgumentType.getString(context, LLM_MODEL);
@@ -57,19 +68,43 @@ public class NPCCreateCommand {
 		LogUtil.info(("Creating NPC with name: " + name + ", LLM Type: " + llmType + ", LLM Model: " + llmModel));
 
 		try {
-			ServerPlayerEntity npc = spawnNpc(context.getSource(), name);
-			npcFactory.createNpc(context.getSource().getServer(), npc, llmType, llmModel);
+			CountDownLatch latch = new CountDownLatch(1);
+			spawnNpc(context.getSource(), name);
+			checkPlayerAvailable(name, latch);
+			CompletableFuture.runAsync(() -> {
+                try {
+                    latch.await();
+                	ServerPlayerEntity npc = context.getSource().getServer().getPlayerManager().getPlayer(name);
+					npcFactory.createNpc(context.getSource().getServer(), Objects.requireNonNull(npc), llmType, llmModel);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+			});
 			return 1;
-		} catch (InvalidLLMTypeException e) {
-			context.getSource().sendFeedback(() -> Text.literal(e.getMessage()), false);
+		} catch (InvalidLLMTypeException | NullPointerException e) {
+			context.getSource().sendFeedback(() -> LogUtil.formatError(e.getMessage()), false);
 			return 0;
 		}
 	}
 
-	private ServerPlayerEntity spawnNpc(ServerCommandSource source, String name) {
-		source.getServer().getCommandManager().executeWithPrefix(source, "player " + name + " spawn");
-		//BaritoneProvider.INSTANCE.getBaritone(source.getPlayer()).getCommandHelper().executeSpawn(name);
-		PlayerManager playerManager = source.getServer().getPlayerManager();
-		return playerManager.getPlayer(name);
+	private void spawnNpc(ServerCommandSource source, String name) {
+		RegistryKey<World> dimensionKey = source.getWorld().getRegistryKey();
+		ServerPlayerEntity player = source.getPlayer();
+
+		boolean isSuccessful = EntityPlayerMPFake.createFake(name, source.getServer(),
+				player.getPos(), player.getYaw(), player.getPitch(),
+				dimensionKey, GameMode.SURVIVAL, false);
+		if (!isSuccessful) {
+			throw new NullPointerException("Player profile doesn't exist!");
+		}
 	}
+
+	private void checkPlayerAvailable(String npcName, CountDownLatch latch) {
+		ServerTickEvents.END_SERVER_TICK.register(server -> {
+			if (server.getPlayerManager().getPlayer(npcName) != null) {
+				latch.countDown();
+			}
+		});
+	}
+
 }

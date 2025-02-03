@@ -13,6 +13,7 @@ import net.minecraft.server.PlayerManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 
 @AllArgsConstructor
 public class NPCRemoveCommand {
@@ -35,7 +36,7 @@ public class NPCRemoveCommand {
 		//try first to remove npc else real players could be removed
 		if (!npcFactory.removeNpc(name) || !isPlayerRemoved) {
 			context.getSource().sendFeedback(() ->
-					Text.of("Could not remove npc with name " + name + ", reason: npc not found"), false);
+					LogUtil.formatError("Could not find npc with name " + name), false);
 			return 0;
 		}
 		return 1;
