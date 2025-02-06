@@ -31,7 +31,8 @@ public class NPCCreateCommand {
 
 	private static final String LLM_TYPE = "llm-type";
 	private static final String LLM_MODEL = "llm-model";
-	private static final List<String> MODELS = List.of("gemma2", "llama3.2", "gpt-4o-mini");
+	private static final List<String> OLLAMA_MODELS = List.of("gemma2", "llama3.2");
+	private static final List<String> OPENAI_MODELS = List.of("gpt-4o-mini", "gpt-4o");
 
 	private final NPCFactory npcFactory;
 
@@ -48,8 +49,11 @@ public class NPCCreateCommand {
 								})
 								.then(argument(LLM_MODEL, StringArgumentType.string())
 										.suggests(((context, builder) -> {
-											for (String model : MODELS) {
-												builder.suggest(model);
+											String userInput = context.getInput();
+											if (userInput.contains(LLMType.OLLAMA.toString())) {
+												OLLAMA_MODELS.forEach(builder::suggest);
+											} else if (userInput.contains(LLMType.OPENAI.toString())) {
+												OPENAI_MODELS.forEach(builder::suggest);
 											}
 											return builder.buildFuture();
 										}))
