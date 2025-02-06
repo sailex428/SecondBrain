@@ -40,7 +40,8 @@ class NPCFactory(
         val baritone = BaritoneAPI.getProvider().getBaritone(npcEntity)
         val history = ConversationHistory(resourcesProvider!!, npcName)
         val controller = NPCController(npcEntity, baritone, llmClient, history)
-        llmClient.setFunctionManager(OpenAiFunctionManager(controller, resourcesProvider!!, npcEntity))
+        llmClient.setFunctionManager(OpenAiFunctionManager(controller, resourcesProvider!!, npcEntity, history))
+        controller.start()
 
         val npc = NPC(npcEntity, llmClient, controller)
 

@@ -9,6 +9,7 @@ import lombok.Getter;
 import lombok.Setter;
 import me.sailex.ai.npc.context.ContextGenerator;
 import me.sailex.ai.npc.database.resources.ResourcesProvider;
+import me.sailex.ai.npc.history.ConversationHistory;
 import me.sailex.ai.npc.model.context.WorldContext;
 import me.sailex.ai.npc.npc.NPCController;
 import me.sailex.ai.npc.npc.NPCInteraction;
@@ -24,15 +25,18 @@ public class OpenAiFunctionManager implements IFunctionManager {
     private static ResourcesProvider resourcesProvider;
     private static NPCController controller;
     private static ServerPlayerEntity npcEntity;
+    private static ConversationHistory history;
 
     public OpenAiFunctionManager(
             NPCController controller,
             ResourcesProvider resourcesProvider,
-            ServerPlayerEntity npcEntity
+            ServerPlayerEntity npcEntity,
+            ConversationHistory history
     ) {
         OpenAiFunctionManager.controller = controller;
         OpenAiFunctionManager.resourcesProvider = resourcesProvider;
         OpenAiFunctionManager.npcEntity = npcEntity;
+        OpenAiFunctionManager.history = history;
         functionExecutor = new FunctionExecutor();
         init();
     }
@@ -50,6 +54,7 @@ public class OpenAiFunctionManager implements IFunctionManager {
                 defineFunction("getNpcState", "Get npc state (foodlevel, health, ...) and inventory items", GetNpcState.class),
                 defineFunction("getRecipes", "Get all recipes that matches the specified item", GetRecipes.class),
                 defineFunction("getConversations", "Get a conversation to a specific topic from the past", GetConversations.class),
+                defineFunction("getLatestConversations", "Get the last 7 conversations (user prompts and answer of you with the functions that are called)", GetLatestConversations.class),
                 defineFunction("stop", "Stop all running npc actions (Should only be used if expressly requested)", Stop.class)
         );
         functions.forEach(functionExecutor::enrollFunction);
@@ -201,4 +206,12 @@ public class OpenAiFunctionManager implements IFunctionManager {
             return NPCInteraction.formatConversation(resourcesProvider.getRelevantConversations(topic));
         }
     }
+
+    private static class GetLatestConversations implements Functional {
+        @Override
+        public Object execute() {
+            return history.getFormattedConversation();
+        }
+    }
+
 }

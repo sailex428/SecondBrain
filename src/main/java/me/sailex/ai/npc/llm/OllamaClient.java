@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.*;
 import lombok.Setter;
-import me.sailex.ai.npc.history.ConversationHistory;
 import me.sailex.ai.npc.util.LogUtil;
 
 /**
@@ -54,8 +53,9 @@ public class OllamaClient extends ALLMClient implements ILLMClient {
 	}
 
 	@Override
-	public void callFunctions(String userPrompt, String systemPrompt, ConversationHistory history) {
+	public String callFunctions(String userPrompt, String systemPrompt) {
 		//idk if i ever support this
+		return "";
 	}
 
 	@Override

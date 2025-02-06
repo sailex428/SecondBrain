@@ -16,6 +16,8 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.command.argument.EntityAnchorArgumentType;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.network.message.MessageType;
+import net.minecraft.network.message.SignedMessage;
 import net.minecraft.recipe.RecipeEntry;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -52,7 +54,9 @@ public class NPCController {
 		this.llmClient = llmClient;
 		this.history = history;
 		this.executorService = Executors.newSingleThreadExecutor();
+	}
 
+	public void start() {
 		//start ticking + explore process
 		tick();
 		handleInitMessage();
@@ -68,7 +72,7 @@ public class NPCController {
 	public void onEvent(String source, String prompt) {
 		CompletableFuture.runAsync(() -> {
 					history.add(prompt);
-					llmClient.callFunctions(source, prompt, history);
+					history.add(llmClient.callFunctions(source, prompt));
 				}, executorService)
 				.exceptionally(e -> {
 					LogUtil.error("Unexpected error occurred handling event: " + e, true);
@@ -107,7 +111,8 @@ public class NPCController {
 	public void chat(String message) {
 		MinecraftServer server = npcEntity.getServer();
 		if (server != null) {
-			server.getPlayerManager().broadcast(Text.of(message), false);
+			server.getPlayerManager().broadcast(SignedMessage.ofUnsigned(message), npcEntity, MessageType.params(MessageType.CHAT, npcEntity));
+			npcEntity.sendMessage(Text.of(message), false);
 			return;
 		}
 		LogUtil.error("There must be some very big issues lol.", true);

@@ -7,12 +7,11 @@ import io.github.sashirestela.openai.domain.chat.ChatMessage;
 import io.github.sashirestela.openai.domain.chat.ChatRequest;
 import io.github.sashirestela.openai.domain.embedding.EmbeddingFloat;
 import io.github.sashirestela.openai.domain.embedding.EmbeddingRequest;
-import me.sailex.ai.npc.history.ConversationHistory;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 /**
  * OpenAI client for generating responses.
@@ -44,16 +43,13 @@ public class OpenAiClient extends ALLMClient implements ILLMClient {
 	 *
 	 * @param source 	the source of the prompt e.g. system
 	 * @param prompt 	the prompt
-	 * @param history  	conversation history
 	 */
 	@Override
-	public void callFunctions(String source, String prompt, ConversationHistory history) {
+	public String callFunctions(String source, String prompt) {
 		try {
+			StringBuilder builder = new StringBuilder();
 			List<ChatMessage> currentMessages = new ArrayList<>();
-			history.getFormattedConversation().forEach(conversation ->
-					currentMessages.add(ChatMessage.SystemMessage.of(conversation)));
 			currentMessages.add(buildPromptMessage(source, prompt));
-			LOGGER.info("Current messages: {}", currentMessages);
 
             ChatMessage.ResponseMessage responseMessage;
 			//execute functions until llm doesnt call anyOfThem anymore, limit to 4 iteration, maybe llm do stupid things
@@ -76,11 +72,16 @@ public class OpenAiClient extends ALLMClient implements ILLMClient {
 					break;
 				}
 				ToolCall toolCall = toolCalls.getFirst();
-				history.add(toolCall.getFunction().getName() + " - " + toolCall.getFunction().getArguments());
+				builder.append("- ")
+						.append(toolCall.getFunction().getName())
+						.append(" args: ")
+						.append(toolCall.getFunction().getArguments());
 				executeFunctionCalls(toolCall, currentMessages);
             }
+			return builder.toString();
         } catch (Exception e) {
 			LOGGER.error("Could not generate response / execute functions for prompt: {}", prompt, e);
+			return StringUtils.EMPTY;
 		}
 	}
 
@@ -95,7 +96,7 @@ public class OpenAiClient extends ALLMClient implements ILLMClient {
 
 	private void executeFunctionCalls(ToolCall toolCall, List<ChatMessage> messages) {
 		FunctionCall function = toolCall.getFunction();
-		LOGGER.info("Executed function: {} : {}", function.getName(), function.getArguments());
+		LOGGER.info("Executed function: {} - {}", function.getName(), function.getArguments());
 		String result = functionManager.getFunctionExecutor().execute(function);
 		messages.add(ChatMessage.ToolMessage.of(result, toolCall.getId()));
 	}

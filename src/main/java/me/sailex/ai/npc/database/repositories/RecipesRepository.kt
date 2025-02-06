@@ -42,18 +42,6 @@ class RecipesRepository(
         return super.selectCount("recipes")
     }
 
-    fun select(requirementIds: List<Int>): List<Resource> {
-        val sql = "SELECT * FROM recipes WHERE id IN (%S)"
-        val result = sqliteClient.select(String.format(sql, requirementIds.joinToString(",")))
-        return processResult(result)
-    }
-
-    fun select(type: String): List<Resource> {
-        val sql = "SELECT * FROM recipes WHERE type IN (%S)"
-        val result = sqliteClient.select(String.format(sql, type))
-        return processResult(result)
-    }
-
     override fun selectAll(): List<Resource> {
         val sql = "SELECT * FROM recipes"
         val result = sqliteClient.select(sql)
