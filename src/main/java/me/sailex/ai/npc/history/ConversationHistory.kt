@@ -19,7 +19,7 @@ class ConversationHistory(
         latestConversations.add(Pair(currentTime, message))
     }
 
-    fun getFormattedConversation(): List<String> {
-        return latestConversations.map { conversation -> "${conversation.first}: ${conversation.second}" }.toList()
+    fun getFormattedConversation(): String {
+        return latestConversations.joinToString { conversation -> "${conversation.first}: ${conversation.second}" }
     }
 }
