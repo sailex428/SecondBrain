@@ -43,7 +43,7 @@ public class OpenAiFunctionManager implements IFunctionManager {
 
     private void init() {
         List<FunctionDef> functions = List.of(
-                defineFunction("chat", "Print message into game chat.", Chat.class),
+                defineFunction("chat", "Print answers on user request into game chat so the players can read it.", Chat.class),
                 defineFunction("move", "Move to the given location", Move.class),
                 defineFunction("mine", "Mine the block at the given location", Mine.class),
                 defineFunction("drop", "Drop one item of the given inventory slot", Drop.class),
