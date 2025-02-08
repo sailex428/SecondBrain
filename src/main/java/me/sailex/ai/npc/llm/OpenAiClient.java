@@ -72,10 +72,10 @@ public class OpenAiClient extends ALLMClient implements ILLMClient {
 					break;
 				}
 				ToolCall toolCall = toolCalls.getFirst();
-				builder.append("- ")
-						.append(toolCall.getFunction().getName())
-						.append(" args: ")
-						.append(toolCall.getFunction().getArguments());
+				builder.append(toolCall.getFunction().getName())
+						.append(" - args: ")
+						.append(toolCall.getFunction().getArguments())
+						.append(StringUtils.SPACE);
 				executeFunctionCalls(toolCall, currentMessages);
             }
 			return builder.toString();
@@ -110,7 +110,7 @@ public class OpenAiClient extends ALLMClient implements ILLMClient {
 							.model("text-embedding-3-small")
 							.input(prompt)
 							.build())
-					.get(5, TimeUnit.SECONDS)
+					.get(10, TimeUnit.SECONDS)
 					.getData()
 					.stream()
 					.map(EmbeddingFloat::getEmbedding)

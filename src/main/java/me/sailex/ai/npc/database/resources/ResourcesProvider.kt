@@ -14,16 +14,18 @@ import net.minecraft.recipe.RecipeEntry
 import net.minecraft.server.MinecraftServer
 import net.minecraft.util.collection.DefaultedList
 import java.sql.Timestamp
+import java.util.concurrent.CompletableFuture
 
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 
 class ResourcesProvider(
     private val conversationRepository: ConversationRepository,
     private val recipesRepository: RecipesRepository,
     private val llmClient: ILLMClient
 ) {
-    private var executorService: ExecutorService = Executors.newSingleThreadExecutor()
+    private var executorService: ExecutorService = Executors.newFixedThreadPool(3)
 
     private val recipes = arrayListOf<Recipe>()
     private val conversations = arrayListOf<Conversation>()
@@ -32,12 +34,12 @@ class ResourcesProvider(
      * Loads conversations from db and recipes from mc into memory
      */
     fun loadResources(server: MinecraftServer, npcName: String) {
-        executorService.submit {
+        runAsync {
             LogUtil.info("Loading resources into memory...", true)
             loadConversations(npcName)
             loadRecipes(server)
+            executorService.shutdown()
         }
-        executorService.shutdown()
     }
 
     fun getRelevantRecipes(itemName: String): List<Recipe> {
@@ -51,18 +53,36 @@ class ResourcesProvider(
     fun addConversation(npcName: String, timestamp: Timestamp, message: String) {
         this.conversations.add(Conversation(
             npcName, message,
-            llmClient.generateEmbedding(listOf(message)),
-            timestamp))
+            timestamp,
+            llmClient.generateEmbedding(listOf(message))))
     }
 
+    /**
+     * Saves recipes and conversations to local db. (called on server stop)
+     */
     fun saveResources() {
-        executorService = Executors.newSingleThreadExecutor()
-        executorService.submit {
-            LogUtil.info("Saving resources into db...", true)
-            recipes.forEach { recipesRepository::insert }
-            conversations.forEach { conversationRepository::insert }
+        if (!executorService.isTerminated) {
+            executorService.shutdownNow()
+            LogUtil.error("Initial loading of resources interrupted - Wait for termination", true)
+            executorService.awaitTermination(500, TimeUnit.MILLISECONDS)
         }
+        executorService = Executors.newFixedThreadPool(2)
+        LogUtil.info("Saving resources into db...", true)
+        val recipesFuture = runAsync {
+            recipes.forEach { recipe -> recipesRepository.insert(recipe) }
+        }
+        val conversationFuture = runAsync {
+            conversations.forEach { conversation -> conversationRepository.insert(conversation) }
+        }
+        CompletableFuture.allOf(recipesFuture, conversationFuture).get()
         executorService.shutdown()
+    }
+
+    private fun runAsync(task: () -> Unit): CompletableFuture<Void> {
+        return CompletableFuture.runAsync(task , executorService).exceptionally {
+            LogUtil.error("Error loading/saving resources into memory: ${it.stackTraceToString()}", true)
+            return@exceptionally null
+        }
     }
 
     private fun getRelevantResources(prompt: String, resources: List<Resource>, maxTopElements: Int): List<Resource> {
@@ -82,14 +102,16 @@ class ResourcesProvider(
             it.value.ingredients.isNotEmpty()
         }
 
-        //if no new recipes are added by other mods, load from the db (avoid re-vectorize the names)
+        //load from the db (avoid re-vectorize the recipe names)
         if (recipesRepository.selectCount() == recipeEntries.size) {
             this.recipes.addAll(recipesRepository.selectAll().filterIsInstance<Recipe>())
             return
         }
 
         recipeEntries.forEach { entry ->
-            this.recipes.add(buildRecipe(entry))
+            executorService.execute {
+                this.recipes.add(buildRecipe(entry))
+            }
         }
     }
 
@@ -99,16 +121,16 @@ class ResourcesProvider(
         val ingredients = recipeValue.ingredients
 
         return Recipe(
-            recipeValue.type.toString(),
             recipeName,
-            llmClient.generateEmbedding(listOf(recipeName)),
+            recipeValue.type.toString(),
             recipeValue.createIcon().name.string,
-            getItemNeeded(ingredients)
+            getItemNeeded(ingredients),
+            llmClient.generateEmbedding(listOf(recipeName))
         )
     }
 
     private fun getItemNeeded(ingredients: DefaultedList<Ingredient>): String {
-        return ingredients.filter { it.matchingStacks.isNullOrEmpty() }
+        return ingredients.filter { !it.matchingStacks.isNullOrEmpty() }
             .joinToString(",") { "${getItemId(it)}=${it.matchingStacks.size}" }
     }
 

@@ -20,6 +20,7 @@ public class VectorUtil {
 	}
 
 	public static double[] convertToDoubles(byte[] bytes) {
+		if (bytes == null) return new double[] {};
 		double[] embedding = new double[bytes.length / 8];
 		ByteBuffer buffer = ByteBuffer.wrap(bytes);
 		for (int i = 0; i < embedding.length; i++) {
@@ -29,6 +30,7 @@ public class VectorUtil {
 	}
 
 	public static byte[] convertToBytes(double[] embedding) {
+		if (embedding.length == 0) return new byte[] {};
 		ByteBuffer buffer = ByteBuffer.allocate(embedding.length * 8);
 		buffer.asDoubleBuffer().put(embedding);
 		return buffer.array();

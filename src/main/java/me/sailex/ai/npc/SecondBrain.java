@@ -18,7 +18,7 @@ import net.minecraft.server.MinecraftServer;
 public class SecondBrain implements ModInitializer {
 
 	public static final String MOD_ID = "second-brain";
-	public static MinecraftServer server; //only for logUtil
+	public static MinecraftServer server; //used for logUtil
 
 	@Override
 	public void onInitialize() {
@@ -34,10 +34,12 @@ public class SecondBrain implements ModInitializer {
 		commandManager.registerAll();
 
 		ServerLifecycleEvents.SERVER_STARTED.register(server -> SecondBrain.server = server);
-		ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
-			ResourcesProvider resourcesProvider = npcFactory.getResourcesProvider();
-			if (resourcesProvider != null) resourcesProvider.saveResources();
-			npcFactory.shutdownNpc();
-		});
+		ServerLifecycleEvents.SERVER_STOPPING.register(i -> onStop(npcFactory));
+	}
+
+	private void onStop(NPCFactory npcFactory) {
+		ResourcesProvider resourcesProvider = npcFactory.getResourcesProvider();
+		if (resourcesProvider != null) resourcesProvider.saveResources();
+		npcFactory.shutdownNpc();
 	}
 }
