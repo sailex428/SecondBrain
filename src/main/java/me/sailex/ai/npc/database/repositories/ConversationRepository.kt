@@ -12,10 +12,10 @@ class ConversationRepository(
         val sql = """
             CREATE TABLE IF NOT EXISTS conversations (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    npc_name TEXT NOT NULL,
-                    conversation TEXT,
-                    conversation_embedding BLOB,
-                    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    npc_name CHARACTER(16) NOT NULL,
+                    conversation TEXT NOT NULL,
+                    timestamp DATETIME,
+                    conversation_embedding BLOB
             );
         """
         sqliteClient.create(sql)
@@ -26,12 +26,12 @@ class ConversationRepository(
     ) {
         val statement =
             sqliteClient.buildPreparedStatement(
-                "INSERT INTO conversations (npc_name, conversation, conversation_embedding, timestamp) VALUES (?, ?, ?, ?)",
+                "INSERT INTO conversations (npc_name, conversation, timestamp, conversation_embedding) VALUES (?, ?, ?, ?)",
             )
         statement.setString(1, conversation.npcName)
         statement.setString(2, conversation.message)
-        statement.setBytes(3, VectorUtil.convertToBytes(conversation.embedding))
-        statement.setTimestamp(4, conversation.timestamp)
+        statement.setTimestamp(3, conversation.timestamp)
+        statement.setBytes(4, VectorUtil.convertToBytes(conversation.embedding))
         sqliteClient.insert(statement)
     }
 
@@ -57,8 +57,8 @@ class ConversationRepository(
                 Conversation(
                     result.getString("npc_name"),
                     result.getString("conversation"),
-                    VectorUtil.convertToDoubles(result.getBytes("conversation_embedding")),
                     result.getTimestamp("timestamp"),
+                    VectorUtil.convertToDoubles(result.getBytes("conversation_embedding")),
                 )
             conversations.add(conversation)
         }

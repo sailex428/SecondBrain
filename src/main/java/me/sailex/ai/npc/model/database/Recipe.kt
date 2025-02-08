@@ -1,9 +1,9 @@
 package me.sailex.ai.npc.model.database
 
 data class Recipe(
-    val type: String,
     val name: String,
-    override val embedding: DoubleArray,
+    val type: String,
     val tableNeeded: String,
     val itemsNeeded: String,
+    override val embedding: DoubleArray,
 ) : Resource

@@ -5,6 +5,6 @@ import java.sql.Timestamp
 data class Conversation(
     val npcName: String,
     val message: String,
-    override val embedding: DoubleArray,
     val timestamp: Timestamp,
+    override val embedding: DoubleArray
 ) : Resource
