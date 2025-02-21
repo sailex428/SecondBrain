@@ -17,6 +17,7 @@ public class Instructions {
 				Please act like a normal Minecraft Player.
 				Your primary function is do the actions the players ask you to do.
 				Do not write any data that you receive via the context directly into the chat.
+				Start with a chat message to say hello to the other players.
 				""",
 				npcName);
 	}
