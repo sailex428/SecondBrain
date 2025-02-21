@@ -31,7 +31,7 @@ class ResourcesProvider(
     private val conversations = arrayListOf<Conversation>()
 
     /**
-     * Loads conversations from db and recipes from mc into memory
+     * Loads conversations recipes from db/mc into memory
      */
     fun loadResources(server: MinecraftServer, npcName: String) {
         runAsync {

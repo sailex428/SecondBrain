@@ -12,6 +12,7 @@ import me.sailex.ai.npc.llm.ILLMClient
 import me.sailex.ai.npc.llm.LLMType
 import me.sailex.ai.npc.llm.OllamaClient
 import me.sailex.ai.npc.llm.OpenAiClient
+import me.sailex.ai.npc.llm.function_calling.OllamaFunctionManager
 import me.sailex.ai.npc.llm.function_calling.OpenAiFunctionManager
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
@@ -24,24 +25,28 @@ class NPCFactory(
     var resourcesProvider: ResourcesProvider? = null
         private set
 
-    fun createNpc(server: MinecraftServer, npcEntity: ServerPlayerEntity, llmType: String, llmModel: String) {
+    fun createNpc(
+        server: MinecraftServer,
+        npcEntity: ServerPlayerEntity,
+        llmType: String,
+        llmModel: String
+    ) {
         val npcName = npcEntity.name.string
         val llmClient = initLlmClient(llmType, llmModel)
 
-        if (this.resourcesProvider == null) {
-            this.resourcesProvider = ResourcesProvider(
-                repositoryFactory.conversationRepository,
-                repositoryFactory.recipesRepository,
-                llmClient
-            )
-            this.resourcesProvider?.loadResources(server, npcName)
-        }
+        initResourceProvider(llmClient, server, npcName)
 
         val baritone = BaritoneAPI.getProvider().getBaritone(npcEntity)
         val history = ConversationHistory(resourcesProvider!!, npcName)
         val controller = NPCController(npcEntity, baritone, llmClient, history)
-        llmClient.setFunctionManager(OpenAiFunctionManager(controller, resourcesProvider!!, npcEntity, history))
-        controller.start()
+
+        if (llmClient is OpenAiClient) {
+            llmClient.setFunctionManager(OpenAiFunctionManager(resourcesProvider!!, controller, npcEntity, history))
+        } else if (llmClient is OllamaClient) {
+            val functionManager = OllamaFunctionManager(resourcesProvider!!, controller, npcEntity, history)
+            llmClient.registerFunctions(functionManager.createTools())
+        }
+        controller.startTick()
 
         val npc = NPC(npcEntity, llmClient, controller)
 
@@ -71,12 +76,10 @@ class NPCFactory(
     }
 
     private fun initLlmClient(llmType: String, llmModel: String): ILLMClient {
-        return if (LLMType.OLLAMA.name == llmType) {
-            initOllamaClient(llmModel)
-        } else if (LLMType.OPENAI.name == llmType) {
-            initOpenAiClient(llmModel)
-        } else {
-            throw InvalidLLMTypeException("Invalid llm type: $llmType")
+        return when (llmType) {
+            LLMType.OLLAMA.name -> initOllamaClient(llmModel)
+            LLMType.OPENAI.name -> initOpenAiClient(llmModel)
+            else -> throw InvalidLLMTypeException("Invalid llm type: $llmType")
         }
     }
 
@@ -91,6 +94,17 @@ class NPCFactory(
         val llmService = OllamaClient(ollamaModel, ollamaUrl)
         llmService.checkServiceIsReachable()
         return llmService
+    }
+
+    private fun initResourceProvider(llmClient: ILLMClient, server: MinecraftServer, npcName: String) {
+        this.resourcesProvider ?: run {
+            this.resourcesProvider = ResourcesProvider(
+                repositoryFactory.conversationRepository,
+                repositoryFactory.recipesRepository,
+                llmClient
+            )
+            resourcesProvider?.loadResources(server, npcName)
+        }
     }
 
 }

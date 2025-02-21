@@ -31,7 +31,7 @@ public class NPCCreateCommand {
 
 	private static final String LLM_TYPE = "llm-type";
 	private static final String LLM_MODEL = "llm-model";
-	private static final List<String> OLLAMA_MODELS = List.of("gemma2", "llama3.2");
+	private static final List<String> OLLAMA_MODELS = List.of("gemma2", "llama3.2", "mistral");
 	private static final List<String> OPENAI_MODELS = List.of("gpt-4o-mini", "gpt-4o");
 
 	private final NPCFactory npcFactory;

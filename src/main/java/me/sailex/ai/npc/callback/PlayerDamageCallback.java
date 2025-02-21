@@ -9,7 +9,7 @@ import net.minecraft.util.math.Vec3d;
 public interface PlayerDamageCallback {
 
 	Event<PlayerDamageCallback> EVENT = EventFactory.createArrayBacked(
-			PlayerDamageCallback.class, (listeners) -> (attacker, target, damageName, pos) -> {
+			PlayerDamageCallback.class, listeners -> (attacker, target, damageName, pos) -> {
 				for (PlayerDamageCallback listener : listeners) {
 					ActionResult result = listener.interact(attacker, target, damageName, pos);
 

@@ -1,16 +1,20 @@
 package me.sailex.ai.npc.llm;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.github.ollama4j.OllamaAPI;
-import io.github.ollama4j.exceptions.OllamaBaseException;
-import io.github.ollama4j.models.chat.OllamaChatRequestBuilder;
+import io.github.ollama4j.tools.OllamaToolsResult;
+import io.github.ollama4j.tools.Tools;
 import io.github.ollama4j.types.OllamaModelType;
+import io.github.ollama4j.utils.OptionsBuilder;
 import me.sailex.ai.npc.exception.OllamaNotReachableException;
 
-import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.*;
 import lombok.Setter;
 import me.sailex.ai.npc.util.LogUtil;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Ollama client for generating responses.
@@ -20,23 +24,27 @@ public class OllamaClient extends ALLMClient implements ILLMClient {
 	@Setter
 	private OllamaAPI ollamaAPI;
 	private final ExecutorService service;
-	private final OllamaChatRequestBuilder builder;
+	private final String model;
+
+	private final List<Tools.ToolSpecification> tools = new ArrayList<>();
 
 	/**
 	 * Constructor for OllamaClient.
 	 *
-	 * @param ollamaModel the ollama model (e.g. "gemma2")
-	 * @param ollamaUrl   the ollama url
+	 * @param model the ollama model (e.g. "gemma2")
+	 * @param url   the ollama url
 	 */
-	public OllamaClient(String ollamaModel, String ollamaUrl) {
-		this.ollamaAPI = new OllamaAPI(ollamaUrl);
-		this.builder = OllamaChatRequestBuilder.getInstance(ollamaModel);
+	public OllamaClient(String model, String url) {
+		this.ollamaAPI = new OllamaAPI(url);
+		ollamaAPI.setVerbose(true);
+		ollamaAPI.setRequestTimeoutSeconds(30);
+		this.model = model;
 		this.service = Executors.newFixedThreadPool(3);
 	}
 
 	/**
 	 * Check if the service is reachable
-	 * @throws RuntimeException if server is not reachable
+	 * @throws OllamaNotReachableException if server is not reachable
 	 */
 	@Override
 	public void checkServiceIsReachable() {
@@ -45,39 +53,74 @@ public class OllamaClient extends ALLMClient implements ILLMClient {
 			if (!isOllamaServerReachable) {
 				LogUtil.error("Ollama server is not reachable");
 			}
-		} catch (RuntimeException e) {
+		} catch (Exception e) {
 			String errorMsg = "Ollama server is not reachable";
 			LogUtil.error(errorMsg);
 			throw new OllamaNotReachableException(errorMsg);
 		}
 	}
 
+	public void registerFunctions(List<Tools.ToolSpecification> tools) {
+		this.tools.addAll(tools);
+		tools.forEach(ollamaAPI::registerTool);
+	}
+
 	@Override
-	public String callFunctions(String userPrompt, String systemPrompt) {
-		//idk if i ever support this
-		return "";
+	public String callFunctions(String source, String prompt) {
+		try {
+			StringBuilder calledFunctions = new StringBuilder();
+			StringBuilder currentPrompt = new StringBuilder(prompt);
+
+			//execute functions until llm doesnt call anyOfThem anymore, limit to 4 iteration, maybe llm do stupid things
+			for (int i = 0; i < 4; i++) {
+				String promptWithTools = buildPrompt(currentPrompt);
+				OllamaToolsResult toolsResult = ollamaAPI.generateWithTools(this.model, promptWithTools, new OptionsBuilder().build());
+				List<OllamaToolsResult.ToolResult> toolResults = toolsResult.getToolResults();
+				if (toolResults == null || toolResults.isEmpty()) {
+					break;
+				}
+				toolsResult.getToolResults().forEach(toolResult -> {
+					currentPrompt.append(" - ").append(toolResult.getResult().toString());
+					//needed for convo history
+					calledFunctions.append(toolResult.getFunctionName())
+							.append(" - args: ")
+							.append(toolResult.getFunctionArguments())
+							.append(StringUtils.SPACE);
+				});
+			}
+			return calledFunctions.toString();
+		} catch (Exception e) {
+			Thread.currentThread().interrupt();
+			LOGGER.error("Could not generate response / execute functions for prompt: {}", prompt, e);
+			return StringUtils.EMPTY;
+		}
+	}
+
+	private String buildPrompt(StringBuilder currentPrompt) throws JsonProcessingException {
+		Tools.PromptBuilder promptBuilder = new Tools.PromptBuilder();
+		tools.forEach(promptBuilder::withToolSpecification);
+		promptBuilder.withPrompt(currentPrompt.toString());
+		return promptBuilder.build();
 	}
 
 	@Override
 	public double[] generateEmbedding(List<String> prompt) {
-		return CompletableFuture.supplyAsync(
-						() -> {
-							try {
-								return convertEmbedding(ollamaAPI
-										.embed(OllamaModelType.NOMIC_EMBED_TEXT, prompt)
-										.getEmbeddings());
-							} catch (IOException | OllamaBaseException | InterruptedException e) {
-								Thread.currentThread().interrupt();
-								throw new CompletionException(
-										"Error generating embedding for prompt: " + prompt.getFirst(), e);
-							}
-						},
-						service)
-				.exceptionally(exception -> {
-					LOGGER.error(exception.getMessage());
-					return new double[] {};
-				})
-				.join();
+		return CompletableFuture.supplyAsync(() -> {
+				try {
+					return convertEmbedding(Collections.singletonList(ollamaAPI
+							.generateEmbeddings(OllamaModelType.NOMIC_EMBED_TEXT, prompt.getFirst())));
+				} catch (Exception e) {
+					Thread.currentThread().interrupt();
+					throw new CompletionException(
+							"Error generating embedding for prompt: " + prompt, e);
+				}
+			},
+				service)
+		.exceptionally(exception -> {
+			LOGGER.error(exception.getMessage());
+			return new double[] {};
+		})
+		.join();
 	}
 
 	@Override

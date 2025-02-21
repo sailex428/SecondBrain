@@ -10,6 +10,8 @@ import lombok.Setter;
 import me.sailex.ai.npc.context.ContextGenerator;
 import me.sailex.ai.npc.database.resources.ResourcesProvider;
 import me.sailex.ai.npc.history.ConversationHistory;
+import me.sailex.ai.npc.llm.function_calling.constant.Function;
+import me.sailex.ai.npc.llm.function_calling.constant.Property;
 import me.sailex.ai.npc.model.context.WorldContext;
 import me.sailex.ai.npc.npc.NPCController;
 import me.sailex.ai.npc.npc.NPCInteraction;
@@ -19,7 +21,7 @@ import java.util.List;
 
 @Setter
 @Getter
-public class OpenAiFunctionManager implements IFunctionManager {
+public class OpenAiFunctionManager {
 
     private FunctionExecutor functionExecutor;
     private static ResourcesProvider resourcesProvider;
@@ -28,8 +30,8 @@ public class OpenAiFunctionManager implements IFunctionManager {
     private static ConversationHistory history;
 
     public OpenAiFunctionManager(
-            NPCController controller,
             ResourcesProvider resourcesProvider,
+            NPCController controller,
             ServerPlayerEntity npcEntity,
             ConversationHistory history
     ) {
@@ -43,19 +45,19 @@ public class OpenAiFunctionManager implements IFunctionManager {
 
     private void init() {
         List<FunctionDef> functions = List.of(
-                defineFunction("chat", "Print answers on user request into game chat so the players can read it.", Chat.class),
-                defineFunction("move", "Move to the given location", Move.class),
-                defineFunction("mine", "Mine the block at the given location", Mine.class),
-                defineFunction("drop", "Drop one item of the given inventory slot", Drop.class),
-                defineFunction("dropAll", "Drop all items of the given inventory slot", DropAll.class),
-                defineFunction("attack", "Attack the entity of the given entity id", Attack.class),
-                defineFunction("getEntities", "Get all entities and players next to the npc player (you)", GetEntities.class),
-                defineFunction("getBlocks", "Get all blocks next to the player", GetBlocks.class),
-                defineFunction("getNpcState", "Get npc state (foodlevel, health, ...) and inventory items", GetNpcState.class),
-                defineFunction("getRecipes", "Get all recipes that matches the specified item", GetRecipes.class),
-                defineFunction("getConversations", "Get a conversation to a specific topic from the past", GetConversations.class),
-                defineFunction("getLatestConversations", "Get the last 7 conversations (user prompts and answer of you with the functions that are called)", GetLatestConversations.class),
-                defineFunction("stop", "Stop all running npc actions (Should only be used if expressly requested)", Stop.class)
+                defineFunction(Function.Name.CHAT, Function.Description.CHAT, Chat.class),
+                defineFunction(Function.Name.MOVE, Function.Description.MOVE, Move.class),
+                defineFunction(Function.Name.MINE, Function.Description.MINE, Mine.class),
+                defineFunction(Function.Name.DROP, Function.Description.DROP, Drop.class),
+                defineFunction(Function.Name.DROP_ALL, Function.Description.DROP_ALL, DropAll.class),
+                defineFunction(Function.Name.ATTACK, Function.Description.ATTACK, Attack.class),
+                defineFunction(Function.Name.GET_ENTITIES, Function.Description.GET_ENTITIES, GetEntities.class),
+                defineFunction(Function.Name.GET_BLOCKS, Function.Description.GET_BLOCKS, GetBlocks.class),
+                defineFunction(Function.Name.GET_NPC_STATE, Function.Description.GET_NPC_STATE, GetNpcState.class),
+                defineFunction(Function.Name.GET_RECIPES, Function.Description.GET_RECIPES, GetRecipes.class),
+                defineFunction(Function.Name.GET_CONVERSATIONS, Function.Description.GET_CONVERSATIONS, GetConversations.class),
+                defineFunction(Function.Name.GET_LATEST_CONVERSATIONS, Function.Description.GET_LATEST_CONVERSATIONS, GetLatestConversations.class),
+                defineFunction(Function.Name.STOP, Function.Description.STOP, Stop.class)
         );
         functions.forEach(functionExecutor::enrollFunction);
     }
@@ -71,7 +73,7 @@ public class OpenAiFunctionManager implements IFunctionManager {
 
     private static class Chat implements Functional {
 
-        @JsonPropertyDescription("Represents the message that will be printed in the game chat.")
+        @JsonPropertyDescription(Property.Description.MESSAGE)
         @JsonProperty(required = true)
         private String message;
 
@@ -116,7 +118,7 @@ public class OpenAiFunctionManager implements IFunctionManager {
 
     private static class Drop implements Functional {
 
-        @JsonPropertyDescription("slot number of the item in the inventory")
+        @JsonPropertyDescription(Property.Description.SLOT)
         @JsonProperty(required = true)
         private int slot;
 
@@ -129,7 +131,7 @@ public class OpenAiFunctionManager implements IFunctionManager {
 
     private static class DropAll implements Functional {
 
-        @JsonPropertyDescription("slot number of the item in the inventory")
+        @JsonPropertyDescription(Property.Description.SLOT)
         @JsonProperty(required = true)
         private int slot;
 
@@ -142,7 +144,7 @@ public class OpenAiFunctionManager implements IFunctionManager {
 
     private static class Attack implements Functional {
 
-        @JsonPropertyDescription("entity id of the Entity that is to be attacked")
+        @JsonPropertyDescription(Property.Description.ENTITY_ID)
         @JsonProperty(required = true)
         private int entityId;
 
@@ -185,7 +187,7 @@ public class OpenAiFunctionManager implements IFunctionManager {
 
     private static class GetRecipes implements Functional {
 
-        @JsonPropertyDescription("item for which a recipe is wanted")
+        @JsonPropertyDescription(Property.Description.ITEM_NAME)
         @JsonProperty(required = true)
         private String itemName;
 
@@ -197,7 +199,7 @@ public class OpenAiFunctionManager implements IFunctionManager {
 
     private static class GetConversations implements Functional {
 
-        @JsonPropertyDescription("Topic for which old conversations should be searched for")
+        @JsonPropertyDescription(Property.Description.TOPIC)
         @JsonProperty(required = true)
         private String topic;
 

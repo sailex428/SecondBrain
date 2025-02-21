@@ -7,6 +7,7 @@ import io.github.sashirestela.openai.domain.chat.ChatMessage;
 import io.github.sashirestela.openai.domain.chat.ChatRequest;
 import io.github.sashirestela.openai.domain.embedding.EmbeddingFloat;
 import io.github.sashirestela.openai.domain.embedding.EmbeddingRequest;
+import me.sailex.ai.npc.llm.function_calling.OpenAiFunctionManager;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
@@ -18,9 +19,11 @@ import java.util.concurrent.TimeUnit;
  */
 public class OpenAiClient extends ALLMClient implements ILLMClient {
 
-	private static final String PROMPT_PREFIX = "CURRENT PROMPT: ";
+	private static final String PROMPT_PREFIX = "ORIGIN PROMPT: ";
 	private final SimpleOpenAI openAiService;
 	private final String openAiModel;
+
+	private OpenAiFunctionManager functionManager;
 
 	/**
 	 * Constructor for OpenAiClient.
@@ -47,12 +50,12 @@ public class OpenAiClient extends ALLMClient implements ILLMClient {
 	@Override
 	public String callFunctions(String source, String prompt) {
 		try {
-			StringBuilder builder = new StringBuilder();
+			StringBuilder calledFunctions = new StringBuilder();
 			List<ChatMessage> currentMessages = new ArrayList<>();
 			currentMessages.add(buildPromptMessage(source, prompt));
 
             ChatMessage.ResponseMessage responseMessage;
-			//execute functions until llm doesnt call anyOfThem anymore, limit to 4 iteration, maybe llm do stupid things
+			//execute functions until llm doesn't call one anymore, limit to 4 iteration, maybe llm do stupid things
            	for (int i = 0; i < 4; i++) {
                 ChatRequest chatRequest = ChatRequest.builder()
                         .model(openAiModel)
@@ -65,22 +68,22 @@ public class OpenAiClient extends ALLMClient implements ILLMClient {
 						.create(chatRequest)
 						.get(5, TimeUnit.SECONDS)
 						.firstMessage();
-                currentMessages.add(responseMessage);
 
 				List<ToolCall> toolCalls = responseMessage.getToolCalls();
 				if (toolCalls == null || toolCalls.isEmpty()) {
 					break;
 				}
 				ToolCall toolCall = toolCalls.getFirst();
-				builder.append(toolCall.getFunction().getName())
+				calledFunctions.append(toolCall.getFunction().getName())
 						.append(" - args: ")
 						.append(toolCall.getFunction().getArguments())
 						.append(StringUtils.SPACE);
-				executeFunctionCalls(toolCall, currentMessages);
+				currentMessages.add(executeFunctionCalls(toolCall));
             }
-			return builder.toString();
+			return calledFunctions.toString();
         } catch (Exception e) {
 			LOGGER.error("Could not generate response / execute functions for prompt: {}", prompt, e);
+			Thread.currentThread().interrupt();
 			return StringUtils.EMPTY;
 		}
 	}
@@ -94,11 +97,11 @@ public class OpenAiClient extends ALLMClient implements ILLMClient {
 		}
 	}
 
-	private void executeFunctionCalls(ToolCall toolCall, List<ChatMessage> messages) {
+	private ChatMessage executeFunctionCalls(ToolCall toolCall) {
 		FunctionCall function = toolCall.getFunction();
 		LOGGER.info("Executed function: {} - {}", function.getName(), function.getArguments());
 		String result = functionManager.getFunctionExecutor().execute(function);
-		messages.add(ChatMessage.ToolMessage.of(result, toolCall.getId()));
+		return ChatMessage.ToolMessage.of(result, toolCall.getId());
 	}
 
 	@Override
@@ -116,8 +119,15 @@ public class OpenAiClient extends ALLMClient implements ILLMClient {
 					.map(EmbeddingFloat::getEmbedding)
 					.toList());
 		} catch (Exception e) {
+			Thread.currentThread().interrupt();
 			LOGGER.error("Could not generate embedding for prompt: {}", prompt.getFirst(), e);
 			return new double[] {};
 		}
 	}
+
+	//needed cause setter is called in kt code
+	public void setFunctionManager(OpenAiFunctionManager functionManager) {
+		this.functionManager = functionManager;
+	}
+
 }

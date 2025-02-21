@@ -19,7 +19,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.message.MessageType;
 import net.minecraft.network.message.SignedMessage;
 import net.minecraft.recipe.RecipeEntry;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
@@ -44,10 +43,10 @@ public class NPCController {
 	private boolean isFirstRequest = true;
 
 	public NPCController(
-			ServerPlayerEntity npcEntity,
-			IBaritone baritone,
-			ILLMClient llmClient,
-			ConversationHistory history
+		ServerPlayerEntity npcEntity,
+		IBaritone baritone,
+		ILLMClient llmClient,
+		ConversationHistory history
 	) {
 		this.npcEntity = npcEntity;
 		this.baritone = baritone;
@@ -56,7 +55,7 @@ public class NPCController {
 		this.executorService = Executors.newSingleThreadExecutor();
 	}
 
-	public void start() {
+	public void startTick() {
 		//start ticking + explore process
 		tick();
 		handleInitMessage();
@@ -109,13 +108,8 @@ public class NPCController {
 	}
 
 	public void chat(String message) {
-		MinecraftServer server = npcEntity.getServer();
-		if (server != null) {
-			server.getPlayerManager().broadcast(SignedMessage.ofUnsigned(message), npcEntity, MessageType.params(MessageType.CHAT, npcEntity));
-			npcEntity.sendMessage(Text.of(message), false);
-			return;
-		}
-		LogUtil.error("There must be some very big issues lol.", true);
+		npcEntity.server.getPlayerManager().broadcast(SignedMessage.ofUnsigned(message), npcEntity, MessageType.params(MessageType.CHAT, npcEntity));
+		npcEntity.sendMessage(Text.of(message), false);
 	}
 
 	public void move(WorldContext.Position targetPosition) {

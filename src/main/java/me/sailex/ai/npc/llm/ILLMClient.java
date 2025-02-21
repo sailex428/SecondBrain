@@ -1,7 +1,5 @@
 package me.sailex.ai.npc.llm;
 
-import me.sailex.ai.npc.llm.function_calling.IFunctionManager;
-
 import java.util.List;
 
 public interface ILLMClient {
@@ -26,8 +24,6 @@ public interface ILLMClient {
 	 * Check if the service is reachable
 	 */
 	void checkServiceIsReachable();
-
-	void setFunctionManager(IFunctionManager functionManager);
 
 	void stopService();
 }
