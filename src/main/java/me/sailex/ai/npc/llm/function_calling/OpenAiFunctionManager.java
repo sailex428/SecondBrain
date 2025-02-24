@@ -70,6 +70,14 @@ public class OpenAiFunctionManager extends AFunctionManager<FunctionDef> {
         });
     }
 
+    @Override
+    public List<FunctionDef> getRelevantFunctions(String prompt) {
+        return getRelevantResources(prompt).stream()
+                .map(OpenAiFunction.class::cast)
+                .map(OpenAiFunction::getFunction)
+                .toList();
+    }
+
     private static class Chat implements Functional {
 
         @JsonPropertyDescription(Property.Description.MESSAGE)

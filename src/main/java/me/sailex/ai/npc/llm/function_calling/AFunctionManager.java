@@ -5,6 +5,8 @@ import me.sailex.ai.npc.history.ConversationHistory;
 import me.sailex.ai.npc.NPCController;
 import me.sailex.ai.npc.llm.ILLMClient;
 import me.sailex.ai.npc.model.database.LLMFunction;
+import me.sailex.ai.npc.model.database.Resource;
+import me.sailex.ai.npc.util.ResourceRecommender;
 import net.minecraft.server.network.ServerPlayerEntity;
 
 import java.util.ArrayList;
@@ -36,12 +38,21 @@ public class AFunctionManager<T> implements IFunctionManager<T> {
         this.vectorizedFunctions = new ArrayList<>();
     }
 
-    @Override
-    public List<T> getRelevantFunctions(String prompt) {
-        return List.of();
+    protected List<Resource> getRelevantResources(String prompt) {
+        return ResourceRecommender.getRelevantResources(
+                llmClient, prompt,
+                vectorizedFunctions, 4
+        );
     }
 
     @Override
-    public void vectorizeFunctions(List<T> rawFunctions) {}
+    public List<T> getRelevantFunctions(String prompt) {
+        throw new UnsupportedOperationException("Must be implemented in child function manager");
+    }
+
+    @Override
+    public void vectorizeFunctions(List<T> rawFunctions) {
+        throw new UnsupportedOperationException("Must be implemented in child function manager");
+    }
 
 }

@@ -5,9 +5,8 @@ import me.sailex.ai.npc.database.repositories.RecipesRepository
 import me.sailex.ai.npc.llm.ILLMClient
 import me.sailex.ai.npc.model.database.Conversation
 import me.sailex.ai.npc.model.database.Recipe
-import me.sailex.ai.npc.model.database.Resource
 import me.sailex.ai.npc.util.LogUtil
-import me.sailex.ai.npc.util.VectorUtil.cosineSimilarity
+import me.sailex.ai.npc.util.ResourceRecommender
 
 import net.minecraft.recipe.Ingredient
 import net.minecraft.recipe.RecipeEntry
@@ -43,11 +42,13 @@ class ResourcesProvider(
     }
 
     fun getRelevantRecipes(itemName: String): List<Recipe> {
-        return getRelevantResources(itemName, recipes, 5).filterIsInstance<Recipe>()
+        return ResourceRecommender.getRelevantResources(llmClient, itemName, recipes, 5)
+            .filterIsInstance<Recipe>()
     }
 
     fun getRelevantConversations(message: String): List<Conversation> {
-        return getRelevantResources(message, conversations, 3).filterIsInstance<Conversation>()
+        return ResourceRecommender.getRelevantResources(llmClient, message, conversations, 3)
+            .filterIsInstance<Conversation>()
     }
 
     fun addConversation(npcName: String, timestamp: Timestamp, message: String) {
@@ -89,14 +90,6 @@ class ResourcesProvider(
             LogUtil.error("Error loading/saving resources into memory: ${it.stackTraceToString()}", true)
             return@exceptionally null
         }
-    }
-
-    private fun getRelevantResources(prompt: String, resources: List<Resource>, maxTopElements: Int): List<Resource> {
-        val promptEmbedding = llmClient.generateEmbedding(listOf(prompt))
-        return resources.map { resource -> Pair(resource, cosineSimilarity(promptEmbedding, resource.embedding)) }
-            .sortedByDescending { it.second }
-            .take(maxTopElements)
-            .map { it.first }
     }
 
     private fun loadConversations(npcName: String) {

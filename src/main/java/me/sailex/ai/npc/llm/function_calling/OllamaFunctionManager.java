@@ -102,6 +102,14 @@ public class OllamaFunctionManager extends AFunctionManager<Tools.ToolSpecificat
         });
     }
 
+    @Override
+    public List<Tools.ToolSpecification> getRelevantFunctions(String prompt) {
+        return getRelevantResources(prompt).stream()
+                .map(OllamaFunction.class::cast)
+                .map(OllamaFunction::getFunction)
+                .toList();
+    }
+
     private static class NPCFunction {
 
         public static String chat(Map<String, Object> arguments) {
