@@ -40,30 +40,10 @@ class NPCFactory(
         llmModel: String
     ) {
         val npcName = npcEntity.name.string
-        if (nameToNpc.containsKey(npcName)) {
-            throw NPCCreationException("An NPC with the name '$npcName' already exists.")
-        }
+        checkNpcName(npcName)
 
-        val npc = when (llmType) {
-            LLMType.OLLAMA.name -> {
-                val llmClient = initOllamaClient(llmModel)
-                val base = initBase(llmClient, server, npcEntity, npcName)
-                val functionManager = OllamaFunctionManager(resourcesProvider!!, base.first, npcEntity, base.second)
-                val eventHandler = NPCEventHandler(llmClient, base.second, functionManager)
-                NPC(npcEntity, llmClient, base.second, eventHandler)
-            }
+        val npc = createNpcInstance(server, npcEntity, npcName, llmType, llmModel)
 
-            LLMType.OPENAI.name -> {
-                val llmClient = initOpenAiClient(llmModel)
-                val base = initBase(llmClient, server, npcEntity, npcName)
-                val functionManager = OpenAiFunctionManager(resourcesProvider!!, base.first, npcEntity, base.second)
-                val eventHandler = NPCEventHandler(llmClient, base.second, functionManager)
-                NPC(npcEntity, llmClient, base.second, eventHandler)
-            }
-            else -> throw NPCCreationException("Invalid llm type: $llmType")
-        }
-
-        //start event listening
         val eventListenerRegisterer = EventListenerRegisterer(npc)
         eventListenerRegisterer.register()
         handleInitMessage(npc.eventHandler, npc.entity.name.string)
@@ -86,6 +66,39 @@ class NPCFactory(
         nameToNpc.values.forEach {
             it.eventHandler.stopService()
             it.llmClient.stopService()
+        }
+    }
+
+    private fun checkNpcName(npcName: String) {
+        if (nameToNpc.containsKey(npcName)) {
+            throw NPCCreationException("An NPC with the name '$npcName' already exists.")
+        }
+    }
+
+    private fun createNpcInstance(
+        server: MinecraftServer,
+        npcEntity: ServerPlayerEntity,
+        npcName: String,
+        llmType: String,
+        llmModel: String
+    ): NPC {
+        return when (llmType) {
+            LLMType.OLLAMA.name -> {
+                val llmClient = initOllamaClient(llmModel)
+                val (controller, history) = initBase(llmClient, server, npcEntity, npcName)
+                val functionManager = OllamaFunctionManager(resourcesProvider!!, controller, npcEntity, history)
+                val eventHandler = NPCEventHandler(llmClient, history, functionManager)
+                NPC(npcEntity, llmClient, history, eventHandler)
+            }
+
+            LLMType.OPENAI.name -> {
+                val llmClient = initOpenAiClient(llmModel)
+                val (controller, history) = initBase(llmClient, server, npcEntity, npcName)
+                val functionManager = OpenAiFunctionManager(resourcesProvider!!, controller, npcEntity, history)
+                val eventHandler = NPCEventHandler(llmClient, history, functionManager)
+                NPC(npcEntity, llmClient, history, eventHandler)
+            }
+            else -> throw NPCCreationException("Invalid llm type: $llmType")
         }
     }
 
