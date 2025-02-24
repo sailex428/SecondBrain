@@ -20,4 +20,29 @@ object ResourceRecommender {
             .map { it.first }
     }
 
+    @JvmStatic
+    fun getMostRelevantResources(
+        llmClient: ILLMClient,
+        prompt: String,
+        resources: List<Resource>,
+        maxTopElements: Int = 3,
+        highSimilarityThreshold: Double = 0.95,
+    ): List<Resource> {
+        val promptEmbedding = llmClient.generateEmbedding(listOf(prompt))
+        val similarities = resources.map { resource ->
+            Pair(resource, cosineSimilarity(promptEmbedding, resource.embedding))
+        }
+        val sortedResources = similarities.sortedByDescending { it.second }
+        val highlySimilarResources = sortedResources.filter { it.second >= highSimilarityThreshold }
+            .map { it.first }
+
+        return if (highlySimilarResources.size > maxTopElements) {
+            highlySimilarResources.take(maxTopElements)
+        } else if (highlySimilarResources.isEmpty()) {
+            sortedResources.map { it.first }.take(maxTopElements)
+        } else {
+            highlySimilarResources
+        }
+    }
+
 }

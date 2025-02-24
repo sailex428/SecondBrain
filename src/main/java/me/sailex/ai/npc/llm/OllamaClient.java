@@ -1,11 +1,13 @@
 package me.sailex.ai.npc.llm;
 
+import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.github.ollama4j.OllamaAPI;
 import io.github.ollama4j.tools.OllamaToolsResult;
 import io.github.ollama4j.tools.Tools;
 import io.github.ollama4j.types.OllamaModelType;
 import io.github.ollama4j.utils.OptionsBuilder;
+import me.sailex.ai.npc.constant.Instructions;
 import me.sailex.ai.npc.exception.LLMServiceException;
 
 import java.util.ArrayList;
@@ -86,17 +88,19 @@ public class OllamaClient extends ALLMClient<Tools.ToolSpecification> {
 				});
 			}
 			return calledFunctions.toString();
+		} catch (JsonParseException e) {
+			LOGGER.warn("LLM has not called any functions for prompt: {}", prompt);
 		} catch (Exception e) {
 			Thread.currentThread().interrupt();
 			LOGGER.error("Could not generate response / execute functions for prompt: {}", prompt, e);
-			return StringUtils.EMPTY;
 		}
+		return StringUtils.EMPTY;
 	}
 
 	private String buildPrompt(StringBuilder currentPrompt, List<Tools.ToolSpecification> functions) throws JsonProcessingException {
 		Tools.PromptBuilder promptBuilder = new Tools.PromptBuilder();
 		functions.forEach(promptBuilder::withToolSpecification);
-		promptBuilder.withPrompt(currentPrompt.toString());
+		promptBuilder.withPrompt(Instructions.PROMPT_PREFIX + currentPrompt.toString());
 		return promptBuilder.build();
 	}
 

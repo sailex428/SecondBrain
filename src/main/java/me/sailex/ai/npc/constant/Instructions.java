@@ -22,6 +22,8 @@ public class Instructions {
 				npcName);
 	}
 
+	public static final String PROMPT_PREFIX = "Please use the tool functions provided!! ";
+
 	@Getter
 	private static final String FORMATTING_INSTRUCTION =
 			"""

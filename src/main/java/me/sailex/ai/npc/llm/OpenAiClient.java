@@ -9,6 +9,7 @@ import io.github.sashirestela.openai.domain.chat.ChatMessage;
 import io.github.sashirestela.openai.domain.chat.ChatRequest;
 import io.github.sashirestela.openai.domain.embedding.EmbeddingFloat;
 import io.github.sashirestela.openai.domain.embedding.EmbeddingRequest;
+import me.sailex.ai.npc.constant.Instructions;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
@@ -69,8 +70,10 @@ public class OpenAiClient extends ALLMClient<FunctionDef> {
                 responseMessage = openAiService
 						.chatCompletions()
 						.create(chatRequest)
-						.get(5, TimeUnit.SECONDS)
+						.get(10, TimeUnit.SECONDS)
 						.firstMessage();
+
+				LOGGER.info(responseMessage.getContent());
 
 				List<ToolCall> toolCalls = responseMessage.getToolCalls();
 				if (toolCalls == null || toolCalls.isEmpty()) {
@@ -92,7 +95,7 @@ public class OpenAiClient extends ALLMClient<FunctionDef> {
 	}
 
 	private ChatMessage buildPromptMessage(String source, String prompt) {
-		String formattedPrompt = PROMPT_PREFIX + prompt;
+		String formattedPrompt = Instructions.PROMPT_PREFIX + PROMPT_PREFIX + prompt;
 		if (source.equals("system")) {
 			return ChatMessage.SystemMessage.of(formattedPrompt);
 		} else {

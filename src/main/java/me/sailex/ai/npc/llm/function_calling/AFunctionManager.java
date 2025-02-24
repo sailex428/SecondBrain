@@ -39,9 +39,8 @@ public class AFunctionManager<T> implements IFunctionManager<T> {
     }
 
     protected List<Resource> getRelevantResources(String prompt) {
-        return ResourceRecommender.getRelevantResources(
-                llmClient, prompt,
-                vectorizedFunctions, 4
+        return ResourceRecommender.getMostRelevantResources(
+                llmClient, prompt, vectorizedFunctions, 3, 0.60
         );
     }
 
