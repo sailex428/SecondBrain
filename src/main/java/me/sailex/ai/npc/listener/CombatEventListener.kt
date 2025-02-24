@@ -1,7 +1,7 @@
 package me.sailex.ai.npc.listener
 
 import me.sailex.ai.npc.callback.PlayerDamageCallback
-import me.sailex.ai.npc.npc.NPC
+import me.sailex.ai.npc.model.NPC
 import net.minecraft.util.ActionResult
 
 class CombatEventListener(

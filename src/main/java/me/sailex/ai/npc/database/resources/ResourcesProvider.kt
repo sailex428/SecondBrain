@@ -72,7 +72,7 @@ class ResourcesProvider(
         val conversationFuture = runAsync {
             conversations.forEach { conversation -> conversationRepository.insert(conversation) }
         }
-        CompletableFuture.allOf(recipesFuture, conversationFuture, functionFuture).get()
+        CompletableFuture.allOf(recipesFuture, conversationFuture).get()
         executorService.shutdown()
     }
 

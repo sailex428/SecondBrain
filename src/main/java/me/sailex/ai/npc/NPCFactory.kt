@@ -1,13 +1,16 @@
-package me.sailex.ai.npc.npc
+package me.sailex.ai.npc
 
 import baritone.api.BaritoneAPI
 import io.github.ollama4j.tools.Tools
 import io.github.sashirestela.openai.common.function.FunctionDef
 import me.sailex.ai.npc.config.ModConfig
 import me.sailex.ai.npc.constant.ConfigConstants
+import me.sailex.ai.npc.constant.Instructions
 import me.sailex.ai.npc.database.repositories.RepositoryFactory
 import me.sailex.ai.npc.database.resources.ResourcesProvider
-import me.sailex.ai.npc.exception.InvalidLLMTypeException
+import me.sailex.ai.npc.event.IEventHandler
+import me.sailex.ai.npc.event.NPCEventHandler
+import me.sailex.ai.npc.exception.NPCCreationException
 import me.sailex.ai.npc.history.ConversationHistory
 import me.sailex.ai.npc.listener.EventListenerRegisterer
 import me.sailex.ai.npc.llm.IFunctionCaller
@@ -17,8 +20,10 @@ import me.sailex.ai.npc.llm.OllamaClient
 import me.sailex.ai.npc.llm.OpenAiClient
 import me.sailex.ai.npc.llm.function_calling.OllamaFunctionManager
 import me.sailex.ai.npc.llm.function_calling.OpenAiFunctionManager
+import me.sailex.ai.npc.model.NPC
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
+import org.apache.commons.lang3.StringUtils
 
 class NPCFactory(
     private val config: ModConfig,
@@ -35,35 +40,42 @@ class NPCFactory(
         llmModel: String
     ) {
         val npcName = npcEntity.name.string
-        val llmClient = initLlmClient(llmType, llmModel)
+        if (nameToNpc.containsKey(npcName)) {
+            throw NPCCreationException("An NPC with the name '$npcName' already exists.")
+        }
 
-        initResourceProvider(llmClient, server, npcName)
-        val baritone = BaritoneAPI.getProvider().getBaritone(npcEntity)
-        val controller = NPCController(npcEntity, baritone)
-        val history = ConversationHistory(resourcesProvider!!, npcName)
+        val npc = when (llmType) {
+            LLMType.OLLAMA.name -> {
+                val llmClient = initOllamaClient(llmModel)
+                val base = initBase(llmClient, server, npcEntity, npcName)
+                val functionManager = OllamaFunctionManager(resourcesProvider!!, base.first, npcEntity, base.second)
+                val eventHandler = NPCEventHandler(llmClient, base.second, functionManager)
+                NPC(npcEntity, llmClient, base.second, eventHandler)
+            }
 
-        if (llmClient is OpenAiClient) {
-            val functionManager = OpenAiFunctionManager(resourcesProvider!!, controller, npcEntity, history)
-            val eventHandler = NPCEventHandler<FunctionDef>(llmClient, history, functionManager)
-            return NPC(npcEntity, llmClient, history, eventHandler)
-        } else if (llmClient is OllamaClient) {
-            val functionManager = OllamaFunctionManager(resourcesProvider!!, controller, npcEntity, history)
-            val eventHandler = NPCEventHandler<Tools.ToolSpecification>(llmClient, history, functionManager)
-            return NPC(npcEntity, llmClient, history, eventHandler)
+            LLMType.OPENAI.name -> {
+                val llmClient = initOpenAiClient(llmModel)
+                val base = initBase(llmClient, server, npcEntity, npcName)
+                val functionManager = OpenAiFunctionManager(resourcesProvider!!, base.first, npcEntity, base.second)
+                val eventHandler = NPCEventHandler(llmClient, base.second, functionManager)
+                NPC(npcEntity, llmClient, base.second, eventHandler)
+            }
+            else -> throw NPCCreationException("Invalid llm type: $llmType")
         }
 
         //start event listening
         val eventListenerRegisterer = EventListenerRegisterer(npc)
         eventListenerRegisterer.register()
-        controller.tick()
+        handleInitMessage(npc.eventHandler, npc.entity.name.string)
 
-        nameToNpc.put(npcName, npc)
+        nameToNpc[npcName] = npc
     }
 
     fun removeNpc(npcName: String): Boolean {
         val npcToRemove = nameToNpc[npcName]
         if (npcToRemove != null) {
             npcToRemove.llmClient.stopService()
+            npcToRemove.eventHandler.stopService()
             nameToNpc.remove(npcName)
             return true
         }
@@ -72,17 +84,26 @@ class NPCFactory(
 
     fun shutdownNpc() {
         nameToNpc.values.forEach {
-            it.controller.stopService()
+            it.eventHandler.stopService()
             it.llmClient.stopService()
         }
     }
 
-    private fun initLlmClient(llmType: String, llmModel: String): ILLMClient {
-        return when (llmType) {
-            LLMType.OLLAMA.name -> initOllamaClient(llmModel)
-            LLMType.OPENAI.name -> initOpenAiClient(llmModel)
-            else -> throw InvalidLLMTypeException("Invalid llm type: $llmType")
-        }
+    private fun initBase(
+        llmClient: ILLMClient,
+        server: MinecraftServer,
+        npcEntity: ServerPlayerEntity,
+        npcName: String
+    ): Pair<NPCController, ConversationHistory> {
+        initResourceProvider(llmClient, server, npcName)
+        val baritone = BaritoneAPI.getProvider().getBaritone(npcEntity)
+        val controller = NPCController(npcEntity, baritone)
+        val history = ConversationHistory(resourcesProvider!!, npcName)
+        return Pair(controller, history)
+    }
+
+    private fun handleInitMessage(eventHandler: IEventHandler, npcName: String) {
+        eventHandler.onEvent(StringUtils.EMPTY, Instructions.getDefaultInstruction(npcName))
     }
 
     private fun initOpenAiClient(openAiModel: String): IFunctionCaller<FunctionDef> {

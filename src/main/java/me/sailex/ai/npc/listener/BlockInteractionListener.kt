@@ -1,9 +1,6 @@
 package me.sailex.ai.npc.listener
 
-import me.sailex.ai.npc.npc.NPC
-import net.fabricmc.fabric.api.event.client.player.ClientPlayerBlockBreakEvents
-import net.fabricmc.fabric.api.event.player.UseBlockCallback
-import net.minecraft.util.ActionResult
+import me.sailex.ai.npc.model.NPC
 
 /**
  * Listens to block interactions of this npc

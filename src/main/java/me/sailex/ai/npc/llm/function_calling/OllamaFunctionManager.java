@@ -4,15 +4,14 @@ import io.github.ollama4j.tools.ToolFunction;
 import io.github.ollama4j.tools.Tools;
 import static io.github.ollama4j.tools.Tools.PromptFuncDefinition;
 
-import lombok.Getter;
 import me.sailex.ai.npc.context.ContextGenerator;
 import me.sailex.ai.npc.database.resources.ResourcesProvider;
 import me.sailex.ai.npc.history.ConversationHistory;
 import me.sailex.ai.npc.llm.function_calling.constant.Function;
 import me.sailex.ai.npc.llm.function_calling.constant.Property;
 import me.sailex.ai.npc.model.context.WorldContext;
-import me.sailex.ai.npc.npc.NPCController;
-import me.sailex.ai.npc.npc.NPCInteraction;
+import me.sailex.ai.npc.NPCController;
+import me.sailex.ai.npc.util.PromptFormatter;
 import net.minecraft.server.network.ServerPlayerEntity;
 
 import java.util.Map;
@@ -135,28 +134,28 @@ public class OllamaFunctionManager extends AFunctionManager<Tools.ToolSpecificat
         }
 
         public static String getEntities(Map<String, Object> arguments) {
-            return NPCInteraction.formatEntities(ContextGenerator.scanNearbyEntities(npcEntity));
+            return PromptFormatter.formatEntities(ContextGenerator.scanNearbyEntities(npcEntity));
         }
 
         public static String getBlocks(Map<String, Object> arguments) {
-            return NPCInteraction.formatBlocks(ContextGenerator.scanNearbyBlocks(npcEntity));
+            return PromptFormatter.formatBlocks(ContextGenerator.scanNearbyBlocks(npcEntity));
         }
 
         public static String getNpcState(Map<String, Object> arguments) {
-            return NPCInteraction.formatInventory(ContextGenerator.getInventoryState(npcEntity)) +
-                    NPCInteraction.formatNPCState(ContextGenerator.getNpcState(npcEntity));
+            return PromptFormatter.formatInventory(ContextGenerator.getInventoryState(npcEntity)) +
+                    PromptFormatter.formatNPCState(ContextGenerator.getNpcState(npcEntity));
         }
 
         public static String getRecipes(Map<String, Object> arguments) {
             String itemName = (String) arguments.get(Property.Name.ITEM_NAME);
 
-            return NPCInteraction.formatRecipes(resourcesProvider.getRelevantRecipes(itemName));
+            return PromptFormatter.formatRecipes(resourcesProvider.getRelevantRecipes(itemName));
         }
 
         public static String getConversations(Map<String, Object> arguments) {
             String topic = (String) arguments.get(Property.Name.TOPIC);
 
-            return NPCInteraction.formatConversation(resourcesProvider.getRelevantConversations(topic));
+            return PromptFormatter.formatConversation(resourcesProvider.getRelevantConversations(topic));
         }
 
         public static String getLatestConversations(Map<String, Object> arguments) {

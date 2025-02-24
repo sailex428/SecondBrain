@@ -6,14 +6,12 @@ import static net.minecraft.server.command.CommandManager.literal;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
-import me.sailex.ai.npc.npc.NPCFactory;
+import me.sailex.ai.npc.NPCFactory;
 import me.sailex.ai.npc.util.LogUtil;
 import lombok.AllArgsConstructor;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
 
 @AllArgsConstructor
 public class NPCRemoveCommand {

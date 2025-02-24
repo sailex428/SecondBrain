@@ -6,7 +6,6 @@ import lombok.Getter;
 import me.sailex.ai.npc.database.SqliteClient;
 import me.sailex.ai.npc.database.repositories.RepositoryFactory;
 import me.sailex.ai.npc.database.resources.ResourcesProvider;
-import me.sailex.ai.npc.npc.NPCFactory;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.minecraft.server.MinecraftServer;

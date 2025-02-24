@@ -1,10 +1,9 @@
-package me.sailex.ai.npc.npc;
+package me.sailex.ai.npc;
 
 import baritone.api.IBaritone;
 import baritone.api.command.exception.CommandException;
 import baritone.api.pathing.goals.GoalBlock;
 import baritone.api.utils.BetterBlockPos;
-import me.sailex.ai.npc.constant.Instructions;
 import me.sailex.ai.npc.model.context.WorldContext;
 import me.sailex.ai.npc.util.LogUtil;
 import me.sailex.ai.npc.util.WorldUtil;
@@ -20,7 +19,6 @@ import net.minecraft.recipe.RecipeEntry;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * Controller of a npc player.
@@ -67,10 +65,6 @@ public class NPCController {
 		}
 		Runnable nextAction = actionQueue.poll();
 		if (nextAction != null) nextAction.run();
-	}
-
-	public void handleInitMessage() {
-		onEvent(StringUtils.EMPTY, Instructions.getDefaultInstruction(npcEntity.getName().getString()));
 	}
 
 	public void chat(String message) {

@@ -17,5 +17,8 @@ public interface ILLMClient {
 	 */
 	void checkServiceIsReachable();
 
+	/**
+	 * Stops the Executor service
+	 */
 	void stopService();
 }

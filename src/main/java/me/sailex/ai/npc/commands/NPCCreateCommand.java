@@ -8,9 +8,9 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import lombok.AllArgsConstructor;
-import me.sailex.ai.npc.exception.InvalidLLMTypeException;
+import me.sailex.ai.npc.exception.LLMServiceException;
 import me.sailex.ai.npc.llm.LLMType;
-import me.sailex.ai.npc.npc.NPCFactory;
+import me.sailex.ai.npc.NPCFactory;
 import me.sailex.ai.npc.util.LogUtil;
 
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
@@ -85,7 +85,7 @@ public class NPCCreateCommand {
                 }
 			});
 			return 1;
-		} catch (InvalidLLMTypeException | NullPointerException e) {
+		} catch (LLMServiceException | NullPointerException e) {
 			context.getSource().sendFeedback(() -> LogUtil.formatError(e.getMessage()), false);
 			return 0;
 		}

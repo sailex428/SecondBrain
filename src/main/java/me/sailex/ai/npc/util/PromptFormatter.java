@@ -1,4 +1,4 @@
-package me.sailex.ai.npc.npc;
+package me.sailex.ai.npc.util;
 
 import me.sailex.ai.npc.model.context.WorldContext;
 import me.sailex.ai.npc.model.database.*;
@@ -12,9 +12,9 @@ import java.util.stream.Collectors;
 /**
  * Stringifies resources for better communication with the LLM.
  */
-public class NPCInteraction {
+public class PromptFormatter {
 
-	private NPCInteraction() {}
+	private PromptFormatter() {}
 
 	public static String formatConversation(List<Conversation> conversations) {
 		return formatList(

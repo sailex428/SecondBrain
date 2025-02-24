@@ -3,7 +3,7 @@ package me.sailex.ai.npc.llm.function_calling;
 import lombok.Getter;
 import me.sailex.ai.npc.database.resources.ResourcesProvider;
 import me.sailex.ai.npc.history.ConversationHistory;
-import me.sailex.ai.npc.npc.NPCController;
+import me.sailex.ai.npc.NPCController;
 import net.minecraft.server.network.ServerPlayerEntity;
 
 import java.util.HashMap;

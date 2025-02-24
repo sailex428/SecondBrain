@@ -4,15 +4,14 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import io.github.sashirestela.openai.common.function.FunctionDef;
 import io.github.sashirestela.openai.common.function.Functional;
-import lombok.Getter;
 import me.sailex.ai.npc.context.ContextGenerator;
 import me.sailex.ai.npc.database.resources.ResourcesProvider;
 import me.sailex.ai.npc.history.ConversationHistory;
 import me.sailex.ai.npc.llm.function_calling.constant.Function;
 import me.sailex.ai.npc.llm.function_calling.constant.Property;
 import me.sailex.ai.npc.model.context.WorldContext;
-import me.sailex.ai.npc.npc.NPCController;
-import me.sailex.ai.npc.npc.NPCInteraction;
+import me.sailex.ai.npc.NPCController;
+import me.sailex.ai.npc.util.PromptFormatter;
 import net.minecraft.server.network.ServerPlayerEntity;
 
 public class OpenAiFunctionManager extends AFunctionManager<FunctionDef> {
@@ -149,22 +148,22 @@ public class OpenAiFunctionManager extends AFunctionManager<FunctionDef> {
     private static class GetEntities implements Functional {
         @Override
         public Object execute() {
-            return NPCInteraction.formatEntities(ContextGenerator.scanNearbyEntities(npcEntity));
+            return PromptFormatter.formatEntities(ContextGenerator.scanNearbyEntities(npcEntity));
         }
     }
 
     private static class GetBlocks implements Functional {
         @Override
         public Object execute() {
-            return NPCInteraction.formatBlocks(ContextGenerator.scanNearbyBlocks(npcEntity));
+            return PromptFormatter.formatBlocks(ContextGenerator.scanNearbyBlocks(npcEntity));
         }
     }
 
     private static class GetNpcState implements Functional {
         @Override
         public Object execute() {
-            return NPCInteraction.formatInventory(ContextGenerator.getInventoryState(npcEntity)) +
-                    NPCInteraction.formatNPCState(ContextGenerator.getNpcState(npcEntity));
+            return PromptFormatter.formatInventory(ContextGenerator.getInventoryState(npcEntity)) +
+                    PromptFormatter.formatNPCState(ContextGenerator.getNpcState(npcEntity));
         }
     }
 
@@ -176,7 +175,7 @@ public class OpenAiFunctionManager extends AFunctionManager<FunctionDef> {
 
         @Override
         public Object execute() {
-            return NPCInteraction.formatRecipes(resourcesProvider.getRelevantRecipes(itemName));
+            return PromptFormatter.formatRecipes(resourcesProvider.getRelevantRecipes(itemName));
         }
     }
 
@@ -188,7 +187,7 @@ public class OpenAiFunctionManager extends AFunctionManager<FunctionDef> {
 
         @Override
         public Object execute() {
-            return NPCInteraction.formatConversation(resourcesProvider.getRelevantConversations(topic));
+            return PromptFormatter.formatConversation(resourcesProvider.getRelevantConversations(topic));
         }
     }
 

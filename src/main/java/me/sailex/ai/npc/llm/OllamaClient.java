@@ -6,7 +6,7 @@ import io.github.ollama4j.tools.OllamaToolsResult;
 import io.github.ollama4j.tools.Tools;
 import io.github.ollama4j.types.OllamaModelType;
 import io.github.ollama4j.utils.OptionsBuilder;
-import me.sailex.ai.npc.exception.OllamaNotReachableException;
+import me.sailex.ai.npc.exception.LLMServiceException;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -44,7 +44,7 @@ public class OllamaClient extends ALLMClient<Tools.ToolSpecification> {
 
 	/**
 	 * Check if the service is reachable
-	 * @throws OllamaNotReachableException if server is not reachable
+	 * @throws LLMServiceException if server is not reachable
 	 */
 	@Override
 	public void checkServiceIsReachable() {
@@ -56,7 +56,7 @@ public class OllamaClient extends ALLMClient<Tools.ToolSpecification> {
 		} catch (Exception e) {
 			String errorMsg = "Ollama server is not reachable";
 			LogUtil.error(errorMsg);
-			throw new OllamaNotReachableException(errorMsg);
+			throw new LLMServiceException(errorMsg);
 		}
 	}
 

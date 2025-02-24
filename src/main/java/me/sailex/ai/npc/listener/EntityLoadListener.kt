@@ -1,6 +1,6 @@
 package me.sailex.ai.npc.listener
 
-import me.sailex.ai.npc.npc.NPC
+import me.sailex.ai.npc.model.NPC
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents
 import net.minecraft.entity.player.PlayerEntity
 

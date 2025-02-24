@@ -4,7 +4,7 @@ import static net.minecraft.server.command.CommandManager.literal;
 
 import me.sailex.ai.npc.config.ModConfig;
 import lombok.AllArgsConstructor;
-import me.sailex.ai.npc.npc.NPCFactory;
+import me.sailex.ai.npc.NPCFactory;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 
 /**
