@@ -12,7 +12,7 @@ import java.util.List;
 
 public class AFunctionManager<T> implements IFunctionManager<T> {
 
-    protected List<? extends LLMFunction> vectorizedFunctions;
+    protected List<LLMFunction> vectorizedFunctions;
 
     protected final ILLMClient llmClient;
 
