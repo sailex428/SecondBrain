@@ -5,8 +5,6 @@ import baritone.api.command.exception.CommandException;
 import baritone.api.pathing.goals.GoalBlock;
 import baritone.api.utils.BetterBlockPos;
 import me.sailex.ai.npc.constant.Instructions;
-import me.sailex.ai.npc.history.ConversationHistory;
-import me.sailex.ai.npc.llm.ILLMClient;
 import me.sailex.ai.npc.model.context.WorldContext;
 import me.sailex.ai.npc.util.LogUtil;
 import me.sailex.ai.npc.util.WorldUtil;
@@ -25,65 +23,34 @@ import net.minecraft.util.Identifier;
 import org.apache.commons.lang3.StringUtils;
 
 /**
- * Controller for managing NPC actions and events.
- * Request the NPC events (actions in-game) and executes the actions called from the llm accordingly.
+ * Controller of a npc player.
+ * Queues and executes actions (npc capabilities) added by
+ * {@link me.sailex.ai.npc.llm.function_calling.OpenAiFunctionManager} or {@link me.sailex.ai.npc.llm.function_calling.OllamaFunctionManager}
  *
  * @author sailex
  */
 public class NPCController {
 
-	private final ExecutorService executorService;
 	private final BlockingQueue<Runnable> actionQueue = new LinkedBlockingQueue<>();
 
 	private final ServerPlayerEntity npcEntity;
 	private final IBaritone baritone;
-	private final ILLMClient llmClient;
-	private final ConversationHistory history;
 
 	private boolean isFirstRequest = true;
 
 	public NPCController(
 		ServerPlayerEntity npcEntity,
-		IBaritone baritone,
-		ILLMClient llmClient,
-		ConversationHistory history
+		IBaritone baritone
 	) {
 		this.npcEntity = npcEntity;
 		this.baritone = baritone;
-		this.llmClient = llmClient;
-		this.history = history;
-		this.executorService = Executors.newSingleThreadExecutor();
-	}
-
-	public void startTick() {
-		//start ticking + explore process
-		tick();
-		handleInitMessage();
-	}
-
-	/**
-	 * Processes an event asynchronously by allowing call actions from the llm using the specified prompt.
-	 * Saves the prompt in conversation history.
-	 *
-	 * @param source  source of the prompt
-	 * @param prompt  prompt of a user or system e.g. chatmessage of a player
-	 */
-	public void onEvent(String source, String prompt) {
-		CompletableFuture.runAsync(() -> {
-					history.add(prompt);
-					history.add(llmClient.callFunctions(source, prompt));
-				}, executorService)
-				.exceptionally(e -> {
-					LogUtil.error("Unexpected error occurred handling event: " + e, true);
-					return null;
-				});
 	}
 
 	/**
 	 * Adds an action to the Queue
 	 *
 	 * @param action 		action (npc capability)
-	 * @param isNonBlocking	whether action should direct executed
+	 * @param isNonBlocking	whether action should be executed directly
 	 */
 	public void addAction(Runnable action, boolean isNonBlocking) {
 		if (isNonBlocking) {
@@ -93,7 +60,7 @@ public class NPCController {
 		actionQueue.add(action);
 	}
 
-	private void takeAction() {
+	private void pollAction() {
 		if (isFirstRequest) {
 			cancelBaritone();
 			isFirstRequest = false;
@@ -104,7 +71,6 @@ public class NPCController {
 
 	public void handleInitMessage() {
 		onEvent(StringUtils.EMPTY, Instructions.getDefaultInstruction(npcEntity.getName().getString()));
-		move(new WorldContext.Position(0, 90, 0));
 	}
 
 	public void chat(String message) {
@@ -174,12 +140,15 @@ public class NPCController {
 		}
 	}
 
-	private void tick() {
+	/**
+	 * Processes npc actions on game tick
+	 */
+	public void tick() {
 		ServerTickEvents.END_SERVER_TICK.register(server -> {
 			autoRespawn();
 			if (!baritoneIsActive()) {
 				lookAtPlayer();
-				takeAction();
+				pollAction();
 			}
 		});
 	}
@@ -197,8 +166,4 @@ public class NPCController {
 			LogUtil.error("Error executing automatone cancel command" + e, true);
         }
     }
-
-	public void stopService() {
-		executorService.shutdown();
-	}
 }

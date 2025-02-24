@@ -4,6 +4,7 @@ import io.github.ollama4j.tools.ToolFunction;
 import io.github.ollama4j.tools.Tools;
 import static io.github.ollama4j.tools.Tools.PromptFuncDefinition;
 
+import lombok.Getter;
 import me.sailex.ai.npc.context.ContextGenerator;
 import me.sailex.ai.npc.database.resources.ResourcesProvider;
 import me.sailex.ai.npc.history.ConversationHistory;
@@ -14,15 +15,9 @@ import me.sailex.ai.npc.npc.NPCController;
 import me.sailex.ai.npc.npc.NPCInteraction;
 import net.minecraft.server.network.ServerPlayerEntity;
 
-import java.util.List;
 import java.util.Map;
 
-public class OllamaFunctionManager {
-
-    private static ResourcesProvider resourcesProvider;
-    private static NPCController controller;
-    private static ServerPlayerEntity npcEntity;
-    private static ConversationHistory history;
+public class OllamaFunctionManager extends AFunctionManager<Tools.ToolSpecification> {
 
     public OllamaFunctionManager(
         ResourcesProvider resourcesProvider,
@@ -30,68 +25,65 @@ public class OllamaFunctionManager {
         ServerPlayerEntity npcEntity,
         ConversationHistory history
     ) {
-        OllamaFunctionManager.resourcesProvider = resourcesProvider;
-        OllamaFunctionManager.history = history;
-        OllamaFunctionManager.controller = controller;
-        OllamaFunctionManager.npcEntity = npcEntity;
+        super(resourcesProvider, controller, npcEntity, history);
+        createTools();
     }
 
-    public List<Tools.ToolSpecification> createTools() {
-        return List.of(
-                defineFunction(Function.Name.CHAT, Function.Description.CHAT, NPCFunction::chat, new Tools.PropsBuilder()
-                    .withProperty(Property.Name.MESSAGE, Tools.PromptFuncDefinition.Property.builder().type("string").description(Property.Name.MESSAGE).required(true).build())
-                    .build()),
-                defineFunction(Function.Name.MOVE, Function.Description.MOVE, NPCFunction::move, new Tools.PropsBuilder()
+    public void createTools() {
+        defineFunction(Function.Name.CHAT, Function.Description.CHAT, NPCFunction::chat, new Tools.PropsBuilder()
+                .withProperty(Property.Name.MESSAGE, Tools.PromptFuncDefinition.Property.builder().type("string").description(Property.Name.MESSAGE).required(true).build())
+                .build());
+        defineFunction(Function.Name.MOVE, Function.Description.MOVE, NPCFunction::move, new Tools.PropsBuilder()
                     .withProperty(Property.Name.X, Tools.PromptFuncDefinition.Property.builder().type("int").required(true).build())
                     .withProperty(Property.Name.Y, Tools.PromptFuncDefinition.Property.builder().type("int").required(true).build())
                     .withProperty(Property.Name.Z, Tools.PromptFuncDefinition.Property.builder().type("int").required(true).build())
-                    .build()),
-                defineFunction(Function.Name.MINE, Function.Description.MINE, NPCFunction::mine, new Tools.PropsBuilder()
-                    .withProperty(Property.Name.X, Tools.PromptFuncDefinition.Property.builder().type("int").required(true).build())
-                    .withProperty(Property.Name.Y, Tools.PromptFuncDefinition.Property.builder().type("int").required(true).build())
-                    .withProperty(Property.Name.Z, Tools.PromptFuncDefinition.Property.builder().type("int").required(true).build())
-                    .build()),
-                defineFunction(Function.Name.ATTACK, Function.Description.ATTACK, NPCFunction::attack, new Tools.PropsBuilder()
-                    .withProperty(Property.Name.ENTITY_ID, Tools.PromptFuncDefinition.Property.builder().type("int").description(Property.Description.ENTITY_ID).required(true).build())
-                    .build()),
-                defineFunction(Function.Name.DROP, Function.Description.DROP, NPCFunction::drop, new Tools.PropsBuilder()
-                    .withProperty(Property.Name.SLOT, Tools.PromptFuncDefinition.Property.builder().type("int").description(Property.Description.SLOT).required(true).build())
-                    .build()),
-                defineFunction(Function.Name.DROP_ALL, Function.Description.DROP_ALL, NPCFunction::dropAll, new Tools.PropsBuilder()
-                    .withProperty(Property.Name.SLOT, Tools.PromptFuncDefinition.Property.builder().type("int").description(Property.Description.SLOT).required(true).build())
-                    .build()),
-                defineVoidFunction(Function.Name.GET_BLOCKS, Function.Description.GET_BLOCKS, NPCFunction::getBlocks),
-                defineVoidFunction(Function.Name.GET_ENTITIES, Function.Description.GET_ENTITIES, NPCFunction::getEntities),
-                defineVoidFunction(Function.Name.GET_NPC_STATE, Function.Description.GET_NPC_STATE, NPCFunction::getNpcState),
-                defineVoidFunction(Function.Name.GET_RECIPES, Function.Description.GET_RECIPES, NPCFunction::getRecipes),
-                defineFunction(Function.Name.GET_CONVERSATIONS, Function.Description.GET_CONVERSATIONS, NPCFunction::getConversations, new Tools.PropsBuilder()
-                        .withProperty(Property.Name.TOPIC, Tools.PromptFuncDefinition.Property.builder().type("string").description(Property.Description.TOPIC).required(true).build())
-                        .build()),
-                defineVoidFunction(Function.Name.GET_LATEST_CONVERSATIONS, Function.Description.GET_LATEST_CONVERSATIONS, NPCFunction::getLatestConversations),
-                defineVoidFunction(Function.Name.STOP, Function.Description.STOP, NPCFunction::stop)
-        );
+                    .build());
+        defineFunction(Function.Name.MINE, Function.Description.MINE, NPCFunction::mine, new Tools.PropsBuilder()
+            .withProperty(Property.Name.X, Tools.PromptFuncDefinition.Property.builder().type("int").required(true).build())
+            .withProperty(Property.Name.Y, Tools.PromptFuncDefinition.Property.builder().type("int").required(true).build())
+            .withProperty(Property.Name.Z, Tools.PromptFuncDefinition.Property.builder().type("int").required(true).build())
+            .build());
+        defineFunction(Function.Name.ATTACK, Function.Description.ATTACK, NPCFunction::attack, new Tools.PropsBuilder()
+            .withProperty(Property.Name.ENTITY_ID, Tools.PromptFuncDefinition.Property.builder().type("int").description(Property.Description.ENTITY_ID).required(true).build())
+            .build());
+        defineFunction(Function.Name.DROP, Function.Description.DROP, NPCFunction::drop, new Tools.PropsBuilder()
+            .withProperty(Property.Name.SLOT, Tools.PromptFuncDefinition.Property.builder().type("int").description(Property.Description.SLOT).required(true).build())
+            .build());
+        defineFunction(Function.Name.DROP_ALL, Function.Description.DROP_ALL, NPCFunction::dropAll, new Tools.PropsBuilder()
+            .withProperty(Property.Name.SLOT, Tools.PromptFuncDefinition.Property.builder().type("int").description(Property.Description.SLOT).required(true).build())
+            .build());
+        defineVoidFunction(Function.Name.GET_BLOCKS, Function.Description.GET_BLOCKS, NPCFunction::getBlocks);
+        defineVoidFunction(Function.Name.GET_ENTITIES, Function.Description.GET_ENTITIES, NPCFunction::getEntities);
+        defineVoidFunction(Function.Name.GET_NPC_STATE, Function.Description.GET_NPC_STATE, NPCFunction::getNpcState);
+        defineVoidFunction(Function.Name.GET_RECIPES, Function.Description.GET_RECIPES, NPCFunction::getRecipes);
+        defineFunction(Function.Name.GET_CONVERSATIONS, Function.Description.GET_CONVERSATIONS, NPCFunction::getConversations, new Tools.PropsBuilder()
+                .withProperty(Property.Name.TOPIC, Tools.PromptFuncDefinition.Property.builder().type("string").description(Property.Description.TOPIC).required(true).build())
+                .build());
+        defineVoidFunction(Function.Name.GET_LATEST_CONVERSATIONS, Function.Description.GET_LATEST_CONVERSATIONS, NPCFunction::getLatestConversations);
+        defineVoidFunction(Function.Name.STOP, Function.Description.STOP, NPCFunction::stop);
     }
 
-    private Tools.ToolSpecification defineVoidFunction(
+    private void defineVoidFunction(
             String functionName,
             String functionDescription,
             ToolFunction toolFunction
     ) {
-        return defineFunction(functionName, functionDescription, toolFunction, new Tools.PropsBuilder().build());
+        defineFunction(functionName, functionDescription, toolFunction, new Tools.PropsBuilder().build());
     }
 
-    private Tools.ToolSpecification defineFunction(
+    private void defineFunction(
         String functionName,
         String functionDescription,
         ToolFunction toolFunction,
         Map<String, PromptFuncDefinition.Property> properties
     ) {
-        return Tools.ToolSpecification.builder()
+        Tools.ToolSpecification function = Tools.ToolSpecification.builder()
                 .functionName(functionName)
                 .functionDescription(functionDescription)
                 .toolDefinition(toolFunction)
                 .properties(properties)
                 .build();
+        this.nameToFunction.put(functionName, function);
     }
 
     private static class NPCFunction {

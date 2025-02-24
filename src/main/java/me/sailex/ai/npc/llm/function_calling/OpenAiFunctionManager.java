@@ -3,10 +3,8 @@ package me.sailex.ai.npc.llm.function_calling;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import io.github.sashirestela.openai.common.function.FunctionDef;
-import io.github.sashirestela.openai.common.function.FunctionExecutor;
 import io.github.sashirestela.openai.common.function.Functional;
 import lombok.Getter;
-import lombok.Setter;
 import me.sailex.ai.npc.context.ContextGenerator;
 import me.sailex.ai.npc.database.resources.ResourcesProvider;
 import me.sailex.ai.npc.history.ConversationHistory;
@@ -17,17 +15,7 @@ import me.sailex.ai.npc.npc.NPCController;
 import me.sailex.ai.npc.npc.NPCInteraction;
 import net.minecraft.server.network.ServerPlayerEntity;
 
-import java.util.List;
-
-@Setter
-@Getter
-public class OpenAiFunctionManager {
-
-    private FunctionExecutor functionExecutor;
-    private static ResourcesProvider resourcesProvider;
-    private static NPCController controller;
-    private static ServerPlayerEntity npcEntity;
-    private static ConversationHistory history;
+public class OpenAiFunctionManager extends AFunctionManager<FunctionDef> {
 
     public OpenAiFunctionManager(
             ResourcesProvider resourcesProvider,
@@ -35,40 +23,35 @@ public class OpenAiFunctionManager {
             ServerPlayerEntity npcEntity,
             ConversationHistory history
     ) {
-        OpenAiFunctionManager.controller = controller;
-        OpenAiFunctionManager.resourcesProvider = resourcesProvider;
-        OpenAiFunctionManager.npcEntity = npcEntity;
-        OpenAiFunctionManager.history = history;
-        functionExecutor = new FunctionExecutor();
-        init();
+        super(resourcesProvider, controller, npcEntity, history);
+        createTools();
     }
 
-    private void init() {
-        List<FunctionDef> functions = List.of(
-                defineFunction(Function.Name.CHAT, Function.Description.CHAT, Chat.class),
-                defineFunction(Function.Name.MOVE, Function.Description.MOVE, Move.class),
-                defineFunction(Function.Name.MINE, Function.Description.MINE, Mine.class),
-                defineFunction(Function.Name.DROP, Function.Description.DROP, Drop.class),
-                defineFunction(Function.Name.DROP_ALL, Function.Description.DROP_ALL, DropAll.class),
-                defineFunction(Function.Name.ATTACK, Function.Description.ATTACK, Attack.class),
-                defineFunction(Function.Name.GET_ENTITIES, Function.Description.GET_ENTITIES, GetEntities.class),
-                defineFunction(Function.Name.GET_BLOCKS, Function.Description.GET_BLOCKS, GetBlocks.class),
-                defineFunction(Function.Name.GET_NPC_STATE, Function.Description.GET_NPC_STATE, GetNpcState.class),
-                defineFunction(Function.Name.GET_RECIPES, Function.Description.GET_RECIPES, GetRecipes.class),
-                defineFunction(Function.Name.GET_CONVERSATIONS, Function.Description.GET_CONVERSATIONS, GetConversations.class),
-                defineFunction(Function.Name.GET_LATEST_CONVERSATIONS, Function.Description.GET_LATEST_CONVERSATIONS, GetLatestConversations.class),
-                defineFunction(Function.Name.STOP, Function.Description.STOP, Stop.class)
-        );
-        functions.forEach(functionExecutor::enrollFunction);
+    private void createTools() {
+        defineFunction(Function.Name.CHAT, Function.Description.CHAT, Chat.class);
+        defineFunction(Function.Name.MOVE, Function.Description.MOVE, Move.class);
+        defineFunction(Function.Name.MINE, Function.Description.MINE, Mine.class);
+        defineFunction(Function.Name.DROP, Function.Description.DROP, Drop.class);
+        defineFunction(Function.Name.DROP_ALL, Function.Description.DROP_ALL, DropAll.class);
+        defineFunction(Function.Name.ATTACK, Function.Description.ATTACK, Attack.class);
+        defineFunction(Function.Name.GET_ENTITIES, Function.Description.GET_ENTITIES, GetEntities.class);
+        defineFunction(Function.Name.GET_BLOCKS, Function.Description.GET_BLOCKS, GetBlocks.class);
+        defineFunction(Function.Name.GET_NPC_STATE, Function.Description.GET_NPC_STATE, GetNpcState.class);
+        defineFunction(Function.Name.GET_RECIPES, Function.Description.GET_RECIPES, GetRecipes.class);
+        defineFunction(Function.Name.GET_CONVERSATIONS, Function.Description.GET_CONVERSATIONS, GetConversations.class);
+        defineFunction(Function.Name.GET_LATEST_CONVERSATIONS, Function.Description.GET_LATEST_CONVERSATIONS, GetLatestConversations.class);
+        defineFunction(Function.Name.STOP, Function.Description.STOP, Stop.class);
     }
 
-    public <T extends Functional> FunctionDef defineFunction(String name, String description, Class<T> clazz) {
-        return FunctionDef.builder()
-                .name(name)
-                .description(description)
-                .functionalClass(clazz)
-                .strict(true)
-                .build();
+    public <T extends Functional> void defineFunction(String name, String description, Class<T> clazz) {
+         this.nameToFunction.put(name,
+                 FunctionDef.builder()
+                    .name(name)
+                    .description(description)
+                    .functionalClass(clazz)
+                    .strict(true)
+                    .build()
+         );
     }
 
     private static class Chat implements Functional {

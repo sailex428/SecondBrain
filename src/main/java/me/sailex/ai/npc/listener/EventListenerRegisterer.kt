@@ -12,7 +12,7 @@ class EventListenerRegisterer(
     /**
      * Register the event listeners.
      */
-    fun registerListeners() {
+    fun register() {
         listOf<IEventListener>(
             BlockInteractionListener(npc),
             EntityLoadListener(npc),

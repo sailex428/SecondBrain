@@ -5,14 +5,6 @@ import java.util.List;
 public interface ILLMClient {
 
 	/**
-	 * Executes functions that are called by openai based on the prompt
-	 *
-	 * @param source the source of the prompt e.g. system
-	 * @param prompt the prompt
-	 */
-	String callFunctions(String source, String prompt);
-
-	/**
 	 * Generate an embedding for a given prompt
 	 *
 	 * @param prompt the text prompt that needs to get vectorized

@@ -2,12 +2,13 @@ package me.sailex.ai.npc.llm;
 
 import io.github.sashirestela.openai.SimpleOpenAI;
 import io.github.sashirestela.openai.common.function.FunctionCall;
+import io.github.sashirestela.openai.common.function.FunctionDef;
+import io.github.sashirestela.openai.common.function.FunctionExecutor;
 import io.github.sashirestela.openai.common.tool.ToolCall;
 import io.github.sashirestela.openai.domain.chat.ChatMessage;
 import io.github.sashirestela.openai.domain.chat.ChatRequest;
 import io.github.sashirestela.openai.domain.embedding.EmbeddingFloat;
 import io.github.sashirestela.openai.domain.embedding.EmbeddingRequest;
-import me.sailex.ai.npc.llm.function_calling.OpenAiFunctionManager;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
@@ -17,13 +18,13 @@ import java.util.concurrent.TimeUnit;
 /**
  * OpenAI client for generating responses.
  */
-public class OpenAiClient extends ALLMClient implements ILLMClient {
+public class OpenAiClient extends ALLMClient<FunctionDef> {
 
 	private static final String PROMPT_PREFIX = "ORIGIN PROMPT: ";
 	private final SimpleOpenAI openAiService;
 	private final String openAiModel;
 
-	private OpenAiFunctionManager functionManager;
+	private final FunctionExecutor functionExecutor;
 
 	/**
 	 * Constructor for OpenAiClient.
@@ -39,6 +40,7 @@ public class OpenAiClient extends ALLMClient implements ILLMClient {
 		this.openAiModel = openAiModel;
 		this.openAiService =
 				SimpleOpenAI.builder().apiKey(apiKey).baseUrl(baseUrl).build();
+		this.functionExecutor = new FunctionExecutor();
 	}
 
 	/**
@@ -48,7 +50,7 @@ public class OpenAiClient extends ALLMClient implements ILLMClient {
 	 * @param prompt 	the prompt
 	 */
 	@Override
-	public String callFunctions(String source, String prompt) {
+	public String callFunctions(String source, String prompt, List<FunctionDef> functions) {
 		try {
 			StringBuilder calledFunctions = new StringBuilder();
 			List<ChatMessage> currentMessages = new ArrayList<>();
@@ -59,7 +61,7 @@ public class OpenAiClient extends ALLMClient implements ILLMClient {
            	for (int i = 0; i < 4; i++) {
                 ChatRequest chatRequest = ChatRequest.builder()
                         .model(openAiModel)
-						.tools(functionManager.getFunctionExecutor().getToolFunctions())
+						.tools(functionExecutor.getToolFunctions())
                         .messages(currentMessages)
                         .build();
 
@@ -100,7 +102,7 @@ public class OpenAiClient extends ALLMClient implements ILLMClient {
 	private ChatMessage executeFunctionCalls(ToolCall toolCall) {
 		FunctionCall function = toolCall.getFunction();
 		LOGGER.info("Executed function: {} - {}", function.getName(), function.getArguments());
-		String result = functionManager.getFunctionExecutor().execute(function);
+		String result = functionExecutor.execute(function);
 		return ChatMessage.ToolMessage.of(result, toolCall.getId());
 	}
 
@@ -123,11 +125,6 @@ public class OpenAiClient extends ALLMClient implements ILLMClient {
 			LOGGER.error("Could not generate embedding for prompt: {}", prompt.getFirst(), e);
 			return new double[] {};
 		}
-	}
-
-	//needed cause setter is called in kt code
-	public void setFunctionManager(OpenAiFunctionManager functionManager) {
-		this.functionManager = functionManager;
 	}
 
 }

@@ -35,7 +35,7 @@ class ResourcesProvider(
      */
     fun loadResources(server: MinecraftServer, npcName: String) {
         runAsync {
-            LogUtil.info("Loading resources into memory...", true)
+            LogUtil.info("Loading resources into memory...")
             loadConversations(npcName)
             loadRecipes(server)
             executorService.shutdown()
@@ -59,13 +59,11 @@ class ResourcesProvider(
 
     /**
      * Saves recipes and conversations to local db. (called on server stop)
+     *
+     * Stops initial resources indexing if not finished by shutting down executor
      */
     fun saveResources() {
-        if (!executorService.isTerminated) {
-            executorService.shutdownNow()
-            LogUtil.error("Initial loading of resources interrupted - Wait for termination", true)
-            executorService.awaitTermination(500, TimeUnit.MILLISECONDS)
-        }
+        shutdownServiceNow()
         executorService = Executors.newFixedThreadPool(2)
         LogUtil.info("Saving resources into db...", true)
         val recipesFuture = runAsync {
@@ -74,8 +72,16 @@ class ResourcesProvider(
         val conversationFuture = runAsync {
             conversations.forEach { conversation -> conversationRepository.insert(conversation) }
         }
-        CompletableFuture.allOf(recipesFuture, conversationFuture).get()
+        CompletableFuture.allOf(recipesFuture, conversationFuture, functionFuture).get()
         executorService.shutdown()
+    }
+
+    private fun shutdownServiceNow() {
+        if (!executorService.isTerminated) {
+            executorService.shutdownNow()
+            LogUtil.error("Initial loading of resources interrupted - Wait for termination", true)
+            executorService.awaitTermination(500, TimeUnit.MILLISECONDS)
+        }
     }
 
     private fun runAsync(task: () -> Unit): CompletableFuture<Void> {

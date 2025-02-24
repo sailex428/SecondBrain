@@ -7,7 +7,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 @Setter
-public abstract class ALLMClient implements ILLMClient {
+public abstract class ALLMClient<T> implements IFunctionCaller<T> {
 
 	protected static final Logger LOGGER = LogManager.getLogger(ALLMClient.class);
 

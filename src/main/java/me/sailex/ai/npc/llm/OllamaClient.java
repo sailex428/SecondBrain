@@ -19,7 +19,7 @@ import org.apache.commons.lang3.StringUtils;
 /**
  * Ollama client for generating responses.
  */
-public class OllamaClient extends ALLMClient implements ILLMClient {
+public class OllamaClient extends ALLMClient<Tools.ToolSpecification> {
 
 	@Setter
 	private OllamaAPI ollamaAPI;
@@ -66,7 +66,7 @@ public class OllamaClient extends ALLMClient implements ILLMClient {
 	}
 
 	@Override
-	public String callFunctions(String source, String prompt) {
+	public String callFunctions(String source, String prompt, List<Tools.ToolSpecification> functions) {
 		try {
 			StringBuilder calledFunctions = new StringBuilder();
 			StringBuilder currentPrompt = new StringBuilder(prompt);
