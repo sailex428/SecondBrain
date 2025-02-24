@@ -1,23 +1,20 @@
 package me.sailex.ai.npc.llm.function_calling;
 
-import lombok.Getter;
 import me.sailex.ai.npc.database.resources.ResourcesProvider;
 import me.sailex.ai.npc.history.ConversationHistory;
 import me.sailex.ai.npc.NPCController;
+import me.sailex.ai.npc.llm.ILLMClient;
+import me.sailex.ai.npc.model.database.LLMFunction;
 import net.minecraft.server.network.ServerPlayerEntity;
 
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
-@Getter
 public class AFunctionManager<T> implements IFunctionManager<T> {
 
-    /**
-     * Map of all registered functions.
-     * (function name mapped to function)
-     */
-    protected Map<String, T> nameToFunction;
+    protected List<? extends LLMFunction> vectorizedFunctions;
+
+    protected final ILLMClient llmClient;
 
     protected static ResourcesProvider resourcesProvider;
     protected static NPCController controller;
@@ -28,18 +25,23 @@ public class AFunctionManager<T> implements IFunctionManager<T> {
         ResourcesProvider resourcesProvider,
         NPCController controller,
         ServerPlayerEntity npcEntity,
-        ConversationHistory history
+        ConversationHistory history,
+        ILLMClient llmClient
     ) {
         AFunctionManager.resourcesProvider = resourcesProvider;
         AFunctionManager.history = history;
         AFunctionManager.controller = controller;
         AFunctionManager.npcEntity = npcEntity;
-        this.nameToFunction = new HashMap<>();
+        this.llmClient = llmClient;
+        this.vectorizedFunctions = new ArrayList<>();
     }
 
     @Override
     public List<T> getRelevantFunctions(String prompt) {
         return List.of();
     }
+
+    @Override
+    public void vectorizeFunctions(List<T> rawFunctions) {}
 
 }

@@ -6,4 +6,6 @@ public interface IFunctionManager<T> {
 
     List<T> getRelevantFunctions(String prompt);
 
+    void vectorizeFunctions(List<T> functions);
+
 }

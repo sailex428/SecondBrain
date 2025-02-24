@@ -7,6 +7,7 @@ import static io.github.ollama4j.tools.Tools.PromptFuncDefinition;
 import me.sailex.ai.npc.context.ContextGenerator;
 import me.sailex.ai.npc.database.resources.ResourcesProvider;
 import me.sailex.ai.npc.history.ConversationHistory;
+import me.sailex.ai.npc.llm.ILLMClient;
 import me.sailex.ai.npc.llm.function_calling.constant.Function;
 import me.sailex.ai.npc.llm.function_calling.constant.Property;
 import me.sailex.ai.npc.model.context.WorldContext;
@@ -22,13 +23,14 @@ public class OllamaFunctionManager extends AFunctionManager<Tools.ToolSpecificat
         ResourcesProvider resourcesProvider,
         NPCController controller,
         ServerPlayerEntity npcEntity,
-        ConversationHistory history
+        ConversationHistory history,
+        ILLMClient llmClient
     ) {
-        super(resourcesProvider, controller, npcEntity, history);
+        super(resourcesProvider, controller, npcEntity, history, llmClient);
         createTools();
     }
 
-    public void createTools() {
+    private void createTools() {
         defineFunction(Function.Name.CHAT, Function.Description.CHAT, NPCFunction::chat, new Tools.PropsBuilder()
                 .withProperty(Property.Name.MESSAGE, Tools.PromptFuncDefinition.Property.builder().type("string").description(Property.Name.MESSAGE).required(true).build())
                 .build());
@@ -63,9 +65,9 @@ public class OllamaFunctionManager extends AFunctionManager<Tools.ToolSpecificat
     }
 
     private void defineVoidFunction(
-            String functionName,
-            String functionDescription,
-            ToolFunction toolFunction
+        String functionName,
+        String functionDescription,
+        ToolFunction toolFunction
     ) {
         defineFunction(functionName, functionDescription, toolFunction, new Tools.PropsBuilder().build());
     }
@@ -82,7 +84,7 @@ public class OllamaFunctionManager extends AFunctionManager<Tools.ToolSpecificat
                 .toolDefinition(toolFunction)
                 .properties(properties)
                 .build();
-        this.nameToFunction.put(functionName, function);
+        this.rawFunctions.add(function);
     }
 
     private static class NPCFunction {

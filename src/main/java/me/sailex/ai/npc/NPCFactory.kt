@@ -86,7 +86,7 @@ class NPCFactory(
             LLMType.OLLAMA.name -> {
                 val llmClient = initOllamaClient(llmModel)
                 val (controller, history) = initBase(llmClient, server, npcEntity, npcName)
-                val functionManager = OllamaFunctionManager(resourcesProvider!!, controller, npcEntity, history)
+                val functionManager = OllamaFunctionManager(resourcesProvider!!, controller, npcEntity, history, llmClient)
                 val eventHandler = NPCEventHandler(llmClient, history, functionManager)
                 NPC(npcEntity, llmClient, history, eventHandler)
             }
@@ -94,7 +94,7 @@ class NPCFactory(
             LLMType.OPENAI.name -> {
                 val llmClient = initOpenAiClient(llmModel)
                 val (controller, history) = initBase(llmClient, server, npcEntity, npcName)
-                val functionManager = OpenAiFunctionManager(resourcesProvider!!, controller, npcEntity, history)
+                val functionManager = OpenAiFunctionManager(resourcesProvider!!, controller, npcEntity, history, llmClient)
                 val eventHandler = NPCEventHandler(llmClient, history, functionManager)
                 NPC(npcEntity, llmClient, history, eventHandler)
             }

@@ -7,6 +7,7 @@ import io.github.sashirestela.openai.common.function.Functional;
 import me.sailex.ai.npc.context.ContextGenerator;
 import me.sailex.ai.npc.database.resources.ResourcesProvider;
 import me.sailex.ai.npc.history.ConversationHistory;
+import me.sailex.ai.npc.llm.ILLMClient;
 import me.sailex.ai.npc.llm.function_calling.constant.Function;
 import me.sailex.ai.npc.llm.function_calling.constant.Property;
 import me.sailex.ai.npc.model.context.WorldContext;
@@ -20,9 +21,10 @@ public class OpenAiFunctionManager extends AFunctionManager<FunctionDef> {
             ResourcesProvider resourcesProvider,
             NPCController controller,
             ServerPlayerEntity npcEntity,
-            ConversationHistory history
+            ConversationHistory history,
+            ILLMClient llmClient
     ) {
-        super(resourcesProvider, controller, npcEntity, history);
+        super(resourcesProvider, controller, npcEntity, history, llmClient);
         createTools();
     }
 
@@ -43,7 +45,7 @@ public class OpenAiFunctionManager extends AFunctionManager<FunctionDef> {
     }
 
     public <T extends Functional> void defineFunction(String name, String description, Class<T> clazz) {
-         this.nameToFunction.put(name,
+         this.rawFunctions.add(
                  FunctionDef.builder()
                     .name(name)
                     .description(description)
