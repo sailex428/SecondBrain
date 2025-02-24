@@ -7,7 +7,7 @@ import static io.github.ollama4j.tools.Tools.PromptFuncDefinition;
 import me.sailex.ai.npc.context.ContextGenerator;
 import me.sailex.ai.npc.database.resources.ResourcesProvider;
 import me.sailex.ai.npc.history.ConversationHistory;
-import me.sailex.ai.npc.llm.ILLMClient;
+import me.sailex.ai.npc.llm.OllamaClient;
 import me.sailex.ai.npc.llm.function_calling.constant.Function;
 import me.sailex.ai.npc.llm.function_calling.constant.Property;
 import me.sailex.ai.npc.model.context.WorldContext;
@@ -26,10 +26,12 @@ public class OllamaFunctionManager extends AFunctionManager<Tools.ToolSpecificat
         NPCController controller,
         ServerPlayerEntity npcEntity,
         ConversationHistory history,
-        ILLMClient llmClient
+        OllamaClient llmClient
     ) {
         super(resourcesProvider, controller, npcEntity, history, llmClient);
-        vectorizeFunctions(createFunctions());
+        List<Tools.ToolSpecification> rawFunctions = createFunctions();
+        llmClient.registerFunctions(rawFunctions);
+        vectorizeFunctions(rawFunctions);
     }
 
     private List<Tools.ToolSpecification> createFunctions() {

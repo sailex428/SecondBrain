@@ -119,13 +119,13 @@ class NPCFactory(
         eventHandler.onEvent(StringUtils.EMPTY, Instructions.getDefaultInstruction(npcName))
     }
 
-    private fun initOpenAiClient(openAiModel: String): IFunctionCaller<FunctionDef> {
+    private fun initOpenAiClient(openAiModel: String): OpenAiClient {
         val apiKey = config.getProperty(ConfigConstants.NPC_LLM_OPENAI_API_KEY)
         val baseUrl = config.getProperty(ConfigConstants.NPC_LLM_OPENAI_BASE_URL)
         return OpenAiClient(openAiModel, apiKey, baseUrl)
     }
 
-    private fun initOllamaClient(ollamaModel: String): IFunctionCaller<Tools.ToolSpecification> {
+    private fun initOllamaClient(ollamaModel: String): OllamaClient {
         val ollamaUrl = config.getProperty(ConfigConstants.NPC_LLM_OLLAMA_URL)
         val llmService = OllamaClient(ollamaModel, ollamaUrl)
         llmService.checkServiceIsReachable()

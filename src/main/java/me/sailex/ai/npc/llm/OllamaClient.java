@@ -26,8 +26,6 @@ public class OllamaClient extends ALLMClient<Tools.ToolSpecification> {
 	private final ExecutorService service;
 	private final String model;
 
-	private final List<Tools.ToolSpecification> tools = new ArrayList<>();
-
 	/**
 	 * Constructor for OllamaClient.
 	 *
@@ -61,7 +59,6 @@ public class OllamaClient extends ALLMClient<Tools.ToolSpecification> {
 	}
 
 	public void registerFunctions(List<Tools.ToolSpecification> tools) {
-		this.tools.addAll(tools);
 		tools.forEach(ollamaAPI::registerTool);
 	}
 
@@ -73,7 +70,7 @@ public class OllamaClient extends ALLMClient<Tools.ToolSpecification> {
 
 			//execute functions until llm doesnt call anyOfThem anymore, limit to 4 iteration, maybe llm do stupid things
 			for (int i = 0; i < 4; i++) {
-				String promptWithTools = buildPrompt(currentPrompt);
+				String promptWithTools = buildPrompt(currentPrompt, functions);
 				OllamaToolsResult toolsResult = ollamaAPI.generateWithTools(this.model, promptWithTools, new OptionsBuilder().build());
 				List<OllamaToolsResult.ToolResult> toolResults = toolsResult.getToolResults();
 				if (toolResults == null || toolResults.isEmpty()) {
@@ -96,9 +93,9 @@ public class OllamaClient extends ALLMClient<Tools.ToolSpecification> {
 		}
 	}
 
-	private String buildPrompt(StringBuilder currentPrompt) throws JsonProcessingException {
+	private String buildPrompt(StringBuilder currentPrompt, List<Tools.ToolSpecification> functions) throws JsonProcessingException {
 		Tools.PromptBuilder promptBuilder = new Tools.PromptBuilder();
-		tools.forEach(promptBuilder::withToolSpecification);
+		functions.forEach(promptBuilder::withToolSpecification);
 		promptBuilder.withPrompt(currentPrompt.toString());
 		return promptBuilder.build();
 	}

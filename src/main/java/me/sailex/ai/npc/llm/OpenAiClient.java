@@ -55,6 +55,7 @@ public class OpenAiClient extends ALLMClient<FunctionDef> {
 			StringBuilder calledFunctions = new StringBuilder();
 			List<ChatMessage> currentMessages = new ArrayList<>();
 			currentMessages.add(buildPromptMessage(source, prompt));
+			functionExecutor.enrollFunctions(functions);
 
             ChatMessage.ResponseMessage responseMessage;
 			//execute functions until llm doesn't call one anymore, limit to 4 iteration, maybe llm do stupid things
