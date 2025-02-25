@@ -9,6 +9,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import lombok.AllArgsConstructor;
 import me.sailex.ai.npc.exception.LLMServiceException;
+import me.sailex.ai.npc.exception.NPCCreationException;
 import me.sailex.ai.npc.llm.LLMType;
 import me.sailex.ai.npc.NPCFactory;
 import me.sailex.ai.npc.util.LogUtil;
@@ -23,7 +24,6 @@ import net.minecraft.world.World;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 
 @AllArgsConstructor
@@ -69,21 +69,24 @@ public class NPCCreateCommand {
 		String llmType = StringArgumentType.getString(context, LLM_TYPE);
 		String llmModel = StringArgumentType.getString(context, LLM_MODEL);
 
-		LogUtil.info(("Creating NPC with name: " + name + ", LLM Type: " + llmType + ", LLM Model: " + llmModel));
-
 		try {
-			CountDownLatch latch = new CountDownLatch(1);
 			spawnNpc(context.getSource(), name);
+			CountDownLatch latch = new CountDownLatch(1);
 			checkPlayerAvailable(name, latch);
-			CompletableFuture.runAsync(() -> {
+
+			new Thread(() -> {
                 try {
                     latch.await();
                 	ServerPlayerEntity npc = context.getSource().getServer().getPlayerManager().getPlayer(name);
 					npcFactory.createNpc(context.getSource().getServer(), Objects.requireNonNull(npc), llmType, llmModel);
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
-                }
-			});
+                } catch (NPCCreationException e) {
+					LogUtil.error(e.getMessage());
+				}
+			}).start();
+
+			LogUtil.info(("Created NPC with name: " + name + ", LLM Type: " + llmType + ", LLM Model: " + llmModel));
 			return 1;
 		} catch (LLMServiceException | NullPointerException e) {
 			context.getSource().sendFeedback(() -> LogUtil.formatError(e.getMessage()), false);

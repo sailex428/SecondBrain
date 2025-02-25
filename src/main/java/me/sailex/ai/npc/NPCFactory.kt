@@ -1,8 +1,6 @@
 package me.sailex.ai.npc
 
 import baritone.api.BaritoneAPI
-import io.github.ollama4j.tools.Tools
-import io.github.sashirestela.openai.common.function.FunctionDef
 import me.sailex.ai.npc.config.ModConfig
 import me.sailex.ai.npc.constant.ConfigConstants
 import me.sailex.ai.npc.constant.Instructions
@@ -13,7 +11,6 @@ import me.sailex.ai.npc.event.NPCEventHandler
 import me.sailex.ai.npc.exception.NPCCreationException
 import me.sailex.ai.npc.history.ConversationHistory
 import me.sailex.ai.npc.listener.EventListenerRegisterer
-import me.sailex.ai.npc.llm.IFunctionCaller
 import me.sailex.ai.npc.llm.ILLMClient
 import me.sailex.ai.npc.llm.LLMType
 import me.sailex.ai.npc.llm.OllamaClient
