@@ -1,6 +1,6 @@
 package me.sailex.ai.npc.llm;
 
-import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.JacksonException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.github.ollama4j.OllamaAPI;
 import io.github.ollama4j.tools.OllamaToolsResult;
@@ -10,7 +10,6 @@ import io.github.ollama4j.utils.OptionsBuilder;
 import me.sailex.ai.npc.constant.Instructions;
 import me.sailex.ai.npc.exception.LLMServiceException;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.*;
@@ -88,7 +87,7 @@ public class OllamaClient extends ALLMClient<Tools.ToolSpecification> {
 				});
 			}
 			return calledFunctions.toString();
-		} catch (JsonParseException e) {
+		} catch (JacksonException e) {
 			LOGGER.warn("LLM has not called any functions for prompt: {}", prompt);
 		} catch (Exception e) {
 			Thread.currentThread().interrupt();
