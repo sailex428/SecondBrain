@@ -13,10 +13,10 @@ class CombatEventListener(
         AttackEntityCallback.EVENT.register { player, _, _, entity, hitResult ->
             if (player.uuid == npc.entity.uuid) {
                 var entityAttackMessage = if (hitResult == null) {
-                    String.format("You tried to attacked entity %s, but you missed your hit", entity.name.string)
+                    String.format("I tried to attacked entity %s, but you missed your hit", entity.name.string)
                 } else {
                     String.format(
-                        "You attacked entity %s at %s",
+                        "I attacked entity %s at %s",
                         entity.name.string,
                         hitResult.pos,
                     )
@@ -29,7 +29,7 @@ class CombatEventListener(
         PlayerDamageCallback.EVENT.register { damageSource, amount ->
             if (damageSource.attacker != null && damageSource.attacker?.uuid != npc.entity.uuid) {
                 val damageSourceMessage = String.format(
-                    "You got damage: amount %s, type %s by Attacker %s",
+                    "I got damage: amount %s, type %s by Attacker %s",
                         amount, damageSource.type.msgId, damageSource.attacker?.name?.string
                 )
                 handleMessage("system", damageSourceMessage)

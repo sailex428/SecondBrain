@@ -17,6 +17,7 @@ import me.sailex.ai.npc.util.PromptFormatter;
 import net.minecraft.server.network.ServerPlayerEntity;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class OpenAiFunctionManager extends AFunctionManager<FunctionDef> {
 
@@ -75,7 +76,7 @@ public class OpenAiFunctionManager extends AFunctionManager<FunctionDef> {
         return getRelevantResources(prompt).stream()
                 .map(OpenAiFunction.class::cast)
                 .map(OpenAiFunction::getFunction)
-                .toList();
+                .collect(Collectors.toList());
     }
 
     private static class Chat implements Functional {

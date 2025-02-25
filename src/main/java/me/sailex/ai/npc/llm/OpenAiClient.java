@@ -60,7 +60,7 @@ public class OpenAiClient extends ALLMClient<FunctionDef> {
 
             ChatMessage.ResponseMessage responseMessage;
 			//execute functions until llm doesn't call one anymore, limit to 4 iteration, maybe llm do stupid things
-           	for (int i = 0; i < 4; i++) {
+           	for (int i = 0; i < functions.size(); i++) {
                 ChatRequest chatRequest = ChatRequest.builder()
                         .model(openAiModel)
 						.tools(functionExecutor.getToolFunctions())
@@ -85,6 +85,7 @@ public class OpenAiClient extends ALLMClient<FunctionDef> {
 						.append(toolCall.getFunction().getArguments())
 						.append(StringUtils.SPACE);
 				currentMessages.add(executeFunctionCalls(toolCall));
+				removeCalledFunctions(functions, toolCall.getFunction().getName());
             }
 			return calledFunctions.toString();
         } catch (Exception e) {
@@ -92,6 +93,16 @@ public class OpenAiClient extends ALLMClient<FunctionDef> {
 			Thread.currentThread().interrupt();
 			return StringUtils.EMPTY;
 		}
+	}
+
+	private void removeCalledFunctions(List<FunctionDef> functions, String functionName) {
+		List<FunctionDef> functionsToRemove = new ArrayList<>();
+		functions.forEach(func -> {
+			if (func.getName().equals(functionName)) {
+				functionsToRemove.add(func);
+			}
+		});
+		functions.removeAll(functionsToRemove);
 	}
 
 	private ChatMessage buildPromptMessage(String source, String prompt) {

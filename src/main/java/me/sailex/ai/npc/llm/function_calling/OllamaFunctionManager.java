@@ -18,6 +18,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class OllamaFunctionManager extends AFunctionManager<Tools.ToolSpecification> {
 
@@ -109,7 +110,7 @@ public class OllamaFunctionManager extends AFunctionManager<Tools.ToolSpecificat
         return getRelevantResources(prompt).stream()
                 .map(OllamaFunction.class::cast)
                 .map(OllamaFunction::getFunction)
-                .toList();
+                .collect(Collectors.toList());
     }
 
     private static class NPCFunction {

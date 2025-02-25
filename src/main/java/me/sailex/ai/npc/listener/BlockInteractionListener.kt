@@ -18,7 +18,7 @@ class BlockInteractionListener(
             }
             val blockBreakMessage =
                 String.format(
-                    "You broke the block %s at %s",
+                    "I broke the block %s at %s",
                     state.block.name.string,
                     pos.toShortString(),
                 )
@@ -29,7 +29,7 @@ class BlockInteractionListener(
             if (player.uuid == npc.entity.uuid) {
                 val blockInteractionMessage =
                     String.format(
-                        "You used block at %s",
+                        "I used block at %s",
                         hitResult.blockPos,
                     )
                 handleMessage("system", blockInteractionMessage)

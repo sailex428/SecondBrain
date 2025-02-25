@@ -3,6 +3,7 @@ package me.sailex.ai.npc.llm;
 import com.fasterxml.jackson.core.JacksonException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.github.ollama4j.OllamaAPI;
+import io.github.ollama4j.exceptions.ToolInvocationException;
 import io.github.ollama4j.tools.OllamaToolsResult;
 import io.github.ollama4j.tools.Tools;
 import io.github.ollama4j.types.OllamaModelType;
@@ -10,6 +11,7 @@ import io.github.ollama4j.utils.OptionsBuilder;
 import me.sailex.ai.npc.constant.Instructions;
 import me.sailex.ai.npc.exception.LLMServiceException;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.*;
@@ -63,6 +65,16 @@ public class OllamaClient extends ALLMClient<Tools.ToolSpecification> {
 		tools.forEach(ollamaAPI::registerTool);
 	}
 
+	/**
+	 * Executes function calls on the provided source or prompt using a LLM. Each function call is executed in sequence,
+	 * with each result being appended to the current context for conversation history.
+	 * The process continues until either, no functions are left in the list or the LLM stops calling any additional tools
+	 *
+	 * @param   source the source of the prompt e.g. system
+	 * @param   prompt the chat/system prompt
+	 * @param   functions relevant functions that matches to the prompt
+	 * @return  String of called functions with their arguments
+	 */
 	@Override
 	public String callFunctions(String source, String prompt, List<Tools.ToolSpecification> functions) {
 		try {
@@ -70,9 +82,13 @@ public class OllamaClient extends ALLMClient<Tools.ToolSpecification> {
 			StringBuilder currentPrompt = new StringBuilder(prompt);
 
 			//execute functions until llm doesnt call anyOfThem anymore, limit to 4 iteration, maybe llm do stupid things
-			for (int i = 0; i < 4; i++) {
-				String promptWithTools = buildPrompt(currentPrompt, functions);
-				OllamaToolsResult toolsResult = ollamaAPI.generateWithTools(this.model, promptWithTools, new OptionsBuilder().build());
+			for (int i = 0; i < functions.size(); i++) {
+				OllamaToolsResult toolsResult = ollamaAPI.generateWithTools(
+						this.model,
+						buildPrompt(currentPrompt, functions),
+						new OptionsBuilder().setTemperature(0.3f).build()
+				);
+
 				List<OllamaToolsResult.ToolResult> toolResults = toolsResult.getToolResults();
 				if (toolResults == null || toolResults.isEmpty()) {
 					break;
@@ -84,16 +100,29 @@ public class OllamaClient extends ALLMClient<Tools.ToolSpecification> {
 							.append(" - args: ")
 							.append(toolResult.getFunctionArguments())
 							.append(StringUtils.SPACE);
+					removeCalledFunctions(functions, toolResult.getFunctionName());
 				});
 			}
 			return calledFunctions.toString();
 		} catch (JacksonException e) {
 			LOGGER.warn("LLM has not called any functions for prompt: {}", prompt);
+		} catch (ToolInvocationException e) {
+			LOGGER.warn("LLM seems to be hallucinating: {}", e.getMessage());
 		} catch (Exception e) {
 			Thread.currentThread().interrupt();
 			LOGGER.error("Could not generate response / execute functions for prompt: {}", prompt, e);
 		}
 		return StringUtils.EMPTY;
+	}
+
+	private void removeCalledFunctions(List<Tools.ToolSpecification> functions, String functionName) {
+		List<Tools.ToolSpecification> functionsToRemove = new ArrayList<>();
+		functions.forEach(func -> {
+			if (func.getFunctionName().equals(functionName)) {
+				functionsToRemove.add(func);
+			}
+		});
+		functions.removeAll(functionsToRemove);
 	}
 
 	private String buildPrompt(StringBuilder currentPrompt, List<Tools.ToolSpecification> functions) throws JsonProcessingException {
