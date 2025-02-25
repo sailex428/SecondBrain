@@ -37,13 +37,13 @@ public class OllamaFunctionManager extends AFunctionManager<Tools.ToolSpecificat
     private List<Tools.ToolSpecification> createFunctions() {
         return List.of(
             defineFunction(Function.Name.CHAT, Function.Description.CHAT, NPCFunction::chat, new Tools.PropsBuilder()
-                    .withProperty(Property.Name.MESSAGE, Tools.PromptFuncDefinition.Property.builder().type("string").description(Property.Name.MESSAGE).required(true).build())
-                    .build()),
+                .withProperty(Property.Name.MESSAGE, Tools.PromptFuncDefinition.Property.builder().type("string").description(Property.Name.MESSAGE).required(true).build())
+                .build()),
             defineFunction(Function.Name.MOVE, Function.Description.MOVE, NPCFunction::move, new Tools.PropsBuilder()
-                        .withProperty(Property.Name.X, Tools.PromptFuncDefinition.Property.builder().type("int").required(true).build())
-                        .withProperty(Property.Name.Y, Tools.PromptFuncDefinition.Property.builder().type("int").required(true).build())
-                        .withProperty(Property.Name.Z, Tools.PromptFuncDefinition.Property.builder().type("int").required(true).build())
-                        .build()),
+                .withProperty(Property.Name.X, Tools.PromptFuncDefinition.Property.builder().type("int").required(true).build())
+                .withProperty(Property.Name.Y, Tools.PromptFuncDefinition.Property.builder().type("int").required(true).build())
+                .withProperty(Property.Name.Z, Tools.PromptFuncDefinition.Property.builder().type("int").required(true).build())
+                .build()),
             defineFunction(Function.Name.MINE, Function.Description.MINE, NPCFunction::mine, new Tools.PropsBuilder()
                 .withProperty(Property.Name.X, Tools.PromptFuncDefinition.Property.builder().type("int").required(true).build())
                 .withProperty(Property.Name.Y, Tools.PromptFuncDefinition.Property.builder().type("int").required(true).build())
@@ -63,8 +63,8 @@ public class OllamaFunctionManager extends AFunctionManager<Tools.ToolSpecificat
             defineVoidFunction(Function.Name.GET_NPC_STATE, Function.Description.GET_NPC_STATE, NPCFunction::getNpcState),
             defineVoidFunction(Function.Name.GET_RECIPES, Function.Description.GET_RECIPES, NPCFunction::getRecipes),
             defineFunction(Function.Name.GET_CONVERSATIONS, Function.Description.GET_CONVERSATIONS, NPCFunction::getConversations, new Tools.PropsBuilder()
-                    .withProperty(Property.Name.TOPIC, Tools.PromptFuncDefinition.Property.builder().type("string").description(Property.Description.TOPIC).required(true).build())
-                    .build()),
+                .withProperty(Property.Name.TOPIC, Tools.PromptFuncDefinition.Property.builder().type("string").description(Property.Description.TOPIC).required(true).build())
+                .build()),
             defineVoidFunction(Function.Name.GET_LATEST_CONVERSATIONS, Function.Description.GET_LATEST_CONVERSATIONS, NPCFunction::getLatestConversations),
             defineVoidFunction(Function.Name.STOP, Function.Description.STOP, NPCFunction::stop)
         );
@@ -100,7 +100,7 @@ public class OllamaFunctionManager extends AFunctionManager<Tools.ToolSpecificat
                     function,
                     llmClient.generateEmbedding(List.of(function.getFunctionDescription()))
             );
-            this.vectorizedFunctions.add(vectorizedFunction);
+            addVectorizedFunction(vectorizedFunction);
         });
     }
 

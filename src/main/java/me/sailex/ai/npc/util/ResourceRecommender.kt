@@ -1,6 +1,7 @@
 package me.sailex.ai.npc.util
 
 import me.sailex.ai.npc.llm.ILLMClient
+import me.sailex.ai.npc.model.database.LLMFunction
 import me.sailex.ai.npc.model.database.Resource
 import me.sailex.ai.npc.util.VectorUtil.cosineSimilarity
 
@@ -36,13 +37,12 @@ object ResourceRecommender {
         val highlySimilarResources = sortedResources.filter { it.second >= highSimilarityThreshold }
             .map { it.first }
 
-        return if (highlySimilarResources.size > maxTopElements) {
-            highlySimilarResources.take(maxTopElements)
-        } else if (highlySimilarResources.isEmpty()) {
-            sortedResources.map { it.first }.take(maxTopElements)
-        } else {
-            highlySimilarResources
+        return when {
+            highlySimilarResources.size > maxTopElements -> highlySimilarResources.take(maxTopElements)
+            highlySimilarResources.isEmpty() -> sortedResources.map { it.first }.take(maxTopElements)
+            else -> highlySimilarResources
         }
+
     }
 
 }

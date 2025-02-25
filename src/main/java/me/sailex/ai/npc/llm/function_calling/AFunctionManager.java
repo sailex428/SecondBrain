@@ -4,6 +4,7 @@ import me.sailex.ai.npc.database.resources.ResourcesProvider;
 import me.sailex.ai.npc.history.ConversationHistory;
 import me.sailex.ai.npc.NPCController;
 import me.sailex.ai.npc.llm.ILLMClient;
+import me.sailex.ai.npc.llm.function_calling.constant.Function;
 import me.sailex.ai.npc.model.database.LLMFunction;
 import me.sailex.ai.npc.model.database.Resource;
 import me.sailex.ai.npc.util.ResourceRecommender;
@@ -16,10 +17,14 @@ public class AFunctionManager<T> implements IFunctionManager<T> {
 
     protected List<LLMFunction> vectorizedFunctions;
 
+    //functions that must always be included in the llm request
+    protected static final List<String> NEEDED_FUNCTIONS = List.of(Function.Name.CHAT);
+    protected final List<LLMFunction> neededFunctions;
+
     protected final ILLMClient llmClient;
 
-    protected static ResourcesProvider resourcesProvider;
     protected static NPCController controller;
+    protected static ResourcesProvider resourcesProvider;
     protected static ServerPlayerEntity npcEntity;
     protected static ConversationHistory history;
 
@@ -35,13 +40,25 @@ public class AFunctionManager<T> implements IFunctionManager<T> {
         AFunctionManager.controller = controller;
         AFunctionManager.npcEntity = npcEntity;
         this.llmClient = llmClient;
+
         this.vectorizedFunctions = new ArrayList<>();
+        this.neededFunctions = new ArrayList<>();
     }
 
     protected List<Resource> getRelevantResources(String prompt) {
-        return ResourceRecommender.getMostRelevantResources(
+        List<Resource> relevantFunctions = ResourceRecommender.getMostRelevantResources(
                 llmClient, prompt, vectorizedFunctions, 3, 0.60
         );
+        relevantFunctions.addAll(neededFunctions);
+        return relevantFunctions;
+    }
+
+    protected void addVectorizedFunction(LLMFunction function) {
+        if (NEEDED_FUNCTIONS.contains(function.getName())) {
+            this.neededFunctions.add(function);
+        } else {
+            this.vectorizedFunctions.add(function);
+        }
     }
 
     @Override

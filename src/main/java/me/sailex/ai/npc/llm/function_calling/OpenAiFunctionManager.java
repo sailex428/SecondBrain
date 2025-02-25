@@ -66,7 +66,7 @@ public class OpenAiFunctionManager extends AFunctionManager<FunctionDef> {
                     function,
                     llmClient.generateEmbedding(List.of(function.getDescription()))
             );
-            this.vectorizedFunctions.add(vectorizedFunction);
+            addVectorizedFunction(vectorizedFunction);
         });
     }
 
