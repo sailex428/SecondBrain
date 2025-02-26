@@ -1,16 +1,16 @@
 package me.sailex.ai.npc.listener
 
 import me.sailex.ai.npc.model.NPC
-import me.sailex.ai.npc.util.LogUtil
+import net.minecraft.entity.player.PlayerEntity
 
 abstract class AEventListener(
-    protected val npc: NPC
+    protected val npcs: Map<String, NPC>
 ) : IEventListener {
 
     abstract override fun register()
 
-    protected fun handleMessage(source: String, prompt: String) {
-        LogUtil.info("source: $source; prompt: $prompt", true)
-        npc.eventHandler.onEvent(source, prompt)
+    protected fun getMatchingNpc(player: PlayerEntity): NPC? {
+        return npcs[player.name.string]
     }
+
 }

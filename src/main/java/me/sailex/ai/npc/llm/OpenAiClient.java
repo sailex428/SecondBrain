@@ -9,7 +9,6 @@ import io.github.sashirestela.openai.domain.chat.ChatMessage;
 import io.github.sashirestela.openai.domain.chat.ChatRequest;
 import io.github.sashirestela.openai.domain.embedding.EmbeddingFloat;
 import io.github.sashirestela.openai.domain.embedding.EmbeddingRequest;
-import me.sailex.ai.npc.constant.Instructions;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
@@ -59,7 +58,6 @@ public class OpenAiClient extends ALLMClient<FunctionDef> {
 			functionExecutor.enrollFunctions(functions);
 
             ChatMessage.ResponseMessage responseMessage;
-			//execute functions until llm doesn't call one anymore, limit to 4 iteration, maybe llm do stupid things
            	for (int i = 0; i < functions.size(); i++) {
                 ChatRequest chatRequest = ChatRequest.builder()
                         .model(openAiModel)
@@ -106,7 +104,7 @@ public class OpenAiClient extends ALLMClient<FunctionDef> {
 	}
 
 	private ChatMessage buildPromptMessage(String source, String prompt) {
-		String formattedPrompt = Instructions.PROMPT_PREFIX + PROMPT_PREFIX + prompt;
+		String formattedPrompt = PROMPT_PREFIX + prompt;
 		if (source.equals("system")) {
 			return ChatMessage.SystemMessage.of(formattedPrompt);
 		} else {

@@ -23,6 +23,7 @@ class NPCEventHandler<T>(
      * @param prompt  prompt of a user or system e.g. chatmessage of a player
      */
     override fun onEvent(source: String, prompt: String) {
+        LogUtil.info("source: $source; prompt: $prompt", true)
         CompletableFuture.runAsync({
             history.add(prompt)
             val relevantFunctions = functionManager.getRelevantFunctions(prompt)

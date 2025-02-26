@@ -10,7 +10,6 @@ import me.sailex.ai.npc.event.IEventHandler
 import me.sailex.ai.npc.event.NPCEventHandler
 import me.sailex.ai.npc.exception.NPCCreationException
 import me.sailex.ai.npc.history.ConversationHistory
-import me.sailex.ai.npc.listener.EventListenerRegisterer
 import me.sailex.ai.npc.llm.ILLMClient
 import me.sailex.ai.npc.llm.LLMType
 import me.sailex.ai.npc.llm.OllamaClient
@@ -26,7 +25,7 @@ class NPCFactory(
     private val config: ModConfig,
     private val repositoryFactory: RepositoryFactory
 ) {
-    private val nameToNpc = mutableMapOf<String, NPC>()
+    val nameToNpc = mutableMapOf<String, NPC>()
     var resourcesProvider: ResourcesProvider? = null
         private set
 
@@ -41,8 +40,6 @@ class NPCFactory(
 
         val npc = createNpcInstance(server, npcEntity, npcName, llmType, llmModel)
 
-        val eventListenerRegisterer = EventListenerRegisterer(npc)
-        eventListenerRegisterer.register()
         handleInitMessage(npc.eventHandler, npc.entity.name.string)
 
         nameToNpc[npcName] = npc

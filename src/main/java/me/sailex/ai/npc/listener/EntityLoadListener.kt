@@ -5,23 +5,26 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents
 import net.minecraft.entity.player.PlayerEntity
 
 class EntityLoadListener(
-    npc: NPC
-) : AEventListener(npc) {
+    npcs: Map<String, NPC>
+) : AEventListener(npcs) {
 
     override fun register() {
         ServerEntityEvents.ENTITY_LOAD.register { entity, _ ->
-            if (npc.entity.uuid == entity.getUuid() || entity !is PlayerEntity) {
+            if (entity !is PlayerEntity) {
                 return@register
             }
-            val entityLoadMessage =
-                String.format(
-                    "A Player with the name: %s loaded in world at x: %s y: %s z: %s",
-                    entity.name.string,
-                    entity.pos.x,
-                    entity.pos.y,
-                    entity.pos.z,
-                )
-            handleMessage("system", entityLoadMessage)
+            val matchingNpc = getMatchingNpc(entity)
+            if (matchingNpc != null) {
+                val entityLoadMessage =
+                    String.format(
+                        "A Player with the name: %s loaded in world at x: %s y: %s z: %s",
+                        entity.name.string,
+                        entity.pos.x,
+                        entity.pos.y,
+                        entity.pos.z,
+                    )
+                matchingNpc.eventHandler.onEvent("user", entityLoadMessage)
+            }
         }
     }
 }

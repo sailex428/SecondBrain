@@ -38,7 +38,7 @@ public class OllamaClient extends ALLMClient<Tools.ToolSpecification> {
 	public OllamaClient(String model, String url) {
 		this.ollamaAPI = new OllamaAPI(url);
 		ollamaAPI.setVerbose(true);
-		ollamaAPI.setRequestTimeoutSeconds(30);
+		ollamaAPI.setRequestTimeoutSeconds(20);
 		this.model = model;
 		this.service = Executors.newFixedThreadPool(3);
 	}
@@ -81,12 +81,11 @@ public class OllamaClient extends ALLMClient<Tools.ToolSpecification> {
 			StringBuilder calledFunctions = new StringBuilder();
 			StringBuilder currentPrompt = new StringBuilder(prompt);
 
-			//execute functions until llm doesnt call anyOfThem anymore, limit to 4 iteration, maybe llm do stupid things
 			for (int i = 0; i < functions.size(); i++) {
 				OllamaToolsResult toolsResult = ollamaAPI.generateWithTools(
 						this.model,
 						buildPrompt(currentPrompt, functions),
-						new OptionsBuilder().setTemperature(0.3f).build()
+						new OptionsBuilder().setTemperature(0.2f).build()
 				);
 
 				List<OllamaToolsResult.ToolResult> toolResults = toolsResult.getToolResults();
