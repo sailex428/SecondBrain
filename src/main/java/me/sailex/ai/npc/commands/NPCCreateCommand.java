@@ -22,7 +22,6 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.world.GameMode;
 import net.minecraft.world.World;
 
-import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 
@@ -31,8 +30,6 @@ public class NPCCreateCommand {
 
 	private static final String LLM_TYPE = "llm-type";
 	private static final String LLM_MODEL = "llm-model";
-	private static final List<String> OLLAMA_MODELS = List.of("gemma2", "llama3.2", "mistral");
-	private static final List<String> OPENAI_MODELS = List.of("gpt-4o-mini", "gpt-4o");
 
 	private final NPCFactory npcFactory;
 
@@ -46,18 +43,7 @@ public class NPCCreateCommand {
 										builder.suggest(llmType.toString());
 									}
 									return builder.buildFuture();
-								})
-								.then(argument(LLM_MODEL, StringArgumentType.string())
-										.suggests(((context, builder) -> {
-											String userInput = context.getInput();
-											if (userInput.contains(LLMType.OLLAMA.toString())) {
-												OLLAMA_MODELS.forEach(builder::suggest);
-											} else if (userInput.contains(LLMType.OPENAI.toString())) {
-												OPENAI_MODELS.forEach(builder::suggest);
-											}
-											return builder.buildFuture();
-										}))
-										.executes(this::createNpcWithLLM))));
+								}).executes(this::createNpcWithLLM)));
 	}
 
 	private int createNpcWithLLM(CommandContext<ServerCommandSource> context) {
@@ -67,7 +53,6 @@ public class NPCCreateCommand {
 		}
 		String name = StringArgumentType.getString(context, "name");
 		String llmType = StringArgumentType.getString(context, LLM_TYPE);
-		String llmModel = StringArgumentType.getString(context, LLM_MODEL);
 
 		try {
 			spawnNpc(context.getSource(), name);
@@ -78,7 +63,7 @@ public class NPCCreateCommand {
                 try {
                     latch.await();
                 	ServerPlayerEntity npc = context.getSource().getServer().getPlayerManager().getPlayer(name);
-					npcFactory.createNpc(context.getSource().getServer(), Objects.requireNonNull(npc), llmType, llmModel);
+					npcFactory.createNpc(context.getSource().getServer(), Objects.requireNonNull(npc), llmType);
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 } catch (NPCCreationException e) {
@@ -86,7 +71,7 @@ public class NPCCreateCommand {
 				}
 			}).start();
 
-			LogUtil.info(("Created NPC with name: " + name + ", LLM Type: " + llmType + ", LLM Model: " + llmModel));
+			LogUtil.info(("Created NPC with name: " + name + ", LLM Type: " + llmType));
 			return 1;
 		} catch (LLMServiceException | NullPointerException e) {
 			context.getSource().sendFeedback(() -> LogUtil.formatError(e.getMessage()), false);

@@ -15,9 +15,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-/**
- * OpenAI client for generating responses.
- */
 public class OpenAiClient extends ALLMClient<FunctionDef> {
 
 	private static final String PROMPT_PREFIX = "ORIGIN PROMPT: ";
@@ -29,15 +26,13 @@ public class OpenAiClient extends ALLMClient<FunctionDef> {
 	/**
 	 * Constructor for OpenAiClient.
 	 *
-	 * @param openAiModel the openai model (e.g. "gpt-3.5-turbo")
-	 * @param apiKey      the api key
+	 * @param apiKey  the api key
 	 */
 	public OpenAiClient(
-			String openAiModel,
 			String apiKey,
 			String baseUrl
 	) {
-		this.openAiModel = openAiModel;
+		this.openAiModel = "gpt-4o-mini";
 		this.openAiService =
 				SimpleOpenAI.builder().apiKey(apiKey).baseUrl(baseUrl).build();
 		this.functionExecutor = new FunctionExecutor();

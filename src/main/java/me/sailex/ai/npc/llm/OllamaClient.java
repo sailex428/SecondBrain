@@ -19,9 +19,6 @@ import lombok.Setter;
 import me.sailex.ai.npc.util.LogUtil;
 import org.apache.commons.lang3.StringUtils;
 
-/**
- * Ollama client for generating responses.
- */
 public class OllamaClient extends ALLMClient<Tools.ToolSpecification> {
 
 	@Setter
@@ -32,14 +29,13 @@ public class OllamaClient extends ALLMClient<Tools.ToolSpecification> {
 	/**
 	 * Constructor for OllamaClient.
 	 *
-	 * @param model the ollama model (e.g. "gemma2")
-	 * @param url   the ollama url
+	 * @param url  the ollama url
 	 */
-	public OllamaClient(String model, String url) {
+	public OllamaClient(String url) {
 		this.ollamaAPI = new OllamaAPI(url);
 		ollamaAPI.setVerbose(true);
 		ollamaAPI.setRequestTimeoutSeconds(20);
-		this.model = model;
+		this.model = "Modelfile";
 		this.service = Executors.newFixedThreadPool(3);
 	}
 

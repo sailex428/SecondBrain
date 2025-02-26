@@ -32,13 +32,12 @@ class NPCFactory(
     fun createNpc(
         server: MinecraftServer,
         npcEntity: ServerPlayerEntity,
-        llmType: String,
-        llmModel: String
+        llmType: String
     ) {
         val npcName = npcEntity.name.string
         checkNpcName(npcName)
 
-        val npc = createNpcInstance(server, npcEntity, npcName, llmType, llmModel)
+        val npc = createNpcInstance(server, npcEntity, npcName, llmType)
 
         handleInitMessage(npc.eventHandler, npc.entity.name.string)
 
@@ -73,12 +72,11 @@ class NPCFactory(
         server: MinecraftServer,
         npcEntity: ServerPlayerEntity,
         npcName: String,
-        llmType: String,
-        llmModel: String
+        llmType: String
     ): NPC {
         return when (llmType) {
             LLMType.OLLAMA.name -> {
-                val llmClient = initOllamaClient(llmModel)
+                val llmClient = initOllamaClient()
                 val (controller, history) = initBase(llmClient, server, npcEntity, npcName)
                 val functionManager = OllamaFunctionManager(resourcesProvider!!, controller, npcEntity, history, llmClient)
                 val eventHandler = NPCEventHandler(llmClient, history, functionManager)
@@ -86,7 +84,7 @@ class NPCFactory(
             }
 
             LLMType.OPENAI.name -> {
-                val llmClient = initOpenAiClient(llmModel)
+                val llmClient = initOpenAiClient()
                 val (controller, history) = initBase(llmClient, server, npcEntity, npcName)
                 val functionManager = OpenAiFunctionManager(resourcesProvider!!, controller, npcEntity, history, llmClient)
                 val eventHandler = NPCEventHandler(llmClient, history, functionManager)
@@ -113,15 +111,15 @@ class NPCFactory(
         eventHandler.onEvent(StringUtils.EMPTY, Instructions.getDefaultInstruction(npcName))
     }
 
-    private fun initOpenAiClient(openAiModel: String): OpenAiClient {
+    private fun initOpenAiClient(): OpenAiClient {
         val apiKey = config.getProperty(ConfigConstants.NPC_LLM_OPENAI_API_KEY)
         val baseUrl = config.getProperty(ConfigConstants.NPC_LLM_OPENAI_BASE_URL)
-        return OpenAiClient(openAiModel, apiKey, baseUrl)
+        return OpenAiClient(apiKey, baseUrl)
     }
 
-    private fun initOllamaClient(ollamaModel: String): OllamaClient {
+    private fun initOllamaClient(): OllamaClient {
         val ollamaUrl = config.getProperty(ConfigConstants.NPC_LLM_OLLAMA_URL)
-        val llmService = OllamaClient(ollamaModel, ollamaUrl)
+        val llmService = OllamaClient(ollamaUrl)
         llmService.checkServiceIsReachable()
         return llmService
     }

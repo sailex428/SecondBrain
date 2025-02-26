@@ -27,7 +27,6 @@ public class NPCRemoveCommand {
 	private int removeNPC(CommandContext<ServerCommandSource> context) {
 		String name = StringArgumentType.getString(context, "name");
 
-		LogUtil.info("Try removing NPC with name: " + name);
 
 		boolean isPlayerRemoved = removePlayer(name, context.getSource().getServer().getPlayerManager());
 
@@ -37,6 +36,7 @@ public class NPCRemoveCommand {
 					LogUtil.formatError("Could not find npc with name " + name), false);
 			return 0;
 		}
+		LogUtil.info("Removed NPC with name: " + name);
 		return 1;
 	}
 
