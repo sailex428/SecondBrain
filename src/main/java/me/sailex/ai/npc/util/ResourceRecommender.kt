@@ -37,11 +37,12 @@ object ResourceRecommender {
         val highlySimilarResources = sortedResources.filter { it.second >= highSimilarityThreshold }
             .map { it.first }
 
-        return when {
-            highlySimilarResources.size > maxTopElements -> highlySimilarResources.take(maxTopElements)
-            highlySimilarResources.isEmpty() -> sortedResources.map { it.first }.take(maxTopElements)
-            else -> highlySimilarResources
-        }
+        return sortedResources.map { it.first }.take(maxTopElements)
+//        return when {
+//            highlySimilarResources.size > maxTopElements -> highlySimilarResources.take(maxTopElements)
+//            highlySimilarResources.isEmpty() -> sortedResources.map { it.first }.take(maxTopElements)
+//            else -> highlySimilarResources
+//        }
 
     }
 

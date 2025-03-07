@@ -1,20 +1,17 @@
 package me.sailex.ai.npc.llm;
 
 import com.fasterxml.jackson.core.JacksonException;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import io.github.ollama4j.OllamaAPI;
-import io.github.ollama4j.exceptions.ToolInvocationException;
-import io.github.ollama4j.tools.OllamaToolsResult;
+import io.github.ollama4j.models.chat.*;
+import io.github.ollama4j.models.embeddings.OllamaEmbedResponseModel;
+import io.github.ollama4j.tools.OllamaToolCallsFunction;
 import io.github.ollama4j.tools.Tools;
 import io.github.ollama4j.types.OllamaModelType;
-import io.github.ollama4j.utils.OptionsBuilder;
-import me.sailex.ai.npc.constant.Instructions;
 import me.sailex.ai.npc.exception.LLMServiceException;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.*;
+
 import lombok.Setter;
 import me.sailex.ai.npc.util.LogUtil;
 import org.apache.commons.lang3.StringUtils;
@@ -33,10 +30,11 @@ public class OllamaClient extends ALLMClient<Tools.ToolSpecification> {
 	 */
 	public OllamaClient(String url) {
 		this.ollamaAPI = new OllamaAPI(url);
+		this.model = "llama3.2:3b";
+		this.service = Executors.newFixedThreadPool(3);
+		ollamaAPI.setMaxChatToolCallRetries(4);
 		ollamaAPI.setVerbose(true);
 		ollamaAPI.setRequestTimeoutSeconds(20);
-		this.model = "Modelfile";
-		this.service = Executors.newFixedThreadPool(3);
 	}
 
 	/**
@@ -62,47 +60,26 @@ public class OllamaClient extends ALLMClient<Tools.ToolSpecification> {
 	}
 
 	/**
-	 * Executes function calls on the provided source or prompt using a LLM. Each function call is executed in sequence,
-	 * with each result being appended to the current context for conversation history.
-	 * The process continues until either, no functions are left in the list or the LLM stops calling any additional tools
+	 * Sends the provided prompt and functions to Ollama API.
+	 * Executes functions called by the LLM.
 	 *
-	 * @param   source the source of the prompt e.g. system
-	 * @param   prompt the chat/system prompt
+	 * @param   prompt    the event prompt
 	 * @param   functions relevant functions that matches to the prompt
-	 * @return  String of called functions with their arguments
+	 * @return  the formatted results of the function calls.
 	 */
 	@Override
-	public String callFunctions(String source, String prompt, List<Tools.ToolSpecification> functions) {
+	public String callFunctions(String prompt, List<Tools.ToolSpecification> functions) {
 		try {
-			StringBuilder calledFunctions = new StringBuilder();
-			StringBuilder currentPrompt = new StringBuilder(prompt);
+			ollamaAPI.registerTools(functions);
 
-			for (int i = 0; i < functions.size(); i++) {
-				OllamaToolsResult toolsResult = ollamaAPI.generateWithTools(
-						this.model,
-						buildPrompt(currentPrompt, functions),
-						new OptionsBuilder().setTemperature(0.2f).build()
-				);
+			OllamaChatRequest toolRequest = OllamaChatRequestBuilder.getInstance(model)
+				.withMessage(OllamaChatMessageRole.USER, prompt)
+				.build();
+			OllamaChatResult response = ollamaAPI.chat(toolRequest);
 
-				List<OllamaToolsResult.ToolResult> toolResults = toolsResult.getToolResults();
-				if (toolResults == null || toolResults.isEmpty()) {
-					break;
-				}
-				toolsResult.getToolResults().forEach(toolResult -> {
-					currentPrompt.append(" - ").append(toolResult.getResult().toString());
-					//needed for convo history
-					calledFunctions.append(toolResult.getFunctionName())
-							.append(" - args: ")
-							.append(toolResult.getFunctionArguments())
-							.append(StringUtils.SPACE);
-					removeCalledFunctions(functions, toolResult.getFunctionName());
-				});
-			}
-			return calledFunctions.toString();
+			return formatChatHistory(response.getChatHistory());
 		} catch (JacksonException e) {
 			LOGGER.warn("LLM has not called any functions for prompt: {}", prompt);
-		} catch (ToolInvocationException e) {
-			LOGGER.warn("LLM seems to be hallucinating: {}", e.getMessage());
 		} catch (Exception e) {
 			Thread.currentThread().interrupt();
 			LOGGER.error("Could not generate response / execute functions for prompt: {}", prompt, e);
@@ -110,29 +87,29 @@ public class OllamaClient extends ALLMClient<Tools.ToolSpecification> {
 		return StringUtils.EMPTY;
 	}
 
-	private void removeCalledFunctions(List<Tools.ToolSpecification> functions, String functionName) {
-		List<Tools.ToolSpecification> functionsToRemove = new ArrayList<>();
-		functions.forEach(func -> {
-			if (func.getFunctionName().equals(functionName)) {
-				functionsToRemove.add(func);
-			}
-		});
-		functions.removeAll(functionsToRemove);
+	private String formatChatHistory(List<OllamaChatMessage> history) {
+		StringBuilder formattedHistory = new StringBuilder();
+		history.stream()
+				.filter(msg -> msg.getRole().equals(OllamaChatMessageRole.ASSISTANT))
+				.flatMap(msg -> msg.getToolCalls().stream())
+				.map(OllamaChatToolCalls::getFunction)
+				.forEach(function -> appendFunctionDetails(formattedHistory, function));
+		return formattedHistory.toString();
 	}
 
-	private String buildPrompt(StringBuilder currentPrompt, List<Tools.ToolSpecification> functions) throws JsonProcessingException {
-		Tools.PromptBuilder promptBuilder = new Tools.PromptBuilder();
-		functions.forEach(promptBuilder::withToolSpecification);
-		promptBuilder.withPrompt(Instructions.PROMPT_PREFIX + currentPrompt.toString());
-		return promptBuilder.build();
+	private void appendFunctionDetails(StringBuilder builder, OllamaToolCallsFunction function) {
+		builder.append(function.getName())
+				.append(" - args: ")
+				.append(function.getArguments())
+				.append(StringUtils.SPACE);
 	}
 
 	@Override
 	public double[] generateEmbedding(List<String> prompt) {
 		return CompletableFuture.supplyAsync(() -> {
 				try {
-					return convertEmbedding(Collections.singletonList(ollamaAPI
-							.generateEmbeddings(OllamaModelType.NOMIC_EMBED_TEXT, prompt.getFirst())));
+					OllamaEmbedResponseModel responseModel = ollamaAPI.embed(OllamaModelType.NOMIC_EMBED_TEXT, prompt);
+					return convertEmbedding(responseModel.getEmbeddings());
 				} catch (Exception e) {
 					Thread.currentThread().interrupt();
 					throw new CompletionException(

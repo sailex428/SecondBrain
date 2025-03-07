@@ -11,6 +11,7 @@ class ConversationHistory(
     private val latestConversations = LinkedBlockingDeque<Pair<Timestamp, String>>(4) //timestamp to message
 
     fun add(message: String) {
+        if (message.isEmpty()) return
         if (latestConversations.remainingCapacity() == 0) {
             val oldestConversation = latestConversations.takeLast()
             resourcesProvider.addConversation(npcName, oldestConversation.first, oldestConversation.second)

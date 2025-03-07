@@ -25,19 +25,18 @@ public class Function {
     public static class Description {
         private Description() {}
 
-        public static final String CHAT = "Print answers on user request into game chat so the players can read it.";
-        public static final String MOVE = "Move to the given location";
-        public static final String MINE = "Mine the block at the given location";
-        public static final String DROP = "Drop one item of the given inventory slot";
-        public static final String DROP_ALL = "Drop all items of the given inventory slot";
-        public static final String ATTACK = "Attack the entity of the given entity id";
-        public static final String GET_ENTITIES = "Get all entities and ids and players next to the npc player (you)";
-        public static final String GET_BLOCKS = "Get all blocks next to the player";
-        public static final String GET_NPC_STATE = "Get npc state (foodlevel, health, ...) and inventory items to slots";
+        public static final String CHAT = "Print answers into game chat so the players can read it.";
+        public static final String MOVE = "Move to a location";
+        public static final String MINE = "Mine the block at a location";
+        public static final String DROP = "Drop one item of an inventory slot";
+        public static final String DROP_ALL = "Drop all items of an inventory slot";
+        public static final String ATTACK = "Attack the entity via an entity id";
+        public static final String GET_ENTITIES = "Get ids / positions of entities and players next to you";
+        public static final String GET_BLOCKS = "Get all blocks next to you";
+        public static final String GET_NPC_STATE = "Get your player state (foodlevel, health, ...) and inventory items mapped to slots";
         public static final String GET_RECIPES = "Get all recipes that matches the specified item";
         public static final String GET_CONVERSATIONS = "Get a conversation to a specific topic from the past";
         public static final String GET_LATEST_CONVERSATIONS = "Get the last 7 conversations (user prompts and answer of you with the functions that are called)";
         public static final String STOP = "Stop all running npc actions (Should only be used if expressly requested)";
-
     }
 }

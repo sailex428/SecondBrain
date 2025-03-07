@@ -21,7 +21,7 @@ class BlockInteractionListener(
                         state.block.name.string,
                         pos.toShortString(),
                     )
-                matchingNpc.eventHandler.onEvent("user", blockBreakMessage)
+                matchingNpc.eventHandler.onEvent(blockBreakMessage)
             }
         }
 
@@ -33,7 +33,7 @@ class BlockInteractionListener(
                         "I used block at %s",
                         hitResult.blockPos,
                     )
-                matchingNpc.eventHandler.onEvent("user", blockInteractionMessage)
+                matchingNpc.eventHandler.onEvent(blockInteractionMessage)
             }
             return@register ActionResult.PASS
         }

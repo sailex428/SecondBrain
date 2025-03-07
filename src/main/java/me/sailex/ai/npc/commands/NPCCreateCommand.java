@@ -29,7 +29,6 @@ import java.util.concurrent.CountDownLatch;
 public class NPCCreateCommand {
 
 	private static final String LLM_TYPE = "llm-type";
-	private static final String LLM_MODEL = "llm-model";
 
 	private final NPCFactory npcFactory;
 

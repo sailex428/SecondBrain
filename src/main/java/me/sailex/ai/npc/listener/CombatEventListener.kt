@@ -12,34 +12,32 @@ class CombatEventListener(
 
     override fun register() {
         AttackEntityCallback.EVENT.register { player, _, _, entity, hitResult ->
-            val matchingNpc = getMatchingNpc(player)
-            if (matchingNpc != null) {
-                var entityAttackMessage = if (hitResult == null) {
-                    String.format("I tried to attacked entity %s, but you missed your hit", entity.name.string)
-                } else {
-                    String.format(
-                        "I attacked entity %s at %s",
-                        entity.name.string,
-                        hitResult.pos,
-                    )
+            if (entity is PlayerEntity) {
+                val matchingNpc = getMatchingNpc(entity)
+                if (matchingNpc != null) {
+                    var entityAttackMessage = if (hitResult == null) {
+                        String.format("You tried to attacked entity %s, but you missed your hit", player.name.string)
+                    } else {
+                        String.format(
+                            "I attacked entity %s at %s",
+                            player.name.string,
+                            hitResult.pos,
+                        )
+                    }
+                    matchingNpc.eventHandler.onEvent(entityAttackMessage)
                 }
-                matchingNpc.eventHandler.onEvent("user", entityAttackMessage)
             }
             return@register ActionResult.PASS
         }
 
-        PlayerDamageCallback.EVENT.register { damageSource, amount ->
-            val attacker = damageSource.attacker
-            if (attacker is PlayerEntity) {
-
-                val matchingNpc = getMatchingNpc(attacker)
-                if (matchingNpc != null) {
-                    val damageSourceMessage = String.format(
-                        "I got damage: amount %s, type %s by Attacker %s",
-                        amount, damageSource.type.msgId, damageSource.attacker?.name?.string
-                    )
-                    matchingNpc.eventHandler.onEvent("user", damageSourceMessage)
-                }
+        PlayerDamageCallback.EVENT.register { damageSource, victim, amount ->
+            val matchingNpc = getMatchingNpc(victim)
+            if (matchingNpc != null) {
+                val damageSourceMessage = String.format(
+                    "You got damage: amount %s, type %s by Attacker %s",
+                    amount, damageSource.type.msgId, damageSource.attacker?.name?.string
+                )
+                matchingNpc.eventHandler.onEvent(damageSourceMessage)
             }
             return@register ActionResult.PASS
         }

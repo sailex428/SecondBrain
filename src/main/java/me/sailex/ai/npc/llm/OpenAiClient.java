@@ -17,7 +17,6 @@ import java.util.concurrent.TimeUnit;
 
 public class OpenAiClient extends ALLMClient<FunctionDef> {
 
-	private static final String PROMPT_PREFIX = "ORIGIN PROMPT: ";
 	private final SimpleOpenAI openAiService;
 	private final String openAiModel;
 
@@ -39,25 +38,24 @@ public class OpenAiClient extends ALLMClient<FunctionDef> {
 	}
 
 	/**
-	 * Executes functions that are called by openai based on the prompt
+	 * Executes functions that are called by openai based on the prompt and registered functions.
 	 *
-	 * @param source 	the source of the prompt e.g. system
-	 * @param prompt 	the prompt
+	 * @param 	prompt 	   the prompt
+	 * @param 	functions  functions relevant functions that matches to the prompt
+	 * @return  the formatted results of the function calls.
 	 */
 	@Override
-	public String callFunctions(String source, String prompt, List<FunctionDef> functions) {
+	public String callFunctions(String prompt, List<FunctionDef> functions) {
 		try {
 			StringBuilder calledFunctions = new StringBuilder();
-			List<ChatMessage> currentMessages = new ArrayList<>();
-			currentMessages.add(buildPromptMessage(source, prompt));
-			functionExecutor.enrollFunctions(functions);
 
             ChatMessage.ResponseMessage responseMessage;
            	for (int i = 0; i < functions.size(); i++) {
+				functionExecutor.enrollFunctions(functions);
                 ChatRequest chatRequest = ChatRequest.builder()
                         .model(openAiModel)
 						.tools(functionExecutor.getToolFunctions())
-                        .messages(currentMessages)
+                        .message(ChatMessage.UserMessage.of(prompt))
                         .build();
 
                 responseMessage = openAiService
@@ -65,8 +63,6 @@ public class OpenAiClient extends ALLMClient<FunctionDef> {
 						.create(chatRequest)
 						.get(10, TimeUnit.SECONDS)
 						.firstMessage();
-
-				LOGGER.info(responseMessage.getContent());
 
 				List<ToolCall> toolCalls = responseMessage.getToolCalls();
 				if (toolCalls == null || toolCalls.isEmpty()) {
@@ -77,7 +73,7 @@ public class OpenAiClient extends ALLMClient<FunctionDef> {
 						.append(" - args: ")
 						.append(toolCall.getFunction().getArguments())
 						.append(StringUtils.SPACE);
-				currentMessages.add(executeFunctionCalls(toolCall));
+				executeFunctionCalls(toolCall);
 				removeCalledFunctions(functions, toolCall.getFunction().getName());
             }
 			return calledFunctions.toString();
@@ -98,20 +94,10 @@ public class OpenAiClient extends ALLMClient<FunctionDef> {
 		functions.removeAll(functionsToRemove);
 	}
 
-	private ChatMessage buildPromptMessage(String source, String prompt) {
-		String formattedPrompt = PROMPT_PREFIX + prompt;
-		if (source.equals("system")) {
-			return ChatMessage.SystemMessage.of(formattedPrompt);
-		} else {
-			return ChatMessage.UserMessage.of(formattedPrompt);
-		}
-	}
-
-	private ChatMessage executeFunctionCalls(ToolCall toolCall) {
+	private void executeFunctionCalls(ToolCall toolCall) {
 		FunctionCall function = toolCall.getFunction();
 		LOGGER.info("Executed function: {} - {}", function.getName(), function.getArguments());
-		String result = functionExecutor.execute(function);
-		return ChatMessage.ToolMessage.of(result, toolCall.getId());
+		functionExecutor.execute(function);
 	}
 
 	@Override

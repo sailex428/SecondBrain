@@ -19,7 +19,6 @@ import me.sailex.ai.npc.llm.function_calling.OpenAiFunctionManager
 import me.sailex.ai.npc.model.NPC
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
-import org.apache.commons.lang3.StringUtils
 
 class NPCFactory(
     private val config: ModConfig,
@@ -108,7 +107,7 @@ class NPCFactory(
     }
 
     private fun handleInitMessage(eventHandler: IEventHandler, npcName: String) {
-        eventHandler.onEvent(StringUtils.EMPTY, Instructions.getDefaultInstruction(npcName))
+        eventHandler.onEvent(Instructions.getInitPrompt(npcName))
     }
 
     private fun initOpenAiClient(): OpenAiClient {

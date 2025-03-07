@@ -19,15 +19,14 @@ class NPCEventHandler<T>(
      * Processes an event asynchronously by allowing call actions from llm using the specified prompt.
      * Saves the prompt in conversation history.
      *
-     * @param source  source of the prompt
      * @param prompt  prompt of a user or system e.g. chatmessage of a player
      */
-    override fun onEvent(source: String, prompt: String) {
-        LogUtil.info("source: $source; prompt: $prompt", true)
+    override fun onEvent(prompt: String) {
         CompletableFuture.runAsync({
+            LogUtil.info("onEvent: $prompt", true)
             history.add(prompt)
             val relevantFunctions = functionManager.getRelevantFunctions(prompt)
-            history.add(llmClient.callFunctions(source, prompt, relevantFunctions))
+            history.add(llmClient.callFunctions(prompt, relevantFunctions))
         }, executorService)
             .exceptionally {
                 LogUtil.error("Unexpected error occurred handling event: $it", true)

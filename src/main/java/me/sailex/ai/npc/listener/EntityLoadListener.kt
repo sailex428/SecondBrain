@@ -23,7 +23,7 @@ class EntityLoadListener(
                         entity.pos.y,
                         entity.pos.z,
                     )
-                matchingNpc.eventHandler.onEvent("user", entityLoadMessage)
+                matchingNpc.eventHandler.onEvent(entityLoadMessage)
             }
         }
     }
