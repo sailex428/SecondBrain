@@ -1,23 +1,22 @@
 package me.sailex.ai.npc.listener
 
-import me.sailex.ai.npc.npc.NPC
+import me.sailex.ai.npc.model.NPC
 
 /**
- * Manager for handling event listeners.
- * Registers listeners for block interactions, chat messages, and stopping the client.
+ * Registers listeners for block interactions, chat messages and so on.
  */
 class EventListenerRegisterer(
-    private val npc: NPC
+    private val npcs: Map<String, NPC>
 ) {
     /**
      * Register the event listeners.
      */
-    fun registerListeners() {
+    fun register() {
         listOf<IEventListener>(
-            BlockInteractionListener(npc),
-            EntityLoadListener(npc),
-            ChatMessageListener(npc),
-            CombatEventListener(npc),
+            BlockInteractionListener(npcs),
+            EntityLoadListener(npcs),
+            ChatMessageListener(npcs),
+            CombatEventListener(npcs)
         ).forEach { listener -> listener.register() }
     }
 }

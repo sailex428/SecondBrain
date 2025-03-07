@@ -1,7 +1,7 @@
 package me.sailex.ai.npc.listener
 
-import me.sailex.ai.npc.npc.NPC
-import net.fabricmc.fabric.api.event.client.player.ClientPlayerBlockBreakEvents
+import me.sailex.ai.npc.model.NPC
+import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents
 import net.fabricmc.fabric.api.event.player.UseBlockCallback
 import net.minecraft.util.ActionResult
 
@@ -9,32 +9,33 @@ import net.minecraft.util.ActionResult
  * Listens to block interactions of this npc
  */
 class BlockInteractionListener(
-    npc: NPC,
-) : AEventListener(npc) {
+    npcs: Map<String, NPC>
+) : AEventListener(npcs) {
     override fun register() {
-//        ClientPlayerBlockBreakEvents.AFTER.register { _, player, pos, state ->
-//            if (player.uuid != npc.entity.uuid) {
-//                return@register
-//            }
-//            val blockBreakMessage =
-//                String.format(
-//                    "You broke the block %s at %s",
-//                    state.block.name.string,
-//                    pos.toShortString(),
-//                )
-//            handleMessage(blockBreakMessage)
-//        }
-//
-//        UseBlockCallback.EVENT.register { player, _, _, hitResult ->
-//            if (player.uuid == npc.entity.uuid) {
-//                val blockInteractionMessage =
-//                    String.format(
-//                        "You used block at %s",
-//                        hitResult.blockPos,
-//                    )
-//                handleMessage(blockInteractionMessage)
-//            }
-//            return@register ActionResult.PASS
-//        }
+        PlayerBlockBreakEvents.AFTER.register { _, player, pos, state, _ ->
+            val matchingNpc = getMatchingNpc(player)
+            if (matchingNpc != null) {
+                val blockBreakMessage =
+                    String.format(
+                        "I broke the block %s at %s",
+                        state.block.name.string,
+                        pos.toShortString(),
+                    )
+                matchingNpc.eventHandler.onEvent(blockBreakMessage)
+            }
+        }
+
+        UseBlockCallback.EVENT.register { player, _, _, hitResult ->
+            val matchingNpc = getMatchingNpc(player)
+            if (matchingNpc != null) {
+                val blockInteractionMessage =
+                    String.format(
+                        "I used block at %s",
+                        hitResult.blockPos,
+                    )
+                matchingNpc.eventHandler.onEvent(blockInteractionMessage)
+            }
+            return@register ActionResult.PASS
+        }
     }
 }

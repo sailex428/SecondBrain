@@ -1,18 +1,8 @@
 package me.sailex.ai.npc.llm;
 
-import me.sailex.ai.npc.llm.function_calling.IFunctionManager;
-
 import java.util.List;
 
 public interface ILLMClient {
-
-	/**
-	 * Executes functions that are called by openai based on the prompt
-	 *
-	 * @param source the source of the prompt e.g. system
-	 * @param prompt the prompt
-	 */
-	void callFunctions(String source, String prompt);
 
 	/**
 	 * Generate an embedding for a given prompt
@@ -27,7 +17,8 @@ public interface ILLMClient {
 	 */
 	void checkServiceIsReachable();
 
-	void setFunctionManager(IFunctionManager functionManager);
-
+	/**
+	 * Stops the Executor service
+	 */
 	void stopService();
 }

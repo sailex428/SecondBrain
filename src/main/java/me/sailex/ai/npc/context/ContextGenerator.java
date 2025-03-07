@@ -19,9 +19,11 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 /**
- * Generates the context for the LLM based on the players world state.
+ * Generates the context for the LLM based on the players (npcs) world state.
  */
 public class ContextGenerator {
+
+	private ContextGenerator() {}
 
 	private static final Logger LOGGER = LogManager.getLogger(ContextGenerator.class);
 	private static final int CHUNK_SCAN_RADIUS = 2;

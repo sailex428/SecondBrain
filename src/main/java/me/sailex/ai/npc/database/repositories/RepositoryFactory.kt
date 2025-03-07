@@ -20,7 +20,8 @@ class RepositoryFactory(
             recipesRepository.init()
         }, executor).exceptionally( {
             LogUtil.error("Failed to init sql database", true)
-            return@exceptionally null
+            null
         } )
+        executor.shutdown()
     }
 }

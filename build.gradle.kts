@@ -16,6 +16,7 @@ val mcVersion = property("mc.version").toString()
 val fabricLoaderVersion = property("deps.fabric_loader").toString()
 val stage = rootProject.extra["deps.stage"].toString()
 val jarName = ("second-brain-$mcVersion-v$version-$stage").toString()
+val automatone = rootProject.extra["deps.automatone"].toString()
 
 val javaVersion = if (stonecutter.eval(mcVersion, ">=1.20.6")) JavaVersion.VERSION_21 else JavaVersion.VERSION_17
 
@@ -46,7 +47,7 @@ dependencies {
     include(modImplementation("org.xerial:sqlite-jdbc:3.46.1.3")!!)
     include(modRuntimeOnly("dev_babbaj:nether-pathfinder:1.4.1")!!)
 
-    include(modImplementation("io.github.ollama4j:ollama4j:1.0.90-with-json-schema")!!)
+    include(modImplementation("io.github.ollama4j:ollama4j:1.0.97")!!)
 
     //needed deps for openai communication
     include(modRuntimeOnly("com.fasterxml.jackson.core:jackson-core:2.18.1")!!)
@@ -64,7 +65,7 @@ dependencies {
     modImplementation("org.ladysnake.cardinal-components-api:cardinal-components-base:${property("cca_version")}")
     modImplementation("org.ladysnake.cardinal-components-api:cardinal-components-entity:${property("cca_version")}")
     modImplementation("org.ladysnake.cardinal-components-api:cardinal-components-world:${property("cca_version")}")
-    include(modRuntimeOnly("com.github.gnembon:fabric-carpet:${property("carpet_version")}")!!)
+    include(modImplementation("com.github.gnembon:fabric-carpet:${property("carpet_version")}")!!)
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.11.3")
     testImplementation("org.mockito:mockito-core:5.14.2")
@@ -112,13 +113,15 @@ tasks.processResources {
     inputs.property("version", version)
     inputs.property("mcDep", mcVersion)
     inputs.property("loader_version", fabricLoaderVersion)
+    inputs.property("automatone", automatone)
     filteringCharset = "UTF-8"
 
     filesMatching("fabric.mod.json") {
         expand(
             "version" to version,
             "mcDep" to mcVersion,
-            "loader_version" to fabricLoaderVersion
+            "loader_version" to fabricLoaderVersion,
+            "automatone" to automatone
         )
     }
 }

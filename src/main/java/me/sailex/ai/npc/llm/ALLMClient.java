@@ -3,15 +3,13 @@ package me.sailex.ai.npc.llm;
 import java.util.List;
 
 import lombok.Setter;
-import me.sailex.ai.npc.llm.function_calling.IFunctionManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 @Setter
-public abstract class ALLMClient implements ILLMClient {
+public abstract class ALLMClient<T> implements IFunctionCaller<T> {
 
 	protected static final Logger LOGGER = LogManager.getLogger(ALLMClient.class);
-	protected IFunctionManager functionManager;
 
 	protected double[] convertEmbedding(List<List<Double>> embedding) {
 		return embedding.stream()

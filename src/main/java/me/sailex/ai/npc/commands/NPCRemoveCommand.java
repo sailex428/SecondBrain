@@ -6,13 +6,12 @@ import static net.minecraft.server.command.CommandManager.literal;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
-import me.sailex.ai.npc.npc.NPCFactory;
+import me.sailex.ai.npc.NPCFactory;
 import me.sailex.ai.npc.util.LogUtil;
 import lombok.AllArgsConstructor;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
 
 @AllArgsConstructor
 public class NPCRemoveCommand {
@@ -28,16 +27,16 @@ public class NPCRemoveCommand {
 	private int removeNPC(CommandContext<ServerCommandSource> context) {
 		String name = StringArgumentType.getString(context, "name");
 
-		LogUtil.info("Try removing NPC with name: " + name);
 
 		boolean isPlayerRemoved = removePlayer(name, context.getSource().getServer().getPlayerManager());
 
 		//try first to remove npc else real players could be removed
 		if (!npcFactory.removeNpc(name) || !isPlayerRemoved) {
 			context.getSource().sendFeedback(() ->
-					Text.of("Could not remove npc with name " + name + ", reason: npc not found"), false);
+					LogUtil.formatError("Could not find npc with name " + name), false);
 			return 0;
 		}
+		LogUtil.info("Removed NPC with name: " + name);
 		return 1;
 	}
 

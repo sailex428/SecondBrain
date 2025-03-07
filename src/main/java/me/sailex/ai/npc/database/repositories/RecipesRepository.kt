@@ -12,11 +12,11 @@ class RecipesRepository(
     override fun createTable() {
         val sql = """
             CREATE TABLE IF NOT EXISTS recipes (
-                    type TEXT NOT NULL,
-                    name TEXT UNIQUE NOT NULL,
-                    name_embedding BLOB,
-                    table_needed BOOLEAN NOT NULL,
-                    items_needed TEXT
+                    name CHARACTER(255) UNIQUE PRIMARY KEY,
+                    type CHARACTER(16) NOT NULL,
+                    table_needed CHARACTER(14) NOT NULL,
+                    items_needed VARCHAR(510) NOT NULL,
+                    name_embedding BLOB
             );
         """
         sqliteClient.create(sql)
@@ -27,31 +27,19 @@ class RecipesRepository(
     ) {
         val statement =
             sqliteClient.buildPreparedStatement(
-                "INSERT INTO recipes (type, name, name_embedding, table_needed, items_needed) VALUES (?, ?, ?, ?, ?)" +
-                    " ON CONFLICT(name) DO UPDATE SET items_needed = excluded.items_needed",
+                "INSERT INTO recipes (name, type, table_needed, items_needed, name_embedding) VALUES (?, ?, ?, ?, ?)" +
+                    " ON CONFLICT(name) DO UPDATE SET items_needed = excluded.items_needed, name_embedding = excluded.name_embedding",
             )
-        statement.setString(1, recipe.type)
-        statement.setString(2, recipe.name)
-        statement.setBytes(3, VectorUtil.convertToBytes(recipe.embedding))
-        statement.setString(4, recipe.tableNeeded)
-        statement.setString(5, recipe.itemsNeeded)
+        statement.setString(1, recipe.name)
+        statement.setString(2, recipe.type)
+        statement.setString(3, recipe.tableNeeded)
+        statement.setString(4, recipe.itemsNeeded)
+        statement.setBytes(5, VectorUtil.convertToBytes(recipe.embedding))
         sqliteClient.insert(statement)
     }
 
     fun selectCount(): Int {
         return super.selectCount("recipes")
-    }
-
-    fun select(requirementIds: List<Int>): List<Resource> {
-        val sql = "SELECT * FROM recipes WHERE id IN (%S)"
-        val result = sqliteClient.select(String.format(sql, requirementIds.joinToString(",")))
-        return processResult(result)
-    }
-
-    fun select(type: String): List<Resource> {
-        val sql = "SELECT * FROM recipes WHERE type IN (%S)"
-        val result = sqliteClient.select(String.format(sql, type))
-        return processResult(result)
     }
 
     override fun selectAll(): List<Resource> {
@@ -65,11 +53,11 @@ class RecipesRepository(
         while (result.next()) {
             val requirement =
                 Recipe(
-                    result.getString("type"),
                     result.getString("name"),
-                    VectorUtil.convertToDoubles(result.getBytes("name_embedding")),
+                    result.getString("type"),
                     result.getString("table_needed"),
                     result.getString("items_needed"),
+                    VectorUtil.convertToDoubles(result.getBytes("name_embedding")),
                 )
             recipes.add(requirement)
         }
