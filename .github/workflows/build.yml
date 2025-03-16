@@ -28,11 +28,13 @@ jobs:
           distribution: 'microsoft'
       - name: make gradle wrapper executable
         run: chmod +x ./gradlew
+      - name: spotless check
+        run: ./gradlew spotlessCheck
       - name: build
         run: gradle chiseledBuild
       - name: capture build artifacts
         if: ${{ matrix.java == '21' }}
         uses: actions/upload-artifact@v4
         with:
-          name: Artifacts
+          name: build
           path: build/libs/
