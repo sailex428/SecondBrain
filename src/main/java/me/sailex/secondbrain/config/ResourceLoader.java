@@ -1,11 +1,11 @@
-package me.sailex.ai.npc.config;
+package me.sailex.secondbrain.config;
 
 import java.io.*;
 import java.net.URL;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import me.sailex.ai.npc.util.LogUtil;
+import me.sailex.secondbrain.util.LogUtil;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
