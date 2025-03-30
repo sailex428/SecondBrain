@@ -28,6 +28,7 @@ repositories {
     maven { url = uri("https://maven.terraformersmc.com/releases/") }
     maven { url = uri("https://maven.ladysnake.org/releases") }
     maven { url = uri("https://jitpack.io") }
+    maven("https://maven.wispforest.io")
 }
 
 dependencies {
@@ -40,6 +41,8 @@ dependencies {
     modImplementation("net.fabricmc:fabric-loader:$fabricLoaderVersion")
     include(modImplementation("net.fabricmc.fabric-api:fabric-api:${property("deps.fapi")}+$mcVersion")!!)
     include(modImplementation("net.fabricmc:fabric-language-kotlin:1.13.0+kotlin.2.1.0")!!)
+
+    modImplementation("io.wispforest:owo-lib:${properties["owo_version"]}")
 
     compileOnly("org.projectlombok:lombok:1.18.34")
     annotationProcessor("org.projectlombok:lombok:1.18.34")
