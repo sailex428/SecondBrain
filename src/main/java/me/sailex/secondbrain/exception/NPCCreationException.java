@@ -1,4 +1,4 @@
-package me.sailex.ai.npc.exception;
+package me.sailex.secondbrain.exception;
 
 public class NPCCreationException extends RuntimeException {
     public NPCCreationException(String message) {

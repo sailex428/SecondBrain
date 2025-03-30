@@ -1,6 +1,6 @@
-package me.sailex.ai.npc.listener
+package me.sailex.secondbrain.listener
 
-import me.sailex.ai.npc.model.NPC
+import me.sailex.secondbrain.model.NPC
 
 /**
  * Registers listeners for block interactions, chat messages and so on.

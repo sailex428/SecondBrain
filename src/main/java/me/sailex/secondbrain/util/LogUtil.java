@@ -1,6 +1,6 @@
-package me.sailex.ai.npc.util;
+package me.sailex.secondbrain.util;
 
-import me.sailex.ai.npc.SecondBrain;
+import me.sailex.secondbrain.SecondBrain;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
@@ -14,6 +14,14 @@ public class LogUtil {
 
 	private static final Logger LOGGER = LogManager.getLogger(LogUtil.class);
 	private static final MutableText PREFIX = buildPrefix();
+
+	public static void debugInChat(String message) {
+		log(formatDebug(message));
+	}
+
+	private static MutableText formatDebug(String message) {
+		return Text.literal(PREFIX.getString()).append(message).setStyle(Style.EMPTY.withFormatting(Formatting.DARK_GRAY));
+	}
 
 	public static void info(String message) {
 		info(message, false);

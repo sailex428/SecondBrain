@@ -1,4 +1,4 @@
-package me.sailex.ai.npc.llm;
+package me.sailex.secondbrain.llm;
 
 import io.github.sashirestela.openai.SimpleOpenAI;
 import io.github.sashirestela.openai.common.function.FunctionCall;
@@ -9,6 +9,8 @@ import io.github.sashirestela.openai.domain.chat.ChatMessage;
 import io.github.sashirestela.openai.domain.chat.ChatRequest;
 import io.github.sashirestela.openai.domain.embedding.EmbeddingFloat;
 import io.github.sashirestela.openai.domain.embedding.EmbeddingRequest;
+import me.sailex.secondbrain.model.function_calling.FunctionResponse;
+import me.sailex.secondbrain.util.LogUtil;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
@@ -19,6 +21,7 @@ public class OpenAiClient extends ALLMClient<FunctionDef> {
 
 	private final SimpleOpenAI openAiService;
 	private final String openAiModel;
+	private final int timeout;
 
 	private final FunctionExecutor functionExecutor;
 
@@ -27,13 +30,11 @@ public class OpenAiClient extends ALLMClient<FunctionDef> {
 	 *
 	 * @param apiKey  the api key
 	 */
-	public OpenAiClient(
-			String apiKey,
-			String baseUrl
-	) {
+	public OpenAiClient(String apiKey, int timeout) {
 		this.openAiModel = "gpt-4o-mini";
 		this.openAiService =
-				SimpleOpenAI.builder().apiKey(apiKey).baseUrl(baseUrl).build();
+				SimpleOpenAI.builder().apiKey(apiKey).build();
+		this.timeout = timeout;
 		this.functionExecutor = new FunctionExecutor();
 	}
 
@@ -45,11 +46,12 @@ public class OpenAiClient extends ALLMClient<FunctionDef> {
 	 * @return  the formatted results of the function calls.
 	 */
 	@Override
-	public String callFunctions(String prompt, List<FunctionDef> functions) {
+	public FunctionResponse callFunctions(String prompt, List<FunctionDef> functions) {
 		try {
 			StringBuilder calledFunctions = new StringBuilder();
+            ChatMessage.ResponseMessage responseMessage = new ChatMessage.ResponseMessage();
+			responseMessage.setContent("empty response");
 
-            ChatMessage.ResponseMessage responseMessage;
            	for (int i = 0; i < functions.size(); i++) {
 				functionExecutor.enrollFunctions(functions);
                 ChatRequest chatRequest = ChatRequest.builder()
@@ -61,7 +63,7 @@ public class OpenAiClient extends ALLMClient<FunctionDef> {
                 responseMessage = openAiService
 						.chatCompletions()
 						.create(chatRequest)
-						.get(10, TimeUnit.SECONDS)
+						.get(timeout, TimeUnit.SECONDS)
 						.firstMessage();
 
 				List<ToolCall> toolCalls = responseMessage.getToolCalls();
@@ -76,11 +78,11 @@ public class OpenAiClient extends ALLMClient<FunctionDef> {
 				executeFunctionCalls(toolCall);
 				removeCalledFunctions(functions, toolCall.getFunction().getName());
             }
-			return calledFunctions.toString();
+			return new FunctionResponse(responseMessage.getContent(), calledFunctions.toString());
         } catch (Exception e) {
-			LOGGER.error("Could not generate response / execute functions for prompt: {}", prompt, e);
 			Thread.currentThread().interrupt();
-			return StringUtils.EMPTY;
+			LogUtil.error("LLM has not called any functions for prompt: " + prompt, true);
+			return new FunctionResponse("No actions called by LLM", "");
 		}
 	}
 
@@ -109,7 +111,7 @@ public class OpenAiClient extends ALLMClient<FunctionDef> {
 							.model("text-embedding-3-small")
 							.input(prompt)
 							.build())
-					.get(10, TimeUnit.SECONDS)
+					.get(timeout, TimeUnit.SECONDS)
 					.getData()
 					.stream()
 					.map(EmbeddingFloat::getEmbedding)

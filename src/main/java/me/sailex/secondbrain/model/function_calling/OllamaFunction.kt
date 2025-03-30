@@ -1,4 +1,4 @@
-package me.sailex.ai.npc.model.database
+package me.sailex.secondbrain.model.function_calling
 
 import io.github.ollama4j.tools.Tools
 

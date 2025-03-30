@@ -1,22 +1,30 @@
-package me.sailex.ai.npc.llm;
+package me.sailex.secondbrain.llm;
 
-import com.fasterxml.jackson.core.JacksonException;
 import io.github.ollama4j.OllamaAPI;
 import io.github.ollama4j.models.chat.*;
 import io.github.ollama4j.models.embeddings.OllamaEmbedResponseModel;
+import io.github.ollama4j.models.request.CustomModelRequest;
+import io.github.ollama4j.models.response.Model;
 import io.github.ollama4j.tools.OllamaToolCallsFunction;
 import io.github.ollama4j.tools.Tools;
 import io.github.ollama4j.types.OllamaModelType;
-import me.sailex.ai.npc.exception.LLMServiceException;
+import me.sailex.secondbrain.exception.LLMServiceException;
 
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.*;
+import java.util.stream.Collectors;
 
 import lombok.Setter;
-import me.sailex.ai.npc.util.LogUtil;
+import me.sailex.secondbrain.model.function_calling.FunctionResponse;
+import me.sailex.secondbrain.util.LogUtil;
 import org.apache.commons.lang3.StringUtils;
 
-public class OllamaClient extends ALLMClient<Tools.ToolSpecification> {
+public class OllamaClient extends ALLMClient<Tools.ToolSpecification> implements FunctionCallable<Tools.ToolSpecification> {
+
+	private static final String LLAMA_MODEL_NAME = "llama3.2";
+	private static final List<String> REQUIRED_MODELS = List.of(
+			OllamaModelType.NOMIC_EMBED_TEXT, LLAMA_MODEL_NAME);
 
 	@Setter
 	private OllamaAPI ollamaAPI;
@@ -28,17 +36,66 @@ public class OllamaClient extends ALLMClient<Tools.ToolSpecification> {
 	 *
 	 * @param url  the ollama url
 	 */
-	public OllamaClient(String url) {
+	public OllamaClient(String url, String customModelName, String defaultPrompt, int timeout) {
 		this.ollamaAPI = new OllamaAPI(url);
-		this.model = "llama3.2:3b";
+		this.model = customModelName;
+		checkServiceIsReachable();
 		this.service = Executors.newFixedThreadPool(3);
-		ollamaAPI.setMaxChatToolCallRetries(4);
 		ollamaAPI.setVerbose(true);
-		ollamaAPI.setRequestTimeoutSeconds(20);
+		ollamaAPI.setMaxChatToolCallRetries(4);
+		ollamaAPI.setRequestTimeoutSeconds(timeout);
+		initModels(defaultPrompt);
+	}
+
+	private void initModels(String defaultPrompt) {
+		pullRequiredModels();
+		createModelWithPrompt(defaultPrompt);
+	}
+
+	private void pullRequiredModels() {
+		try {
+			Set<String> modelNames = ollamaAPI.listModels().stream()
+					.map(Model::getModelName).collect(Collectors.toSet());
+			boolean requiredModelsExist = modelNames.containsAll(REQUIRED_MODELS);
+			if (!requiredModelsExist) {
+				for (String requiredModel : REQUIRED_MODELS) {
+					LogUtil.debugInChat("Pulling model: " + requiredModel);
+					ollamaAPI.pullModel(requiredModel);
+				}
+			}
+		} catch (Exception e) {
+			throw new LLMServiceException("Could not required models: " + REQUIRED_MODELS,  e);
+		}
+	}
+
+	private void createModelWithPrompt(String defaultPrompt) {
+		try {
+			LogUtil.debugInChat("Init model: " + model);
+			ollamaAPI.createModel(CustomModelRequest.builder()
+					.from(LLAMA_MODEL_NAME)
+					.model(model)
+					.system(defaultPrompt)
+					.license("MIT")
+					.build());
+		} catch (Exception e) {
+			throw new LLMServiceException("Could not create model: " + model, e);
+		}
 	}
 
 	/**
-	 * Check if the service is reachable
+	 * Removes current model.
+	 */
+	public void removeModel() {
+		try {
+			LogUtil.debugInChat("Removing model: " + model);
+			ollamaAPI.deleteModel(model, false);
+		} catch (Exception e) {
+			throw new LLMServiceException("Could not remove model: " + model, e);
+		}
+	}
+
+	/**
+	 * Check if the service is reachable.
 	 * @throws LLMServiceException if server is not reachable
 	 */
 	@Override
@@ -55,20 +112,16 @@ public class OllamaClient extends ALLMClient<Tools.ToolSpecification> {
 		}
 	}
 
-	public void registerFunctions(List<Tools.ToolSpecification> tools) {
-		tools.forEach(ollamaAPI::registerTool);
-	}
-
 	/**
 	 * Sends the provided prompt and functions to Ollama API.
 	 * Executes functions called by the LLM.
 	 *
 	 * @param   prompt    the event prompt
 	 * @param   functions relevant functions that matches to the prompt
-	 * @return  the formatted results of the function calls.
+	 * @return  FunctionResponse - the formatted results of the function calls.
 	 */
 	@Override
-	public String callFunctions(String prompt, List<Tools.ToolSpecification> functions) {
+	public FunctionResponse callFunctions(String prompt, List<Tools.ToolSpecification> functions) {
 		try {
 			ollamaAPI.registerTools(functions);
 
@@ -77,14 +130,13 @@ public class OllamaClient extends ALLMClient<Tools.ToolSpecification> {
 				.build();
 			OllamaChatResult response = ollamaAPI.chat(toolRequest);
 
-			return formatChatHistory(response.getChatHistory());
-		} catch (JacksonException e) {
-			LOGGER.warn("LLM has not called any functions for prompt: {}", prompt);
+			String finalResponse = response.getResponseModel().getMessage().getContent();
+			return new FunctionResponse(finalResponse, formatChatHistory(response.getChatHistory()));
 		} catch (Exception e) {
 			Thread.currentThread().interrupt();
-			LOGGER.error("Could not generate response / execute functions for prompt: {}", prompt, e);
+			LogUtil.error("LLM has not called any functions for prompt: " + prompt, true);
+			return new FunctionResponse("No actions called by LLM.", "");
 		}
-		return StringUtils.EMPTY;
 	}
 
 	private String formatChatHistory(List<OllamaChatMessage> history) {
@@ -126,6 +178,11 @@ public class OllamaClient extends ALLMClient<Tools.ToolSpecification> {
 
 	@Override
 	public void stopService() {
+        try {
+            this.ollamaAPI.deleteModel(model, false);
+        } catch (Exception e) {
+            LogUtil.error("Could not delete model: " + e.getMessage());
+        }
 		this.service.shutdown();
 	}
 }
