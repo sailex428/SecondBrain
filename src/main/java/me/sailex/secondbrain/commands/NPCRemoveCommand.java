@@ -1,4 +1,4 @@
-package me.sailex.ai.npc.commands;
+package me.sailex.secondbrain.commands;
 
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
@@ -6,8 +6,8 @@ import static net.minecraft.server.command.CommandManager.literal;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
-import me.sailex.ai.npc.NPCFactory;
-import me.sailex.ai.npc.util.LogUtil;
+import me.sailex.secondbrain.common.NPCFactory;
+import me.sailex.secondbrain.util.LogUtil;
 import lombok.AllArgsConstructor;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.command.ServerCommandSource;
@@ -27,11 +27,10 @@ public class NPCRemoveCommand {
 	private int removeNPC(CommandContext<ServerCommandSource> context) {
 		String name = StringArgumentType.getString(context, "name");
 
-
 		boolean isPlayerRemoved = removePlayer(name, context.getSource().getServer().getPlayerManager());
 
 		//try first to remove npc else real players could be removed
-		if (!npcFactory.removeNpc(name) || !isPlayerRemoved) {
+		if (!npcFactory.deleteNpc(name) || !isPlayerRemoved) {
 			context.getSource().sendFeedback(() ->
 					LogUtil.formatError("Could not find npc with name " + name), false);
 			return 0;
