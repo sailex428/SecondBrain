@@ -1,6 +1,6 @@
-package me.sailex.ai.npc.listener
+package me.sailex.secondbrain.listener
 
-import me.sailex.ai.npc.model.NPC
+import me.sailex.secondbrain.model.NPC
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents
 import net.fabricmc.fabric.api.event.player.UseBlockCallback
 import net.minecraft.util.ActionResult
@@ -21,7 +21,7 @@ class BlockInteractionListener(
                         state.block.name.string,
                         pos.toShortString(),
                     )
-                matchingNpc.eventHandler.onEvent(blockBreakMessage)
+//                matchingNpc.eventHandler.onEvent(blockBreakMessage)
             }
         }
 
@@ -33,7 +33,7 @@ class BlockInteractionListener(
                         "I used block at %s",
                         hitResult.blockPos,
                     )
-                matchingNpc.eventHandler.onEvent(blockInteractionMessage)
+//                matchingNpc.eventHandler.onEvent(blockInteractionMessage)
             }
             return@register ActionResult.PASS
         }
