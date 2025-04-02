@@ -1,6 +1,6 @@
 package me.sailex.secondbrain.client.networking;
 
-import me.sailex.secondbrain.client.gui.NPCScreen;
+import me.sailex.secondbrain.client.gui.SecondBrainScreen;
 import me.sailex.secondbrain.networking.NetworkHandler;
 import me.sailex.secondbrain.networking.packet.ConfigPacket;
 import net.minecraft.client.MinecraftClient;
@@ -16,7 +16,7 @@ public class ClientNetworkManager {
 
     public void registerPacketReceiver() {
         NetworkHandler.CHANNEL.registerClientbound(ConfigPacket.class, (configPacket, access) -> {
-            Screen npcConfigScreen = new NPCScreen(configPacket.npcConfigs(), configPacket.baseConfig(), this);
+            Screen npcConfigScreen = new SecondBrainScreen(configPacket.npcConfigs(), configPacket.baseConfig(), this);
             client.setScreen(npcConfigScreen);
         });
     }

@@ -39,22 +39,26 @@ public class NetworkHandler {
         CHANNEL.registerServerbound(ConfigPacket.class, (configPacket, clientAccess) -> {
             if (isPlayerAuthorized(clientAccess)) {
                 configProvider.setBaseConfig(configPacket.baseConfig());
-                //configProvider.setNpcConfigs(configPacket.npcConfigs());
+                configProvider.setNpcConfigs(configPacket.npcConfigs());
                 LogUtil.info("Updated config to: " + configPacket, true);
             }
         });
         CHANNEL.registerServerbound(AddNpcPacket.class, (addNpcPacket, clientAccess) -> {
             if (isPlayerAuthorized(clientAccess)) {
-                configProvider.addNpcConfig(addNpcPacket.npcConfig());
                 npcFactory.createNpc(addNpcPacket.npcConfig(), clientAccess.player());
+                if (addNpcPacket.isNewConfig()) {
+                    configProvider.addNpcConfig(addNpcPacket.npcConfig());
+                }
                 LogUtil.info("Added npc: " + addNpcPacket, true);
             }
         });
         CHANNEL.registerServerbound(DeleteNpcPacket.class, (configPacket, clientAccess) -> {
             if (isPlayerAuthorized(clientAccess)) {
-                configProvider.deleteNpcConfig(configPacket.npcName());
                 npcFactory.deleteNpc(configPacket.npcName());
-                LogUtil.info("Deleted npc with uuid: " + configPacket.npcName(), true);
+                if (configPacket.isDeleteConfig()) {
+                    configProvider.deleteNpcConfig(configPacket.npcName());
+                }
+                LogUtil.info("Deleted npc with uuid: " + configPacket, true);
             }
         });
 
