@@ -6,32 +6,29 @@ import io.wispforest.endec.impl.StructEndecBuilder;
 import me.sailex.secondbrain.constant.Instructions;
 import me.sailex.secondbrain.llm.LLMType;
 
-import java.util.UUID;
-
 public class NPCConfig implements Configurable {
 
 	private String npcName = "Steve";
-	private UUID uuid;
+	private boolean isActive = false;
 	private String llmDefaultPrompt = Instructions.getLlmSystemPrompt(npcName, Instructions.DEFAULT_CHARACTER_TRAITS);
 	private LLMType llmType = LLMType.OLLAMA;
 	private String ollamaUrl = "http://localhost:11434";
 	private String openaiApiKey = "API_KEY";
 
-	public NPCConfig(String npcName, UUID uuid) {
+	public NPCConfig(String npcName) {
 		this.npcName = npcName;
-		this.uuid = uuid;
 	}
 
 	public NPCConfig(
 		String npcName,
-		String uuid,
+		boolean isActive,
 		String llmDefaultPrompt,
 		LLMType llmType,
 		String ollamaUrl,
 		String openaiApiKey
 	) {
 		this.npcName = npcName;
-		this.uuid = UUID.fromString(uuid);
+		this.isActive = isActive;
 		this.llmDefaultPrompt = llmDefaultPrompt;
 		this.llmType = llmType;
 		this.ollamaUrl = ollamaUrl;
@@ -43,7 +40,7 @@ public class NPCConfig implements Configurable {
 		private final NPCConfig npcConfig;
 
 		public Builder(String npcName) {
-			this.npcConfig = new NPCConfig(npcName, null);
+			this.npcConfig = new NPCConfig(npcName);
 		}
 
 		public Builder llmDefaultPrompt(String llmDefaultPrompt) {
@@ -80,6 +77,10 @@ public class NPCConfig implements Configurable {
 		return npcName;
 	}
 
+	public boolean isActive() {
+		return isActive;
+	}
+
 	public String getLlmDefaultPrompt() {
 		return llmDefaultPrompt;
 	}
@@ -112,12 +113,8 @@ public class NPCConfig implements Configurable {
 		this.openaiApiKey = openaiApiKey;
 	}
 
-	public UUID getUuid() {
-		return uuid;
-	}
-
-	public void setUuid(UUID uuid) {
-		this.uuid = uuid;
+	public void setActive(boolean active) {
+		isActive = active;
 	}
 
 	@Override
@@ -127,7 +124,7 @@ public class NPCConfig implements Configurable {
 
 	public static final StructEndec<NPCConfig> ENDEC = StructEndecBuilder.of(
 			Endec.STRING.fieldOf("npcName", NPCConfig::getNpcName),
-			Endec.STRING.fieldOf("uuid", config -> config.getUuid().toString()),
+			Endec.BOOLEAN.fieldOf("isActive", NPCConfig::isActive),
 			Endec.STRING.fieldOf("llmDefaultPrompt", NPCConfig::getLlmDefaultPrompt),
 			Endec.forEnum(LLMType.class).fieldOf("llmType", NPCConfig::getLlmType),
 			Endec.STRING.fieldOf("ollamaUrl", NPCConfig::getOllamaUrl),
@@ -138,7 +135,7 @@ public class NPCConfig implements Configurable {
 	@Override
 	public String toString() {
 		return "NPCConfig{npcName=" + npcName +
-				",uuid=" + uuid +
+				",isActive=" + isActive +
 				",llmType=" + llmType +
 				",ollamaUrl=" + ollamaUrl +
 				",openaiApiKey=" + openaiApiKey +

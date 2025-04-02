@@ -24,7 +24,6 @@ import me.sailex.secondbrain.model.NPC
 import me.sailex.secondbrain.util.LogUtil
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.server.network.ServerPlayerEntity
-import java.util.*
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
@@ -59,6 +58,7 @@ class NPCFactory(
                 LogUtil.error(e.message)
             }
         }.start()
+        config.isActive = true
     }
 
     private fun createNpc(
@@ -80,6 +80,7 @@ class NPCFactory(
             npcToRemove.modeController.setAllIsOn(false)
             npcToRemove.npcController.cancelActions()
             nameToNpc.remove(name)
+            npcToRemove.config.isActive = false
             return true
         }
         return false
