@@ -1,0 +1,80 @@
+package me.sailex.secondbrain.client.gui;
+
+import io.wispforest.owo.ui.base.BaseUIModelScreen;
+import io.wispforest.owo.ui.component.ButtonComponent;
+import io.wispforest.owo.ui.component.Components;
+import io.wispforest.owo.ui.container.Containers;
+import io.wispforest.owo.ui.container.FlowLayout;
+
+import io.wispforest.owo.ui.core.Sizing;
+import me.sailex.secondbrain.client.networking.ClientNetworkManager;
+import me.sailex.secondbrain.config.BaseConfig;
+import me.sailex.secondbrain.config.NPCConfig;
+import me.sailex.secondbrain.networking.packet.AddNpcPacket;
+import me.sailex.secondbrain.networking.packet.DeleteNpcPacket;
+import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
+
+import java.util.List;
+
+import static me.sailex.secondbrain.SecondBrain.MOD_ID;
+
+public class SecondBrainScreen extends BaseUIModelScreen<FlowLayout> {
+
+    private static final Identifier ID = Identifier.of(MOD_ID, "second_brain");
+    private final List<NPCConfig> npcConfig;
+    private final BaseConfig baseConfig;
+    private final ClientNetworkManager networkManager;
+
+    public SecondBrainScreen(
+        List<NPCConfig> npcConfig,
+        BaseConfig baseConfig,
+        ClientNetworkManager networkManager
+    ) {
+        super(FlowLayout.class, DataSource.asset(ID));
+        this.npcConfig = npcConfig;
+        this.baseConfig = baseConfig;
+        this.networkManager = networkManager;
+    }
+
+    @Override
+    protected void build(FlowLayout rootComponent) {
+        npcConfig.forEach(config -> addNpcComponent(rootComponent, config));
+
+        rootComponent.childById(ButtonComponent.class, "add_npc").onPress(button ->
+            client.setScreen(new NPCConfigScreen(networkManager, new NPCConfig(), false))
+        );
+
+        rootComponent.childById(ButtonComponent.class, "edit_base").onPress(button ->
+            client.setScreen(new BaseConfigScreen(networkManager, baseConfig, true))
+        );
+    }
+
+    private void addNpcComponent(FlowLayout rootComponent, NPCConfig config) {
+        rootComponent.child(Containers.verticalFlow(Sizing.content(), Sizing.content())
+                .children(List.of(
+                        Components.textBox(Sizing.content(), config.getNpcName()),
+                        Components.button(isActiveText(config), button -> {
+                            if (config.isActive()) {
+                                networkManager.sendPacket(new DeleteNpcPacket(config.getNpcName(), false));
+                            } else {
+                                networkManager.sendPacket(new AddNpcPacket(config, false));
+                            }
+                            close();
+                        }),
+                        Components.button(Text.of("edit"), button ->
+                            client.setScreen(new NPCConfigScreen(networkManager, config, true))
+                        ),
+                        Components.button(Text.of("delete"), button -> {
+                            networkManager.sendPacket(new DeleteNpcPacket(config.getNpcName(), true));
+                            close();
+                        })
+                ))
+        );
+    }
+
+    private Text isActiveText(NPCConfig npcConfig) {
+        return Text.of(npcConfig.isActive() ? "despawn" : "spawn");
+    }
+
+}
