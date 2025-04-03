@@ -9,8 +9,7 @@ import net.fabricmc.loader.api.FabricLoader;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Stream;
 
 import static me.sailex.secondbrain.SecondBrain.MOD_ID;
@@ -90,6 +89,14 @@ public class ConfigProvider {
     public void addNpcConfig(NPCConfig npcConfig) {
         npcConfigs.add(npcConfig);
         save(NPC_CONFIG_DIR, npcConfig);
+    }
+
+    public void updateNpcConfig(NPCConfig updatedConfig) {
+        npcConfigs.forEach(config -> {
+            if (config.getUuid().equals(updatedConfig.getUuid())) {
+                npcConfigs.set(npcConfigs.indexOf(config), updatedConfig);
+            }
+        });
     }
 
     public List<NPCConfig> getNpcConfigs() {

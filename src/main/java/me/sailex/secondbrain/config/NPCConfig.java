@@ -6,14 +6,19 @@ import io.wispforest.endec.impl.StructEndecBuilder;
 import me.sailex.secondbrain.constant.Instructions;
 import me.sailex.secondbrain.llm.LLMType;
 
+import java.util.UUID;
+
 public class NPCConfig implements Configurable {
 
 	private String npcName = "Steve";
+	private UUID uuid = UUID.randomUUID();
 	private boolean isActive = false;
 	private String llmDefaultPrompt = Instructions.getLlmSystemPrompt(npcName, Instructions.DEFAULT_CHARACTER_TRAITS);
 	private LLMType llmType = LLMType.OLLAMA;
 	private String ollamaUrl = "http://localhost:11434";
 	private String openaiApiKey = "API_KEY";
+
+	public NPCConfig() {}
 
 	public NPCConfig(String npcName) {
 		this.npcName = npcName;
@@ -21,6 +26,7 @@ public class NPCConfig implements Configurable {
 
 	public NPCConfig(
 		String npcName,
+		String uuid,
 		boolean isActive,
 		String llmDefaultPrompt,
 		LLMType llmType,
@@ -28,6 +34,7 @@ public class NPCConfig implements Configurable {
 		String openaiApiKey
 	) {
 		this.npcName = npcName;
+		this.uuid = UUID.fromString(uuid);
 		this.isActive = isActive;
 		this.llmDefaultPrompt = llmDefaultPrompt;
 		this.llmType = llmType;
@@ -117,6 +124,10 @@ public class NPCConfig implements Configurable {
 		isActive = active;
 	}
 
+	public UUID getUuid() {
+		return uuid;
+	}
+
 	@Override
 	public String getConfigName() {
 		return npcName.toLowerCase();
@@ -124,6 +135,7 @@ public class NPCConfig implements Configurable {
 
 	public static final StructEndec<NPCConfig> ENDEC = StructEndecBuilder.of(
 			Endec.STRING.fieldOf("npcName", NPCConfig::getNpcName),
+			Endec.STRING.fieldOf("uuid", config -> config.getUuid().toString()),
 			Endec.BOOLEAN.fieldOf("isActive", NPCConfig::isActive),
 			Endec.STRING.fieldOf("llmDefaultPrompt", NPCConfig::getLlmDefaultPrompt),
 			Endec.forEnum(LLMType.class).fieldOf("llmType", NPCConfig::getLlmType),
@@ -135,6 +147,7 @@ public class NPCConfig implements Configurable {
 	@Override
 	public String toString() {
 		return "NPCConfig{npcName=" + npcName +
+				",uuid=" + uuid +
 				",isActive=" + isActive +
 				",llmType=" + llmType +
 				",ollamaUrl=" + ollamaUrl +
