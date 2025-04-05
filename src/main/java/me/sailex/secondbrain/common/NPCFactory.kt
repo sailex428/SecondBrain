@@ -76,7 +76,7 @@ class NPCFactory(
     fun deleteNpc(name: String, playerManager: PlayerManager) {
         val npcToRemove = nameToNpc[name]
         if (npcToRemove != null) {
-            despawnNpc(name, playerManager)
+            npcSpawner.despawn(name, playerManager)
             npcToRemove.llmClient.stopService()
             npcToRemove.eventHandler.stopService()
             npcToRemove.modeController.setAllIsOn(false)
@@ -87,13 +87,6 @@ class NPCFactory(
             LogUtil.info("Removed NPC with name: $name")
         } else {
             LogUtil.error("Could not find npc with name $name")
-        }
-    }
-
-    private fun despawnNpc(name: String, playerManager: PlayerManager) {
-        val player: ServerPlayerEntity? = playerManager.getPlayer(name)
-        if (player != null) {
-            playerManager.remove(player)
         }
     }
 

@@ -4,6 +4,8 @@ import carpet.patches.EntityPlayerMPFake;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.registry.RegistryKey;
+import net.minecraft.server.PlayerManager;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.world.GameMode;
 import net.minecraft.world.World;
 
@@ -19,6 +21,13 @@ public class NPCSpawner {
                 dimensionKey, GameMode.SURVIVAL, false);
         if (!isSuccessful) {
             throw new NullPointerException("Player profile doesn't exist!");
+        }
+    }
+
+    public void despawn(String name, PlayerManager playerManager) {
+        ServerPlayerEntity player = playerManager.getPlayer(name);
+        if (player != null) {
+            playerManager.remove(player);
         }
     }
 
