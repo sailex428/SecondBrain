@@ -1,0 +1,82 @@
+<owo-ui xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/wisp-forest/owo-lib/1.20/owo-ui.xsd">
+    <components>
+        <flow-layout direction="vertical">
+            <children>
+                <flow-layout direction="vertical">
+                    <children>
+
+                        <flow-layout direction="horizontal">
+                            <children>
+                                <texture texture="secondbrain:icon.png" v="8" u="8" region-width="8" region-height="8" texture-width="8" texture-height="8">
+                                    <blend>true</blend>
+                                    <margins>
+                                        <right>1</right>
+                                    </margins>
+                                </texture>
+                                <label>
+                                    <text>SecondBrain</text>
+                                    <shadow>true</shadow>
+                                    <margins>
+                                        <left>1</left>
+                                    </margins>
+                                </label>
+                            </children>
+                        </flow-layout>
+
+                        <flow-layout direction="vertical" id="npc">
+                            <children>
+                            </children>
+
+                            <padding>
+                                <all>2</all>
+                            </padding>
+
+                            <margins>
+                                <top>4</top>
+                            </margins>
+
+                            <gap>7</gap>
+                        </flow-layout>
+
+                        <flow-layout direction="horizontal">
+                            <children>
+                                <button id="add_npc">
+                                    <text>Add NPC</text>
+                                    <margins>
+                                        <right>1</right>
+                                    </margins>
+                                </button>
+                                <button id="edit_base">
+                                    <text>Edit Config</text>
+                                    <margins>
+                                        <left>1</left>
+                                    </margins>
+                                </button>
+                            </children>
+                        </flow-layout>
+
+                    </children>
+
+                    <horizontal-alignment>center</horizontal-alignment>
+                    <vertical-alignment>center</vertical-alignment>
+
+                    <surface>
+                        <panel dark="true"/>
+                    </surface>
+
+                    <padding>
+                        <all>8</all>
+                    </padding>
+                </flow-layout>
+            </children>
+
+            <horizontal-alignment>center</horizontal-alignment>
+            <vertical-alignment>center</vertical-alignment>
+
+            <surface>
+                <vanilla-translucent/>
+            </surface>
+        </flow-layout>
+    </components>
+</owo-ui>

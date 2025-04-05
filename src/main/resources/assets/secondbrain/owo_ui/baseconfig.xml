@@ -1,0 +1,107 @@
+<owo-ui xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/wisp-forest/owo-lib/1.20/owo-ui.xsd">
+    <components>
+        <flow-layout direction="vertical">
+            <children>
+                <flow-layout direction="vertical" id="panel">
+                    <children>
+
+                        <flow-layout direction="vertical">
+                            <children>
+
+                                <flow-layout direction="vertical">
+                                    <children>
+                                        <label id="llmTimeout-label">
+                                            <shadow>true</shadow>
+                                        </label>
+                                        <discrete-slider id="llmTimeout" min="1" max="60">
+                                            <sizing>
+                                                <horizontal method="fill">25</horizontal>
+                                                <vertical method="fill">7</vertical>
+                                            </sizing>
+                                        </discrete-slider>
+                                    </children>
+                                </flow-layout>
+
+
+                                <flow-layout direction="vertical">
+                                    <children>
+                                        <label id="chunkRadius-label">
+                                            <shadow>true</shadow>
+                                        </label>
+                                        <discrete-slider id="chunkRadius" min="1" max="7">
+                                            <sizing>
+                                                <horizontal method="fill">25</horizontal>
+                                                <vertical method="fill">7</vertical>
+                                            </sizing>
+                                        </discrete-slider>
+                                    </children>
+                                </flow-layout>
+
+
+                                <flow-layout direction="vertical">
+                                    <children>
+                                        <label id="verticalScanRange-label">
+                                            <shadow>true</shadow>
+                                        </label>
+                                        <discrete-slider id="verticalScanRange" min="4" max="16">
+                                            <sizing>
+                                                <horizontal method="fill">25</horizontal>
+                                                <vertical method="fill">7</vertical>
+                                            </sizing>
+                                        </discrete-slider>
+                                    </children>
+                                </flow-layout>
+
+
+                                <flow-layout direction="vertical">
+                                    <children>
+                                        <label id="cacheExpiryTime-label">
+                                            <shadow>true</shadow>
+                                        </label>
+                                        <discrete-slider id="cacheExpiryTime" min="20" max="120">
+                                            <sizing>
+                                                <horizontal method="fill">25</horizontal>
+                                                <vertical method="fill">7</vertical>
+                                            </sizing>
+                                        </discrete-slider>
+                                    </children>
+                                </flow-layout>
+
+                                <button id="save">
+                                    <text>Save</text>
+                                </button>
+
+                            </children>
+
+                            <margins>
+                                <all>11</all>
+                            </margins>
+
+                            <gap>7</gap>
+
+                            <horizontal-alignment>center</horizontal-alignment>
+                            <vertical-alignment>center</vertical-alignment>
+
+                        </flow-layout>
+
+                    </children>
+
+                    <horizontal-alignment>center</horizontal-alignment>
+                    <vertical-alignment>center</vertical-alignment>
+
+                    <surface>
+                        <panel dark="true"/>
+                    </surface>
+                </flow-layout>
+            </children>
+
+            <horizontal-alignment>center</horizontal-alignment>
+            <vertical-alignment>center</vertical-alignment>
+
+            <surface>
+                <vanilla-translucent/>
+            </surface>
+        </flow-layout>
+    </components>
+</owo-ui>
