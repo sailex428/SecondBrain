@@ -85,7 +85,7 @@ public class NetworkHandler {
     private void registerDeleteNpc() {
         CHANNEL.registerServerbound(DeleteNpcPacket.class, (configPacket, clientAccess) -> {
             if (isPlayerAuthorized(clientAccess)) {
-                npcFactory.deleteNpc(configPacket.npcName());
+                npcFactory.deleteNpc(configPacket.npcName(), clientAccess.player().getServer().getPlayerManager());
                 if (configPacket.isDeleteConfig()) {
                     configProvider.deleteNpcConfig(configPacket.npcName());
                 }

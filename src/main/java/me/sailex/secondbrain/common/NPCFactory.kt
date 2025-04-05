@@ -23,6 +23,7 @@ import me.sailex.secondbrain.mode.ModeInitializer
 import me.sailex.secondbrain.model.NPC
 import me.sailex.secondbrain.util.LogUtil
 import net.minecraft.entity.player.PlayerEntity
+import net.minecraft.server.PlayerManager
 import net.minecraft.server.network.ServerPlayerEntity
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
@@ -46,7 +47,7 @@ class NPCFactory(
 
         Thread {
             try {
-                //player spawning is nonblocking so we need to wait here
+                //player spawning is nonblocking so we need to wait here until its avail
                 val npcWasCreated = latch.await(3, TimeUnit.SECONDS)
                 val npcEntity = source.server?.playerManager?.getPlayer(name)
                 if (!npcWasCreated || npcEntity == null) {
@@ -72,18 +73,28 @@ class NPCFactory(
         LogUtil.info(("Created NPC with name: ${config.npcName}"))
     }
 
-    fun deleteNpc(name: String): Boolean {
+    fun deleteNpc(name: String, playerManager: PlayerManager) {
         val npcToRemove = nameToNpc[name]
         if (npcToRemove != null) {
+            despawnNpc(name, playerManager)
             npcToRemove.llmClient.stopService()
             npcToRemove.eventHandler.stopService()
             npcToRemove.modeController.setAllIsOn(false)
             npcToRemove.npcController.cancelActions()
             nameToNpc.remove(name)
             npcToRemove.config.isActive = false
-            return true
+
+            LogUtil.info("Removed NPC with name: $name")
+        } else {
+            LogUtil.error("Could not find npc with name $name")
         }
-        return false
+    }
+
+    private fun despawnNpc(name: String, playerManager: PlayerManager) {
+        val player: ServerPlayerEntity? = playerManager.getPlayer(name)
+        if (player != null) {
+            playerManager.remove(player)
+        }
     }
 
     fun shutdownNpcs() {

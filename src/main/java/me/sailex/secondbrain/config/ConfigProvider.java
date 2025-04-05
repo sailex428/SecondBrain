@@ -78,12 +78,14 @@ public class ConfigProvider {
     }
 
     public void deleteNpcConfig(String name) {
+        List<NPCConfig> configsToRemove = new ArrayList<>();
         npcConfigs.forEach(config -> {
             if (config.getNpcName().equals(name)) {
-                npcConfigs.remove(config);
-                delete(config.getConfigName());
+                configsToRemove.add(config);
             }
         });
+        npcConfigs.removeAll(configsToRemove);
+        configsToRemove.forEach(config -> delete(config.getConfigName()));
     }
 
     public void addNpcConfig(NPCConfig npcConfig) {

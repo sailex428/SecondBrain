@@ -9,11 +9,8 @@ import net.minecraft.util.Identifier;
 
 import java.util.function.Consumer;
 
-import static me.sailex.secondbrain.SecondBrain.MOD_ID;
-
 public abstract class ConfigScreen<T extends Configurable> extends BaseUIModelScreen<FlowLayout> {
 
-    private static final Identifier ID = Identifier.of(MOD_ID, "config");
     protected final ClientNetworkManager networkManager;
     protected final T config;
     protected final boolean isEdit;
@@ -21,9 +18,10 @@ public abstract class ConfigScreen<T extends Configurable> extends BaseUIModelSc
     protected ConfigScreen(
         ClientNetworkManager networkManager,
         T config,
-        boolean isEdit
+        boolean isEdit,
+        Identifier id
     ) {
-        super(FlowLayout.class, DataSource.asset(ID));
+        super(FlowLayout.class, DataSource.asset(id));
         this.networkManager = networkManager;
         this.config = config;
         this.isEdit = isEdit;

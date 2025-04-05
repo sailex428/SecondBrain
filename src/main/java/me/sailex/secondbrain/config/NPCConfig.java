@@ -128,6 +128,10 @@ public class NPCConfig implements Configurable {
 		return uuid;
 	}
 
+	public void setNpcName(String npcName) {
+		this.npcName = npcName;
+	}
+
 	@Override
 	public String getConfigName() {
 		return npcName.toLowerCase();
@@ -154,4 +158,11 @@ public class NPCConfig implements Configurable {
 				",openaiApiKey=" + openaiApiKey +
 				",llmDefaultPrompt=" + llmDefaultPrompt + "}";
 	}
+
+	//name for fields for npc config screen
+	public static final String NPC_NAME = "Name of the NPC";
+	public static final String LLM_DEFAULT_PROMPT = "Default Prompt/Instruction";
+	public static final String LLM_TYPE = "Type of the LLM";
+	public static final String OLLAMA_URL = "Ollama URL";
+	public static final String OPENAI_API_KEY = "OpenAI API Key";
 }

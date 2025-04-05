@@ -58,4 +58,18 @@ public class BaseConfig implements Configurable {
             Endec.INT.fieldOf("chunkExpiryTime", BaseConfig::getChunkExpiryTime),
             BaseConfig::new
     );
+
+    @Override
+    public String toString() {
+        return "BaseConfig{" +
+                "llmTimeout=" + llmTimeout +
+                ",contextChunkRadius=" + contextChunkRadius +
+                ",contextVerticalScanRange=" + contextVerticalScanRange +
+                ",chunkExpiryTime=" + chunkExpiryTime + "}";
+    }
+
+    public static final String LLM_TIMEOUT_KEY = "LLM Timeout";
+    public static final String CONTEXT_CHUNK_RADIUS_KEY = "Chunk Radius";
+    public static final String CONTEXT_VERTICAL_RANGE_KEY = "Vertical Scan Range";
+    public static final String CHUNK_EXPIRY_TIME_KEY = "Chunk Expiry Time";
 }
