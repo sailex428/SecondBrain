@@ -64,6 +64,7 @@ public class SecondBrainScreen extends BaseUIModelScreen<FlowLayout> {
                                     } else {
                                         networkManager.sendPacket(new AddNpcPacket(config, false));
                                     }
+                                    close();
                                 }),
 
                                 Components.button(Text.of("edit"), button ->
