@@ -6,7 +6,9 @@ import io.wispforest.owo.ui.component.Components;
 import io.wispforest.owo.ui.container.Containers;
 import io.wispforest.owo.ui.container.FlowLayout;
 
+import io.wispforest.owo.ui.core.Insets;
 import io.wispforest.owo.ui.core.Sizing;
+import io.wispforest.owo.ui.core.Surface;
 import me.sailex.secondbrain.client.networking.ClientNetworkManager;
 import me.sailex.secondbrain.config.BaseConfig;
 import me.sailex.secondbrain.config.NPCConfig;
@@ -54,29 +56,29 @@ public class SecondBrainScreen extends BaseUIModelScreen<FlowLayout> {
     private void addNpcComponent(FlowLayout panelComponent, NPCConfig config) {
         panelComponent.child(Containers.verticalFlow(Sizing.content(), Sizing.content())
                 .children(List.of(
-                        Components.label(Text.of(config.getNpcName())),
+                    Components.label(Text.of(config.getNpcName())),
 
-                        Containers.horizontalFlow(Sizing.content(), Sizing.content()).children(List.of(
+                    Containers.horizontalFlow(Sizing.content(), Sizing.content()).children(List.of(
 
-                                Components.button(isActiveText(config), button -> {
-                                    if (config.isActive()) {
-                                        networkManager.sendPacket(new DeleteNpcPacket(config.getNpcName(), false));
-                                    } else {
-                                        networkManager.sendPacket(new AddNpcPacket(config, false));
-                                    }
-                                    close();
-                                }),
+                            Components.button(isActiveText(config), button -> {
+                                if (config.isActive()) {
+                                    networkManager.sendPacket(new DeleteNpcPacket(config.getNpcName(), false));
+                                } else {
+                                    networkManager.sendPacket(new AddNpcPacket(config, false));
+                                }
+                                close();
+                            }),
 
-                                Components.button(Text.of("edit"), button ->
-                                        client.setScreen(new NPCConfigScreen(networkManager, config, true))
-                                ),
+                            Components.button(Text.of("edit"), button ->
+                                    client.setScreen(new NPCConfigScreen(networkManager, config, true))
+                            ),
 
-                                Components.button(Text.of("delete"), button -> {
-                                    networkManager.sendPacket(new DeleteNpcPacket(config.getNpcName(), true));
-                                    close();
-                                })
-                        ))
-                ))
+                            Components.button(Text.of("delete"), button -> {
+                                networkManager.sendPacket(new DeleteNpcPacket(config.getNpcName(), true));
+                                close();
+                            })
+                    )).gap(2)
+                )).surface(Surface.DARK_PANEL).padding(Insets.of(10))
         );
     }
 
