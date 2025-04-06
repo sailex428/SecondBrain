@@ -81,12 +81,10 @@ class NPCFactory(
             npcToRemove.eventHandler.stopService()
             npcToRemove.modeController.setAllIsOn(false)
             npcToRemove.npcController.cancelActions()
-            nameToNpc.remove(name)
             npcToRemove.config.isActive = false
+            nameToNpc.remove(name)
 
             LogUtil.info("Removed NPC with name: $name")
-        } else {
-            LogUtil.error("Could not find npc with name $name")
         }
     }
 
