@@ -92,7 +92,7 @@ ehthumbs_vista.db
 # Dump file
 *.stackdump
 
-# Folder modConfig file
+# Folder NPCConfig file
 [Dd]esktop.ini
 
 # Recycle Bin used on file shares
@@ -111,7 +111,7 @@ $RECYCLE.BIN/
 .gradle
 build/
 
-# Ignore Gradle GUI modConfig
+# Ignore Gradle GUI NPCConfig
 gradle-app.setting
 
 # Cache of project

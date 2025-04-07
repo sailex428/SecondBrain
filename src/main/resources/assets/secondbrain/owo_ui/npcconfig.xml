@@ -1,0 +1,96 @@
+<owo-ui xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/wisp-forest/owo-lib/1.20/owo-ui.xsd">
+    <components>
+        <flow-layout direction="vertical">
+            <children>
+                <flow-layout direction="vertical" id="panel">
+                    <children>
+
+                        <flow-layout direction="vertical">
+                            <children>
+
+                                <flow-layout direction="vertical">
+                                    <children>
+                                        <label id="npcName-label">
+                                            <shadow>true</shadow>
+                                        </label>
+                                        <text-area id="npcName">
+                                            <sizing>
+                                                <horizontal method="fill">35</horizontal>
+                                                <vertical method="fill">7</vertical>
+                                            </sizing>
+                                        </text-area>
+                                    </children>
+                                </flow-layout>
+
+
+                                <flow-layout direction="vertical">
+                                    <children>
+                                        <label id="llmDefaultPrompt-label">
+                                            <shadow>true</shadow>
+                                        </label>
+                                        <text-area id="llmDefaultPrompt">
+                                            <sizing>
+                                                <horizontal method="fill">35</horizontal>
+                                                <vertical method="fill">25</vertical>
+                                            </sizing>
+                                        </text-area>
+                                    </children>
+                                </flow-layout>
+
+                                <flow-layout direction="vertical">
+                                    <children>
+                                        <label id="llmType-label">
+                                            <shadow>true</shadow>
+                                        </label>
+                                        <dropdown id="llmType">
+                                            <sizing>
+                                                <horizontal method="fill">35</horizontal>
+                                                <vertical method="fill">14</vertical>
+                                            </sizing>
+                                        </dropdown>
+                                    </children>
+                                </flow-layout>
+
+                                <flow-layout direction="vertical" id="llmInfo">
+                                    <children>
+                                    </children>
+                                </flow-layout>
+
+                                <button id="save">
+                                    <text>Save</text>
+                                </button>
+
+                            </children>
+
+                            <margins>
+                                <all>11</all>
+                            </margins>
+
+                            <gap>7</gap>
+
+                            <horizontal-alignment>center</horizontal-alignment>
+                            <vertical-alignment>center</vertical-alignment>
+
+                        </flow-layout>
+
+                    </children>
+
+                    <horizontal-alignment>center</horizontal-alignment>
+                    <vertical-alignment>center</vertical-alignment>
+
+                    <surface>
+                        <panel dark="true"/>
+                    </surface>
+                </flow-layout>
+            </children>
+
+            <horizontal-alignment>center</horizontal-alignment>
+            <vertical-alignment>center</vertical-alignment>
+
+            <surface>
+                <vanilla-translucent/>
+            </surface>
+        </flow-layout>
+    </components>
+</owo-ui>

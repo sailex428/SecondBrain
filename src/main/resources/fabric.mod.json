@@ -1,20 +1,24 @@
 {
   "schemaVersion": 1,
-  "id": "second-brain",
+  "id": "secondbrain",
   "version": "${version}",
   "name": "SecondBrain",
   "description": "A Minecraft NPC thats controlled by a LLM.",
   "authors": ["sailex428"],
   "contact": {},
+  "icon": "assets/secondbrain/icon.png",
   "license": "LGPL-3.0",
-  "environment": "server",
+  "environment": "*",
   "entrypoints": {
     "main": [
-      "me.sailex.ai.npc.SecondBrain"
+      "me.sailex.secondbrain.SecondBrain"
+    ],
+    "client": [
+      "me.sailex.secondbrain.client.SecondBrainClient"
     ]
   },
   "mixins": [
-    "me.sailex.ai.npc.mixins.json"
+    "me.sailex.secondbrain.mixins.json"
   ],
   "depends": {
     "fabric-language-kotlin": ">=1.13.0+kotlin.2.1.0",
