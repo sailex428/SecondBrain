@@ -64,7 +64,7 @@ public class SecondBrainScreen extends BaseUIModelScreen<FlowLayout> {
                                 if (config.isActive()) {
                                     networkManager.sendPacket(new DeleteNpcPacket(config.getNpcName(), false));
                                 } else {
-                                    networkManager.sendPacket(new AddNpcPacket(config, false));
+                                    networkManager.sendPacket(new AddNpcPacket(config));
                                 }
                                 close();
                             }),

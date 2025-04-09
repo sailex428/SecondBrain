@@ -64,7 +64,7 @@ public class NPCConfigScreen extends ConfigScreen<NPCConfig> {
                 networkManager.sendPacket(new UpdateNpcConfigPacket(config));
                 close();
             } else {
-                networkManager.sendPacket(new AddNpcPacket(config, true));
+                networkManager.sendPacket(new AddNpcPacket(config));
                 close();
             }
         });
