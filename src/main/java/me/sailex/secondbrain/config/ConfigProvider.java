@@ -95,10 +95,16 @@ public class ConfigProvider {
 
     public void updateNpcConfig(NPCConfig updatedConfig) {
         npcConfigs.forEach(config -> {
-            if (config.getUuid().equals(updatedConfig.getUuid())) {
+            if (config.getNpcName().equals(updatedConfig.getNpcName())) {
                 npcConfigs.set(npcConfigs.indexOf(config), updatedConfig);
             }
         });
+    }
+
+    public Optional<NPCConfig> getNpcConfig(String npcName) {
+        return npcConfigs.stream()
+                .filter(config -> config.getNpcName().equals(npcName))
+                .findFirst();
     }
 
     public List<NPCConfig> getNpcConfigs() {

@@ -38,13 +38,13 @@ class NPCFactory(
         private set
 
     fun createNpc(config: NPCConfig, source: PlayerEntity) {
+        checkLimit()
         val name = config.npcName
         checkNpcName(name)
 
         npcSpawner.spawn(source, name)
         val latch = CountDownLatch(1)
         npcSpawner.checkPlayerAvailable(name, latch)
-
         Thread {
             try {
                 //player spawning is nonblocking so we need to wait here until its avail
@@ -53,27 +53,22 @@ class NPCFactory(
                 if (!npcWasCreated || npcEntity == null) {
                     throw NPCCreationException("NPCEntity with name: $name could not be spawned.")
                 }
-                createNpc(npcEntity, config)
+                val npc = createNpcInstance(npcEntity, config)
+                nameToNpc[config.npcName] = npc
+                handleInitMessage(npc.eventHandler)
             } catch (e: Exception) {
                 Thread.currentThread().interrupt()
-                LogUtil.error(e.message)
+                throw NPCCreationException("Failed to create NPC: " + e.message)
             }
         }.start()
-        config.isActive = true
-    }
 
-    private fun createNpc(
-        npcEntity: ServerPlayerEntity,
-        config: NPCConfig,
-    ) {
-        val npc = createNpcInstance(npcEntity, config)
-        handleInitMessage(npc.eventHandler)
-        nameToNpc[config.npcName] = npc
-
+        if (configProvider.getNpcConfig(name).isEmpty) {
+            configProvider.addNpcConfig(config)
+        }
         LogUtil.info(("Created NPC with name: ${config.npcName}"))
     }
 
-    fun deleteNpc(name: String, playerManager: PlayerManager) {
+    fun removeNpc(name: String, playerManager: PlayerManager) {
         val npcToRemove = nameToNpc[name]
         if (npcToRemove != null) {
             npcSpawner.despawn(name, playerManager)
@@ -81,11 +76,15 @@ class NPCFactory(
             npcToRemove.eventHandler.stopService()
             npcToRemove.modeController.setAllIsOn(false)
             npcToRemove.npcController.cancelActions()
-            npcToRemove.config.isActive = false
             nameToNpc.remove(name)
-
-            LogUtil.info("Removed NPC with name: $name")
         }
+    }
+
+    fun deleteNpc(name: String, playerManager: PlayerManager) {
+        removeNpc(name, playerManager)
+        configProvider.deleteNpcConfig(name)
+
+        LogUtil.info("Deleted NPC with name: $name")
     }
 
     fun shutdownNpcs() {
@@ -172,8 +171,14 @@ class NPCFactory(
     }
 
     fun checkNpcName(npcName: String) {
-        if (nameToNpc.containsKey(npcName)) {
+        if (nameToNpc.containsKey(npcName) || configProvider.getNpcConfig(npcName).isPresent) {
             throw NPCCreationException("A NPC with the name '$npcName' already exists.")
+        }
+    }
+
+    fun checkLimit() {
+        if (nameToNpc.size == 3) {
+            throw NPCCreationException("Currently there are no more than 3 parallel running NPCs supported!")
         }
     }
 

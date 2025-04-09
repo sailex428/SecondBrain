@@ -31,17 +31,12 @@ public class OllamaClient extends ALLMClient<Tools.ToolSpecification> implements
 	private final ExecutorService service;
 	private final String model;
 
-	/**
-	 * Constructor for OllamaClient.
-	 *
-	 * @param url  the ollama url
-	 */
 	public OllamaClient(String url, String customModelName, String defaultPrompt, int timeout) {
 		this.ollamaAPI = new OllamaAPI(url);
 		this.model = customModelName;
 		checkServiceIsReachable();
 		this.service = Executors.newFixedThreadPool(3);
-		ollamaAPI.setVerbose(true);
+		ollamaAPI.setVerbose(false);
 		ollamaAPI.setMaxChatToolCallRetries(4);
 		ollamaAPI.setRequestTimeoutSeconds(timeout);
 		initModels(defaultPrompt);
@@ -179,7 +174,7 @@ public class OllamaClient extends ALLMClient<Tools.ToolSpecification> implements
 	@Override
 	public void stopService() {
         try {
-            this.ollamaAPI.deleteModel(model, false);
+            removeModel();
         } catch (Exception e) {
             LogUtil.error("Could not delete model: " + e.getMessage());
         }

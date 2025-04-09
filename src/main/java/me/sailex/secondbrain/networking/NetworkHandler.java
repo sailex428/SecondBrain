@@ -6,9 +6,11 @@ import me.sailex.secondbrain.common.NPCFactory;
 import me.sailex.secondbrain.config.BaseConfig;
 import me.sailex.secondbrain.config.ConfigProvider;
 import me.sailex.secondbrain.config.NPCConfig;
+import me.sailex.secondbrain.exception.NPCCreationException;
 import me.sailex.secondbrain.networking.packet.*;
 import me.sailex.secondbrain.util.LogUtil;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.server.PlayerManager;
 import net.minecraft.util.Identifier;
 
 import static me.sailex.secondbrain.SecondBrain.MOD_ID;
@@ -72,12 +74,12 @@ public class NetworkHandler {
 
     private void registerAddNpc() {
         CHANNEL.registerServerbound(AddNpcPacket.class, (addNpcPacket, clientAccess) -> {
-            if (isPlayerAuthorized(clientAccess)) {
-                npcFactory.createNpc(addNpcPacket.npcConfig(), clientAccess.player());
-                if (addNpcPacket.isNewConfig()) {
-                    configProvider.addNpcConfig(addNpcPacket.npcConfig());
+            try {
+                if (isPlayerAuthorized(clientAccess)) {
+                    npcFactory.createNpc(addNpcPacket.npcConfig(), clientAccess.player());
                 }
-                LogUtil.info("Added npc: " + addNpcPacket, true);
+            } catch (NPCCreationException e) {
+                LogUtil.error(e.getMessage());
             }
         });
     }
@@ -85,11 +87,14 @@ public class NetworkHandler {
     private void registerDeleteNpc() {
         CHANNEL.registerServerbound(DeleteNpcPacket.class, (configPacket, clientAccess) -> {
             if (isPlayerAuthorized(clientAccess)) {
-                npcFactory.deleteNpc(configPacket.npcName(), clientAccess.player().getServer().getPlayerManager());
-                if (configPacket.isDeleteConfig()) {
-                    configProvider.deleteNpcConfig(configPacket.npcName());
+                PlayerManager playerManager = clientAccess.player().getServer().getPlayerManager();
+                String npcName = configPacket.npcName();
+
+                if (configPacket.isDelete()) {
+                    npcFactory.deleteNpc(npcName, playerManager);
+                } else {
+                    npcFactory.removeNpc(npcName, playerManager);
                 }
-                LogUtil.info("Deleted npc with uuid: " + configPacket, true);
             }
         });
     }
