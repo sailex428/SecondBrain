@@ -41,7 +41,7 @@ public class SecondBrainScreen extends BaseUIModelScreen<FlowLayout> {
 
     @Override
     protected void build(FlowLayout rootComponent) {
-        FlowLayout panelComponent = rootComponent.childById(FlowLayout.class, "npc");
+        FlowLayout panelComponent = rootComponent.childById(FlowLayout.class, "npc").gap(1);
         npcConfig.forEach(config -> addNpcComponent(panelComponent, config));
 
         rootComponent.childById(ButtonComponent.class, "add_npc").onPress(button ->
