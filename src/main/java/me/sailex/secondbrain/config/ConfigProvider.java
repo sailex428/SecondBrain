@@ -69,7 +69,7 @@ public class ConfigProvider {
     }
 
     private void delete(String configName) {
-        Path configPath = CONFIG_DIR.resolve(configName + JSON_EXTENSION);
+        Path configPath = NPC_CONFIG_DIR.resolve(configName + JSON_EXTENSION);
         try {
             Files.deleteIfExists(configPath);
         } catch (IOException e) {
