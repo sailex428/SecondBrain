@@ -39,7 +39,7 @@ class NPCFactory(
 
     fun createNpc(config: NPCConfig, source: PlayerEntity) {
         checkLimit()
-        val name = config.npcName
+        var name = config.npcName
         checkNpcName(name)
 
         npcSpawner.spawn(source, name)
@@ -50,11 +50,12 @@ class NPCFactory(
                 //player spawning is nonblocking so we need to wait here until its avail
                 val npcWasCreated = latch.await(3, TimeUnit.SECONDS)
                 val npcEntity = source.server?.playerManager?.getPlayer(name)
+                name = npcEntity?.name?.string //FIXME: npcSpawner should create npc with same casing as typed in
                 if (!npcWasCreated || npcEntity == null) {
                     throw NPCCreationException("NPCEntity with name: $name could not be spawned.")
                 }
                 val npc = createNpcInstance(npcEntity, config)
-                nameToNpc[config.npcName] = npc
+                nameToNpc[name] = npc
                 handleInitMessage(npc.eventHandler)
             } catch (e: Exception) {
                 Thread.currentThread().interrupt()
