@@ -36,7 +36,7 @@ class NPCEventHandler<T>(
             val formattedPrompt = PromptFormatter.format(prompt, context)
 
             val response = llmClient.callFunctions(formattedPrompt, relevantFunctions)
-            controller.chat(response.finalResponse())
+            controller.addGoal("chat") { controller.chat(response.finalResponse()) }
             history.add(response.chatHistory())
         }, executorService)
             .exceptionally {
