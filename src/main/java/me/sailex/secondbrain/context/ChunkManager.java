@@ -47,7 +47,7 @@ public class ChunkManager {
                 updateAllBlocks();
                 updateNearbyBlocks();
             }
-        }, 1, chunkExpiryTime, TimeUnit.SECONDS);
+        }, 0, chunkExpiryTime, TimeUnit.SECONDS);
     }
 
     public List<BlockData> getBlocksOfType(String type, int numberOfBlocks) {
