@@ -37,7 +37,7 @@ public class ContextProvider {
 					chunkManager.getNearbyBlocks(),
 					getNearbyEntities()
 			);
-			chunkManager.getNearbyBlocks().forEach(blockData -> LogUtil.debugInChat(blockData.toString()));
+//			chunkManager.getNearbyBlocks().forEach(blockData -> LogUtil.debugInChat(blockData.toString()));
 			this.cachedContext = context;
 			return context;
 		}

@@ -1,5 +1,6 @@
 package me.sailex.secondbrain.context;
 
+import lombok.Getter;
 import me.sailex.secondbrain.config.BaseConfig;
 import me.sailex.secondbrain.model.context.BlockData;
 import me.sailex.secondbrain.util.LogUtil;
@@ -9,8 +10,11 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
+import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.chunk.WorldChunk;
 
 import java.util.*;
+import java.util.concurrent.*;
 
 import static me.sailex.secondbrain.util.MCDataUtil.getMiningLevel;
 import static me.sailex.secondbrain.util.MCDataUtil.getToolNeeded;
@@ -20,41 +24,36 @@ public class ChunkManager {
     private final int verticalScanRange;
     private final int chunkRadius;
 
-    private record ChunkData(Set<BlockData> blocks, long timestamp) {}
-
     private final ServerPlayerEntity npcEntity;
-    private final Map<ChunkPos, ChunkData> chunks = new HashMap<>();
-    private final long chunkExpiryTime;
+    private final ScheduledExecutorService threadPool;
+    private final List<BlockData> currentLoadedBlocks;
+
+    @Getter
+    private final List<BlockData> nearbyBlocks = new ArrayList<>();
+
 
     public ChunkManager(ServerPlayerEntity npcEntity, BaseConfig config) {
         this.npcEntity = npcEntity;
         this.verticalScanRange = config.getContextVerticalScanRange();
         this.chunkRadius = config.getContextChunkRadius();
-        this.chunkExpiryTime = config.getChunkExpiryTime();
+        this.currentLoadedBlocks = new ArrayList<>();
+        this.threadPool = Executors.newSingleThreadScheduledExecutor();
+        scheduleRefreshBlocks(config.getChunkExpiryTime());
     }
 
-    /**
-     * Get block data of every block type nearest block to the npc
-     * @return block data of all nearest blocks
-     */
-    public List<BlockData> getNearbyBlocks() {
-        List<BlockData> allBlocks = getAllBlocks();
-        Map<String, BlockData> nearestBlocks = new HashMap<>();
-
-        for (BlockData block : allBlocks) {
-            String blockType = block.type();
-            if (!nearestBlocks.containsKey(blockType) ||
-                    isCloser(block.position(), nearestBlocks.get(blockType).position())) {
-                nearestBlocks.put(blockType, block);
+    private void scheduleRefreshBlocks(int chunkExpiryTime) {
+        threadPool.scheduleAtFixedRate(() -> {
+            synchronized (this) {
+                updateAllBlocks();
+                updateNearbyBlocks();
             }
-        }
-        return new ArrayList<>(nearestBlocks.values());
+        }, 1, chunkExpiryTime, TimeUnit.SECONDS);
     }
 
     public List<BlockData> getBlocksOfType(String type, int numberOfBlocks) {
         List<BlockData> blocksFound = new ArrayList<>();
 
-        for (BlockData block : getAllBlocks()) {
+        for (BlockData block : currentLoadedBlocks) {
             if (blocksFound.size() >= numberOfBlocks) {
                 break;
             } else if (type.equals(block.type())) {
@@ -69,86 +68,74 @@ public class ChunkManager {
     }
 
     /**
-     * Get all blocks in the chunks around the NPC
-     * - Updates data of each chunk after expiry time
-     * @return list of all block data
+     * Updates block data of every block type nearest block to the npc
      */
-    public List<BlockData> getAllBlocks() {
+    private void updateNearbyBlocks() {
+        Map<String, BlockData> nearestBlocks = new HashMap<>();
+
+        for (BlockData block : currentLoadedBlocks) {
+            String blockType = block.type();
+            if (!nearestBlocks.containsKey(blockType) ||
+                    isCloser(block.position(), nearestBlocks.get(blockType).position())) {
+                nearestBlocks.put(blockType, block);
+            }
+        }
+        this.nearbyBlocks.addAll(nearestBlocks.values());
+    }
+
+    /**
+     * Updates all blocks in the chunks around the NPC
+     */
+    private void updateAllBlocks() {
+        currentLoadedBlocks.clear();
         World world = npcEntity.getWorld();
         ChunkPos centerChunk = npcEntity.getChunkPos();
-        Set<ChunkPos> currentChunks = new HashSet<>();
-        List<BlockData> allBlocks = new ArrayList<>();
-
-        long currentTime = System.currentTimeMillis();
 
         for (int x = -chunkRadius; x <= chunkRadius; x++) {
             for (int z = -chunkRadius; z <= chunkRadius; z++) {
                 ChunkPos pos = new ChunkPos(centerChunk.x + x, centerChunk.z + z);
-                currentChunks.add(pos);
 
                 boolean isLoaded = world.isChunkLoaded(pos.x, pos.z);
-                ChunkData chunkData = chunks.get(pos);
-                boolean isExpired = chunkData != null &&
-                        (currentTime - chunkData.timestamp() > chunkExpiryTime);
 
-                if (isLoaded && (chunkData == null || isExpired)) {
-                    scanChunk(pos, currentTime);
-                }
-
-                if (isLoaded && chunks.containsKey(pos)) {
-                    allBlocks.addAll(chunks.get(pos).blocks());
+                if (isLoaded) {
+                    currentLoadedBlocks.addAll(scanChunk(pos));
                 }
             }
         }
-        removeChunks(world, currentChunks);
-        return allBlocks;
     }
 
-    // Remove chunks that are out of range or unloaded
-    private void removeChunks(World world, Set<ChunkPos> currentChunks) {
-        Set<ChunkPos> toRemove = new HashSet<>();
-        for (ChunkPos pos : chunks.keySet()) {
-            if (!currentChunks.contains(pos) || !world.isChunkLoaded(pos.x, pos.z)) {
-                toRemove.add(pos);
-            }
-        }
-
-        if (!toRemove.isEmpty()) {
-            toRemove.forEach(chunks::remove);
-        }
-    }
-
-    private void scanChunk(ChunkPos chunk, long timestamp) {
+    private List<BlockData> scanChunk(ChunkPos chunk) {
         World world = npcEntity.getWorld();
         BlockPos.Mutable pos = new BlockPos.Mutable();
         int baseY = Math.max(0, npcEntity.getBlockPos().getY() - verticalScanRange);
         int maxY = Math.min(world.getHeight(), npcEntity.getBlockPos().getY() + verticalScanRange);
 
-        Set<BlockData> blocks = new HashSet<>();
+        List<BlockData> blocks = new ArrayList<>();
 
         for (int x = 0; x < 16; x++) {
             for (int z = 0; z < 16; z++) {
                 for (int y = baseY; y < maxY; y++) {
                     pos.set(chunk.getStartX() + x, y, chunk.getStartZ() + z);
+                    WorldChunk currentChunk = world.getWorldChunk(pos);
 
-                    BlockState blockState = world.getBlockState(pos);
+                    BlockState blockState = currentChunk.getBlockState(pos);
                     String blockType = blockState.getBlock().getName().getString().toLowerCase();
 
                     if (blockType.contains("air")) continue;
 
-                    if (isAccessible(pos, world)) {
+                    if (isAccessible(pos, currentChunk)) {
                         blocks.add(new BlockData(blockType, pos.toImmutable(),
                                 getMiningLevel(blockState), getToolNeeded(blockState)));
                     }
                 }
             }
         }
-        chunks.put(chunk, new ChunkData(blocks, timestamp));
+        return blocks;
     }
 
-    private boolean isAccessible(BlockPos pos, World world) {
+    private boolean isAccessible(BlockPos pos, WorldChunk chunk) {
         for (Direction dir : Direction.values()) {
-            if (world.getBlockState(pos.offset(dir)).isAir()) {
+            if (chunk.getBlockState(pos.offset(dir)).isAir()) {
                 return true;
             }
         }
@@ -159,9 +146,5 @@ public class ChunkManager {
         double dist1 = npcEntity.getBlockPos().getSquaredDistance(pos1);
         double dist2 = npcEntity.getBlockPos().getSquaredDistance(pos2);
         return dist1 < dist2;
-    }
-
-    public void clearContext() {
-        chunks.clear();
     }
 }
