@@ -73,13 +73,13 @@ public class NetworkHandler {
     }
 
     private void registerAddNpc() {
-        CHANNEL.registerServerbound(AddNpcPacket.class, (addNpcPacket, clientAccess) -> {
-            try {
-                if (isPlayerAuthorized(clientAccess)) {
-                    npcFactory.createNpc(addNpcPacket.npcConfig(), clientAccess.player());
+        CHANNEL.registerServerbound(CreateNpcPacket.class, (createNpcPacket, clientAccess) -> {
+            if (isPlayerAuthorized(clientAccess)) {
+                try {
+                    npcFactory.createNpc(createNpcPacket.npcConfig(), clientAccess.player());
+                } catch (NPCCreationException e) {
+                    LogUtil.error(e.getMessage());
                 }
-            } catch (NPCCreationException e) {
-                LogUtil.error(e.getMessage());
             }
         });
     }
@@ -104,7 +104,7 @@ public class NetworkHandler {
             builder.register(ConfigPacket.ENDEC, ConfigPacket.class);
             builder.register(BaseConfig.ENDEC, BaseConfig.class);
             builder.register(NPCConfig.ENDEC, NPCConfig.class);
-            builder.register(AddNpcPacket.ENDEC, AddNpcPacket.class);
+            builder.register(CreateNpcPacket.ENDEC, CreateNpcPacket.class);
             builder.register(DeleteNpcPacket.ENDEC, DeleteNpcPacket.class);
             builder.register(UpdateNpcConfigPacket.ENDEC, UpdateNpcConfigPacket.class);
             builder.register(UpdateBaseConfigPacket.ENDEC, UpdateBaseConfigPacket.class);

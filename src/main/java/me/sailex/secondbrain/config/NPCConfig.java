@@ -144,7 +144,7 @@ public class NPCConfig implements Configurable {
 				",isActive=" + isActive +
 				",llmType=" + llmType +
 				",ollamaUrl=" + ollamaUrl +
-				",openaiApiKey=" + openaiApiKey +
+				",openaiApiKey=***" +
 				",llmDefaultPrompt=" + llmDefaultPrompt + "}";
 	}
 

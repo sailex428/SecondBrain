@@ -90,7 +90,6 @@ public class ConfigProvider {
 
     public void addNpcConfig(NPCConfig npcConfig) {
         npcConfigs.add(npcConfig);
-        save(NPC_CONFIG_DIR, npcConfig);
     }
 
     public void updateNpcConfig(NPCConfig updatedConfig) {

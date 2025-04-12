@@ -12,7 +12,7 @@ import io.wispforest.owo.ui.core.Surface;
 import me.sailex.secondbrain.client.networking.ClientNetworkManager;
 import me.sailex.secondbrain.config.BaseConfig;
 import me.sailex.secondbrain.config.NPCConfig;
-import me.sailex.secondbrain.networking.packet.AddNpcPacket;
+import me.sailex.secondbrain.networking.packet.CreateNpcPacket;
 import me.sailex.secondbrain.networking.packet.DeleteNpcPacket;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
@@ -64,7 +64,7 @@ public class SecondBrainScreen extends BaseUIModelScreen<FlowLayout> {
                                 if (config.isActive()) {
                                     networkManager.sendPacket(new DeleteNpcPacket(config.getNpcName(), false));
                                 } else {
-                                    networkManager.sendPacket(new AddNpcPacket(config));
+                                    networkManager.sendPacket(new CreateNpcPacket(config));
                                 }
                                 close();
                             }),

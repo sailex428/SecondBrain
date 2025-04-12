@@ -63,29 +63,32 @@ class NPCFactory(
             }
         }.start()
 
-        if (configProvider.getNpcConfig(name).isEmpty) {
+        val matchingConfig = configProvider.getNpcConfig(name)
+        if (matchingConfig.isEmpty) {
             configProvider.addNpcConfig(config)
+        } else {
+            matchingConfig.get().isActive = true
         }
-        LogUtil.info(("Created NPC with name: ${config.npcName}"))
+        LogUtil.info(("Added NPC with name: ${config.npcName}"))
     }
 
     fun removeNpc(name: String, playerManager: PlayerManager) {
         val npcToRemove = nameToNpc[name]
         if (npcToRemove != null) {
+            configProvider.getNpcConfig(name).ifPresent { it.isActive = false }
             npcSpawner.despawn(name, playerManager)
             npcToRemove.llmClient.stopService()
             npcToRemove.eventHandler.stopService()
             npcToRemove.modeController.setAllIsOn(false)
             npcToRemove.npcController.cancelActions()
             nameToNpc.remove(name)
+            LogUtil.info("Removed NPC with name: $name")
         }
     }
 
     fun deleteNpc(name: String, playerManager: PlayerManager) {
         removeNpc(name, playerManager)
         configProvider.deleteNpcConfig(name)
-
-        LogUtil.info("Deleted NPC with name: $name")
     }
 
     fun shutdownNpcs() {
@@ -172,7 +175,7 @@ class NPCFactory(
     }
 
     fun checkNpcName(npcName: String) {
-        if (nameToNpc.containsKey(npcName) || configProvider.getNpcConfig(npcName).isPresent) {
+        if (nameToNpc.containsKey(npcName)) {
             throw NPCCreationException("A NPC with the name '$npcName' already exists.")
         }
     }

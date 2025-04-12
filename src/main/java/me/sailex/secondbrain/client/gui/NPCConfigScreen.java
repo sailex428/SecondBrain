@@ -10,7 +10,7 @@ import io.wispforest.owo.ui.core.Sizing;
 import me.sailex.secondbrain.client.networking.ClientNetworkManager;
 import me.sailex.secondbrain.config.NPCConfig;
 import me.sailex.secondbrain.llm.LLMType;
-import me.sailex.secondbrain.networking.packet.AddNpcPacket;
+import me.sailex.secondbrain.networking.packet.CreateNpcPacket;
 import me.sailex.secondbrain.networking.packet.UpdateNpcConfigPacket;
 
 import net.minecraft.text.Text;
@@ -64,7 +64,7 @@ public class NPCConfigScreen extends ConfigScreen<NPCConfig> {
                 networkManager.sendPacket(new UpdateNpcConfigPacket(config));
                 close();
             } else {
-                networkManager.sendPacket(new AddNpcPacket(config));
+                networkManager.sendPacket(new CreateNpcPacket(config));
                 close();
             }
         });
