@@ -62,8 +62,12 @@ public class LogUtil {
 	}
 
 	private static void log(MutableText formattedMessage) {
-		SecondBrain.server.getPlayerManager().getPlayerList().stream()
-				.filter(player -> player.hasPermissionLevel(2))
-				.forEach(player -> player.sendMessage(formattedMessage, false));
+		if (SecondBrain.server != null) {
+			SecondBrain.server.getPlayerManager().getPlayerList().stream()
+					.filter(player -> player.hasPermissionLevel(2))
+					.forEach(player -> player.sendMessage(formattedMessage, false));
+		} else {
+			LOGGER.error("{}server is null - cant log to ingame chat!", buildPrefix().getString());
+		}
 	}
 }
