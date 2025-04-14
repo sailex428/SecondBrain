@@ -1,7 +1,8 @@
 package me.sailex.secondbrain.common;
 
 import carpet.patches.EntityPlayerMPFake;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import me.sailex.secondbrain.exception.NPCCreationException;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.PlayerManager;
@@ -20,7 +21,7 @@ public class NPCSpawner {
                 player.getPos(), player.getYaw(), player.getPitch(),
                 dimensionKey, GameMode.SURVIVAL, false);
         if (!isSuccessful) {
-            throw new NullPointerException("Player profile doesn't exist!");
+            throw new NPCCreationException("Player profile doesn't exist!");
         }
     }
 
@@ -32,8 +33,9 @@ public class NPCSpawner {
     }
 
     public void checkPlayerAvailable(String npcName, CountDownLatch latch) {
-        ServerTickEvents.END_SERVER_TICK.register(server -> {
-            if (server.getPlayerManager().getPlayer(npcName) != null) {
+        ServerEntityEvents.ENTITY_LOAD.register((entity, world) -> {
+            if (entity instanceof ServerPlayerEntity
+                    && entity.getName().getString().equals(npcName)) {
                 latch.countDown();
             }
         });

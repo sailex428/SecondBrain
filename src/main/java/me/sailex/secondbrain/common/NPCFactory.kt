@@ -22,10 +22,13 @@ import me.sailex.secondbrain.mode.ModeController
 import me.sailex.secondbrain.mode.ModeInitializer
 import me.sailex.secondbrain.model.NPC
 import me.sailex.secondbrain.util.LogUtil
-import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.server.PlayerManager
 import net.minecraft.server.network.ServerPlayerEntity
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CountDownLatch
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 class NPCFactory(
@@ -33,11 +36,12 @@ class NPCFactory(
     private val repositoryFactory: RepositoryFactory
 ) {
     val npcSpawner = NPCSpawner()
-    val nameToNpc = mutableMapOf<String, NPC>()
+    val nameToNpc = ConcurrentHashMap<String, NPC>()
     var resourcesProvider: ResourcesProvider? = null
         private set
+    val executorService: ExecutorService = Executors.newSingleThreadExecutor()
 
-    fun createNpc(config: NPCConfig, source: PlayerEntity) {
+    fun createNpc(config: NPCConfig, source: ServerPlayerEntity) {
         checkLimit()
         var name = config.npcName
         checkNpcName(name)
@@ -45,29 +49,30 @@ class NPCFactory(
         npcSpawner.spawn(source, name)
         val latch = CountDownLatch(1)
         npcSpawner.checkPlayerAvailable(name, latch)
-        Thread {
-            try {
-                //player spawning is nonblocking so we need to wait here until its avail
-                val npcWasCreated = latch.await(3, TimeUnit.SECONDS)
-                val npcEntity = source.server?.playerManager?.getPlayer(name)
-                name = npcEntity?.name?.string //FIXME: npcSpawner should create npc with same casing as typed in
-                if (!npcWasCreated || npcEntity == null) {
-                    throw NPCCreationException("NPCEntity with name: $name could not be spawned.")
-                }
-                val npc = createNpcInstance(npcEntity, config)
-                nameToNpc[name] = npc
-                handleInitMessage(npc.eventHandler)
-            } catch (e: Exception) {
-                Thread.currentThread().interrupt()
-                throw NPCCreationException("Failed to create NPC: " + e.message)
-            }
-        }.start()
 
-        val matchingConfig = configProvider.getNpcConfig(name)
-        if (matchingConfig.isEmpty) {
-            configProvider.addNpcConfig(config)
-        } else {
-            matchingConfig.get().isActive = true
+        CompletableFuture.runAsync({
+            //player spawning runs async so we need to wait here until its avail
+            val npcWasCreated = latch.await(3, TimeUnit.SECONDS)
+            if (!npcWasCreated) {
+                throw NPCCreationException("NPCEntity with name $name could not be spawned within 3 seconds. Operation timed out.")
+            }
+            val npcEntity = source.server?.playerManager?.getPlayer(name)
+            if (npcEntity == null) {
+                throw NPCCreationException("NPCEntity with name: $name could not be spawned.")
+            }
+            name = npcEntity.name.string //FIXME: npcSpawner should create npc with same casing as typed in
+
+            val npc = createNpcInstance(npcEntity, config)
+            val matchingConfig = configProvider.getNpcConfig(name)
+            if (matchingConfig.isEmpty) {
+                configProvider.addNpcConfig(config)
+            } else {
+                matchingConfig.get().isActive = true
+            }
+            nameToNpc[name] = npc
+            handleInitMessage(npc.eventHandler)
+        }, executorService).exceptionally {
+            throw NPCCreationException("Failed to create NPC: " + it.message)
         }
         LogUtil.info(("Added NPC with name: ${config.npcName}"))
     }
