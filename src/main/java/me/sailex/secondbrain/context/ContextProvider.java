@@ -55,11 +55,11 @@ public class ContextProvider {
 		PlayerInventory inventory = npcEntity.getInventory();
 		return new InventoryData(
 				// armour
-				getItemsInRange(inventory, 0, 3),
+				getItemsInRange(inventory, 36, 39),
 				// main inventory
-				getItemsInRange(inventory, 4, 30),
+				getItemsInRange(inventory, 9, 35),
 				// hotbar
-				getItemsInRange(inventory, 31, 39),
+				getItemsInRange(inventory, 0, 8),
 				// off-hand
 				getItemsInRange(inventory, 40, 40)
 		);
@@ -91,7 +91,7 @@ public class ContextProvider {
 		entities.forEach(entity ->
 			nearbyEntities.add(new EntityData(entity.getId(), entity.getName().getString(), entity.isPlayer()))
 		);
-		return nearbyEntities.stream().distinct().toList();
+		return nearbyEntities.stream().toList();
 	}
 
 	public ChunkManager getChunkManager() {
