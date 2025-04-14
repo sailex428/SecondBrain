@@ -4,7 +4,6 @@ import java.util.*;
 
 import me.sailex.secondbrain.config.BaseConfig;
 import me.sailex.secondbrain.model.context.*;
-import me.sailex.secondbrain.util.LogUtil;
 import me.sailex.secondbrain.util.MCDataUtil;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerInventory;

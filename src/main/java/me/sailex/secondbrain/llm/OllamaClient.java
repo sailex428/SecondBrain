@@ -34,7 +34,7 @@ public class OllamaClient extends ALLMClient<Tools.ToolSpecification> implements
 	public OllamaClient(String url, String customModelName, String defaultPrompt, int timeout) {
 		this.ollamaAPI = new OllamaAPI(url);
 		this.model = customModelName;
-		checkServiceIsReachable();
+		checkServiceIsReachable(url);
 		this.service = Executors.newFixedThreadPool(3);
 		ollamaAPI.setVerbose(false);
 		ollamaAPI.setMaxChatToolCallRetries(4);
@@ -94,16 +94,14 @@ public class OllamaClient extends ALLMClient<Tools.ToolSpecification> implements
 	 * @throws LLMServiceException if server is not reachable
 	 */
 	@Override
-	public void checkServiceIsReachable() {
+	public void checkServiceIsReachable(String url) {
 		try {
 			boolean isOllamaServerReachable = ollamaAPI.ping();
 			if (!isOllamaServerReachable) {
-				LogUtil.error("Ollama server is not reachable");
+				throw new LLMServiceException();
 			}
 		} catch (Exception e) {
-			String errorMsg = "Ollama server is not reachable";
-			LogUtil.error(errorMsg);
-			throw new LLMServiceException(errorMsg);
+			throw new LLMServiceException("Ollama server is not reachable at: " +  url, e);
 		}
 	}
 
@@ -179,5 +177,9 @@ public class OllamaClient extends ALLMClient<Tools.ToolSpecification> implements
             LogUtil.error("Could not delete model: " + e.getMessage());
         }
 		this.service.shutdown();
+	}
+
+	public void setVerbose(boolean verbose) {
+		this.ollamaAPI.setVerbose(verbose);
 	}
 }
