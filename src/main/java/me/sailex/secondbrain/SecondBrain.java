@@ -42,13 +42,14 @@ public class SecondBrain implements ModInitializer {
 		commandManager.registerAll();
 
 		ServerLifecycleEvents.SERVER_STARTED.register(server -> SecondBrain.server = server);
-		ServerLifecycleEvents.SERVER_STOPPING.register(i -> onStop(npcFactory, configProvider));
+		ServerLifecycleEvents.SERVER_STOPPING.register(i -> onStop(npcFactory, configProvider, sqlite));
 	}
 
-	private void onStop(NPCFactory npcFactory, ConfigProvider configProvider) {
+	private void onStop(NPCFactory npcFactory, ConfigProvider configProvider, SqliteClient sqlite) {
 		ResourcesProvider resourcesProvider = npcFactory.getResourcesProvider();
 		if (resourcesProvider != null) resourcesProvider.saveResources();
 		npcFactory.shutdownNpcs();
 		configProvider.saveAll();
+		sqlite.closeConnection();
 	}
 }

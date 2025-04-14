@@ -101,6 +101,7 @@ class NPCFactory(
             it.eventHandler.stopService()
             it.llmClient.stopService()
         }
+        executorService.shutdown()
     }
 
     private fun createNpcInstance(npcEntity: ServerPlayerEntity, config: NPCConfig): NPC {
