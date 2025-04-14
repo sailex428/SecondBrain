@@ -13,4 +13,9 @@ public record EntityData(int id, String name, boolean isPlayer) {
         EntityData other = (EntityData) obj;
         return other.name.equals(this.name);
     }
+
+    @Override
+    public int hashCode() {
+        return this.name.hashCode();
+    }
 }
