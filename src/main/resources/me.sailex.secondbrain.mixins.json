@@ -6,7 +6,10 @@
     "defaultRequire": 1
   },
   "mixins": [
+    "ClientConnectionMixin",
+    "LivingEntityAccessor",
     "PlayerDamageMixin",
-    "LivingEntityAccessor"
+    "PlayerEntityMixin",
+    "PlayerManagerMixin"
   ]
 }
