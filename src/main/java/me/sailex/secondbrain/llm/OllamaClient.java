@@ -127,7 +127,7 @@ public class OllamaClient extends ALLMClient<Tools.ToolSpecification> implements
 			return new FunctionResponse(finalResponse, formatChatHistory(response.getChatHistory()));
 		} catch (Exception e) {
 			Thread.currentThread().interrupt();
-			LogUtil.error("LLM has not called any functions for prompt: " + prompt, true);
+			LogUtil.error("LLM has not called any functions for prompt: " + prompt);
 			return new FunctionResponse("No actions called by LLM.", "");
 		}
 	}
@@ -135,7 +135,7 @@ public class OllamaClient extends ALLMClient<Tools.ToolSpecification> implements
 	private String formatChatHistory(List<OllamaChatMessage> history) {
 		StringBuilder formattedHistory = new StringBuilder();
 		history.stream()
-				.filter(msg -> msg.getRole().equals(OllamaChatMessageRole.ASSISTANT))
+				.filter(msg -> msg.getRole().equals(OllamaChatMessageRole.TOOL))
 				.flatMap(msg -> msg.getToolCalls().stream())
 				.map(OllamaChatToolCalls::getFunction)
 				.forEach(function -> appendFunctionDetails(formattedHistory, function));
@@ -157,13 +157,13 @@ public class OllamaClient extends ALLMClient<Tools.ToolSpecification> implements
 					return convertEmbedding(responseModel.getEmbeddings());
 				} catch (Exception e) {
 					Thread.currentThread().interrupt();
-					throw new CompletionException(
+					throw new LLMServiceException(
 							"Error generating embedding for prompt: " + prompt, e);
 				}
 			},
 				service)
 		.exceptionally(exception -> {
-			LOGGER.error(exception.getMessage());
+			LogUtil.error(exception.getMessage());
 			return new double[] {};
 		})
 		.join();

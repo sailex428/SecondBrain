@@ -37,7 +37,7 @@ public class ConfigProvider {
                     .findFirst()
                     .orElseGet(BaseConfig::new);
         } catch (IOException e) {
-            LogUtil.error("Failed to load config: " + e.getMessage(), true);
+            LogUtil.error("Failed to load config: " + e.getMessage());
         }
     }
 
@@ -64,7 +64,7 @@ public class ConfigProvider {
         try (Writer writer = Files.newBufferedWriter(configPath)) {
             GSON.toJson(config, writer);
         } catch (IOException e) {
-            LogUtil.error("Failed to save config for: " + config.getConfigName(), true);
+            LogUtil.error("Failed to save config for: " + config.getConfigName());
         }
     }
 

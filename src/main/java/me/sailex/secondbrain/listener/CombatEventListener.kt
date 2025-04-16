@@ -16,7 +16,7 @@ class CombatEventListener(
                 val matchingNpc = getMatchingNpc(entity)
                 if (matchingNpc != null) {
                     var entityAttackMessage = if (hitResult == null) {
-                        String.format("You tried to attacked entity %s, but you missed your hit", player.name.string)
+                        String.format("You tried to attacked %s, but you missed the hit", player.name.string)
                     } else {
                         String.format(
                             "I attacked entity %s at %s",
@@ -34,8 +34,8 @@ class CombatEventListener(
             val matchingNpc = getMatchingNpc(victim)
             if (matchingNpc != null) {
                 val damageSourceMessage = String.format(
-                    "You got damage: amount %s, type %s by Attacker %s",
-                    amount, damageSource.type.msgId, damageSource.attacker?.name?.string
+                    "You got damage: amount %s by %s",
+                    amount, damageSource.attacker?.name?.string
                 )
                 matchingNpc.eventHandler.onEvent(damageSourceMessage)
             }

@@ -62,7 +62,7 @@ public class ChunkManager {
         }
         if (blocksFound.size() < numberOfBlocks) {
             LogUtil.error("Only %s blocks found of %s (wanted: %s)".formatted(
-                    blocksFound.size(), type, numberOfBlocks), true);
+                    blocksFound.size(), type, numberOfBlocks));
         }
         return blocksFound;
     }

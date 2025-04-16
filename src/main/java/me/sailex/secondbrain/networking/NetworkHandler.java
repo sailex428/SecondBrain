@@ -58,7 +58,7 @@ public class NetworkHandler {
         CHANNEL.registerServerbound(UpdateBaseConfigPacket.class, (configPacket, clientAccess) -> {
             if (isPlayerAuthorized(clientAccess)) {
                 configProvider.setBaseConfig(configPacket.baseConfig());
-                LogUtil.info("Updated base config to: " + configPacket, true);
+                LogUtil.info("Updated base config to: " + configPacket);
             }
         });
     }
@@ -67,7 +67,7 @@ public class NetworkHandler {
         CHANNEL.registerServerbound(UpdateNpcConfigPacket.class, (configPacket, clientAccess) -> {
             if (isPlayerAuthorized(clientAccess)) {
                 configProvider.updateNpcConfig(configPacket.npcConfig());
-                LogUtil.info("Updated npc config to: " + configPacket, true);
+                LogUtil.info("Updated npc config to: " + configPacket);
             }
         });
     }
@@ -75,11 +75,7 @@ public class NetworkHandler {
     private void registerAddNpc() {
         CHANNEL.registerServerbound(CreateNpcPacket.class, (createNpcPacket, clientAccess) -> {
             if (isPlayerAuthorized(clientAccess)) {
-                try {
-                    npcFactory.createNpc(createNpcPacket.npcConfig(), clientAccess.player());
-                } catch (NPCCreationException e) {
-                    LogUtil.error(e.getMessage());
-                }
+                npcFactory.createNpc(createNpcPacket.npcConfig(), clientAccess.player());
             }
         });
     }
