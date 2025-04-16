@@ -23,21 +23,6 @@
                                     </children>
                                 </flow-layout>
 
-
-                                <flow-layout direction="vertical">
-                                    <children>
-                                        <label id="llmDefaultPrompt-label">
-                                            <shadow>true</shadow>
-                                        </label>
-                                        <text-area id="llmDefaultPrompt">
-                                            <sizing>
-                                                <horizontal method="fill">35</horizontal>
-                                                <vertical method="fill">25</vertical>
-                                            </sizing>
-                                        </text-area>
-                                    </children>
-                                </flow-layout>
-
                                 <flow-layout direction="vertical">
                                     <children>
                                         <label id="llmType-label">
