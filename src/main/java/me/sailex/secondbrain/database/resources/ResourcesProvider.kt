@@ -11,7 +11,6 @@ import me.sailex.secondbrain.util.ResourceRecommender
 
 import net.minecraft.recipe.Ingredient
 import net.minecraft.recipe.RecipeEntry
-import net.minecraft.server.MinecraftServer
 import net.minecraft.util.collection.DefaultedList
 import java.sql.Timestamp
 import java.util.concurrent.CompletableFuture
@@ -67,7 +66,7 @@ class ResourcesProvider(
     fun saveResources() {
         shutdownServiceNow()
         executorService = Executors.newFixedThreadPool(2)
-        LogUtil.info("Saving resources into db...", true)
+        LogUtil.info("Saving resources into db...")
         val recipesFuture = runAsync {
             recipes.forEach { recipe -> recipesRepository.insert(recipe) }
         }
@@ -81,15 +80,15 @@ class ResourcesProvider(
     private fun shutdownServiceNow() {
         if (!executorService.isTerminated) {
             executorService.shutdownNow()
-            LogUtil.error("Initial loading of resources interrupted - Wait for termination", true)
+            LogUtil.error("Initial loading of resources interrupted - Wait for termination")
             executorService.awaitTermination(500, TimeUnit.MILLISECONDS)
         }
     }
 
     private fun runAsync(task: () -> Unit): CompletableFuture<Void> {
         return CompletableFuture.runAsync(task , executorService).exceptionally {
-            LogUtil.error("Error loading/saving resources into memory: ${it.stackTraceToString()}", true)
-            return@exceptionally null
+            LogUtil.error("Error loading/saving resources into memory", it)
+            null
         }
     }
 

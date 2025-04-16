@@ -30,7 +30,7 @@ public class OpenAiFunctionManager extends AFunctionManager<FunctionDef> {
 
     protected List<FunctionDef> createFunctions() {
         return List.of(
-//                defineFunction(Function.Name.CHAT, Function.Description.CHAT, Chat.class),
+                defineFunction(Function.Name.CHAT, Function.Description.CHAT, Chat.class),
                 defineFunction(Function.Name.MOVE_TO_COORDINATES, Function.Description.MOVE_TO_COORDINATES, MoveToCoordinates.class),
                 defineFunction(Function.Name.MOVE_TO_ENTITY, Function.Description.MOVE_TO_ENTITY, MoveToEntity.class),
                 defineFunction(Function.Name.MOVE_AWAY, Function.Description.MOVE_AWAY, MoveAway.class),

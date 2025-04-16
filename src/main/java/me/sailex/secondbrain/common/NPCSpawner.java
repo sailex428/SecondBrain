@@ -14,7 +14,9 @@ import java.util.concurrent.CountDownLatch;
 
 public class NPCSpawner {
 
-    public void spawn(PlayerEntity player, String name) {
+    private NPCSpawner() {}
+
+    public static void spawn(PlayerEntity player, String name) {
         RegistryKey<World> dimensionKey = player.getWorld().getRegistryKey();
 
         boolean isSuccessful = EntityPlayerMPFake.createFake(name, player.getServer(),
@@ -25,14 +27,14 @@ public class NPCSpawner {
         }
     }
 
-    public void despawn(String name, PlayerManager playerManager) {
+    public static void remove(String name, PlayerManager playerManager) {
         ServerPlayerEntity player = playerManager.getPlayer(name);
         if (player != null) {
             playerManager.remove(player);
         }
     }
 
-    public void checkPlayerAvailable(String npcName, CountDownLatch latch) {
+    public static void checkPlayerAvailable(String npcName, CountDownLatch latch) {
         ServerEntityEvents.ENTITY_LOAD.register((entity, world) -> {
             if (entity instanceof ServerPlayerEntity
                     && entity.getName().getString().equals(npcName)) {

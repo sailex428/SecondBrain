@@ -32,25 +32,23 @@ import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 class NPCFactory(
-    private val configProvider: ConfigProvider,
+    var configProvider: ConfigProvider,
     private val repositoryFactory: RepositoryFactory
 ) {
-    val npcSpawner = NPCSpawner()
     val nameToNpc = ConcurrentHashMap<String, NPC>()
     var resourcesProvider: ResourcesProvider? = null
         private set
     val executorService: ExecutorService = Executors.newSingleThreadExecutor()
 
     fun createNpc(config: NPCConfig, source: ServerPlayerEntity) {
-        checkLimit()
-        var name = config.npcName
-        checkNpcName(name)
-
-        npcSpawner.spawn(source, name)
-        val latch = CountDownLatch(1)
-        npcSpawner.checkPlayerAvailable(name, latch)
-
         CompletableFuture.runAsync({
+            checkLimit()
+            var name = config.npcName
+            checkNpcName(name)
+
+            NPCSpawner.spawn(source, name)
+            val latch = CountDownLatch(1)
+            NPCSpawner.checkPlayerAvailable(name, latch)
             //player spawning runs async so we need to wait here until its avail
             val npcWasCreated = latch.await(3, TimeUnit.SECONDS)
             if (!npcWasCreated) {
@@ -71,17 +69,21 @@ class NPCFactory(
             }
             nameToNpc[name] = npc
             handleInitMessage(npc.eventHandler)
+
+            LogUtil.infoInChat(("Added NPC with name: ${config.npcName}"))
         }, executorService).exceptionally {
-            throw NPCCreationException("Failed to create NPC: " + it.message)
+            val errorMsg = "Failed to create NPC"
+            LogUtil.errorInChat(errorMsg)
+            LogUtil.error(errorMsg, it)
+            null
         }
-        LogUtil.info(("Added NPC with name: ${config.npcName}"))
     }
 
     fun removeNpc(name: String, playerManager: PlayerManager) {
         val npcToRemove = nameToNpc[name]
         if (npcToRemove != null) {
             configProvider.getNpcConfig(name).ifPresent { it.isActive = false }
-            npcSpawner.despawn(name, playerManager)
+            NPCSpawner.remove(name, playerManager)
             npcToRemove.llmClient.stopService()
             npcToRemove.eventHandler.stopService()
             npcToRemove.modeController.setAllIsOn(false)

@@ -27,7 +27,6 @@ import net.minecraft.network.message.MessageType;
 import net.minecraft.network.message.SignedMessage;
 import net.minecraft.recipe.RecipeEntry;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 
@@ -111,7 +110,6 @@ public class NPCController implements Tickable {
 	 */
 	public void chat(String message) {
 		npcEntity.server.getPlayerManager().broadcast(SignedMessage.ofUnsigned(message), npcEntity, MessageType.params(MessageType.CHAT, npcEntity));
-		npcEntity.sendMessage(Text.of(message), false);
 	}
 
 	/**
@@ -129,7 +127,7 @@ public class NPCController implements Tickable {
 		if (entity != null) {
 			this.moveToCoordinates(entity.getBlockPos());
 		} else {
-			LogUtil.error("Unable to move to entity: " + entityName + " - entity not found!", true);
+			LogUtil.error("Unable to move to entity: " + entityName + " - entity not found!");
 		}
 	}
 
@@ -160,7 +158,7 @@ public class NPCController implements Tickable {
 		if (!blocks.isEmpty()) {
 			for (int i = 0; i < numberOfBlocks; i++) {
 				BlockData block = blocks.get(i);
-				mine(block.position());
+				goalQueue.add(new Goal("mine block " +  block.type(), () -> mine(block.position())));
 			}
 		} else {
 			LogUtil.debugInChat("Couldnt find blocks of type: " + blockType + " to mine!");
@@ -188,7 +186,7 @@ public class NPCController implements Tickable {
 		if (entity != null) {
 			this.attack(entity);
 		} else {
-			LogUtil.error("Couldnt find " + entityName + " to attack!", true);
+			LogUtil.error("Couldnt find " + entityName + " to attack!");
 		}
 	}
 
@@ -246,8 +244,8 @@ public class NPCController implements Tickable {
 
 	private void autoRespawn() {
 		if (npcEntity.isDead()) {
-			npcEntity.server.getPlayerManager().remove(npcEntity);
-			automatone.getCommandHelper().executeSpawn(npcEntity.getName().getString());
+//			NPCSpawner.remove(npcEntity.getName().getString(), npcEntity.getServer().getPlayerManager());
+//			NPCSpawner.spawn(npcEntity, npcEntity.getName().getString());
 		}
 	}
 
@@ -266,7 +264,8 @@ public class NPCController implements Tickable {
 	private boolean isActive() {
 		return automatone.getPathingBehavior().isPathing()
 				|| automatone.getCustomGoalProcess().isActive()
-				|| automatone.getMineProcess().isActive();
+				|| automatone.getMineProcess().isActive()
+				|| automatone.getBuilderProcess().isActive();
 	}
 
 	public void cancelActions() {
@@ -281,7 +280,7 @@ public class NPCController implements Tickable {
         try {
             automatone.getCommandManager().execute(npcEntity.getCommandSource(), "cancel");
         } catch (CommandException e) {
-			LogUtil.error("Error executing automatone cancel command" + e, true);
+			LogUtil.error("Error executing automatone cancel command", e);
         }
     }
 

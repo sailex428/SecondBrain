@@ -160,8 +160,7 @@ public class OllamaClient extends ALLMClient<Tools.ToolSpecification> implements
 					throw new LLMServiceException(
 							"Error generating embedding for prompt: " + prompt, e);
 				}
-			},
-				service)
+			}, service)
 		.exceptionally(exception -> {
 			LogUtil.error(exception.getMessage());
 			return new double[] {};

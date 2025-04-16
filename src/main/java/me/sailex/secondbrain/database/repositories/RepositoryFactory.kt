@@ -19,7 +19,7 @@ class RepositoryFactory(
             conversationRepository.init()
             recipesRepository.init()
         }, executor).exceptionally( {
-            LogUtil.error("Failed to init sql database", true)
+            LogUtil.error("Failed to init sql database", it)
             null
         } )
         executor.shutdown()
