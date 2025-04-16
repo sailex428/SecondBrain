@@ -98,10 +98,6 @@ tasks.jar {
     archiveVersion.set("")
 }
 
-tasks.jar {
-    archiveVersion.set("")
-}
-
 tasks.remapJar {
     archiveBaseName.set(jarName)
     archiveVersion.set("")
