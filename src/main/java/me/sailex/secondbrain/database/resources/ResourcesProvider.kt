@@ -22,7 +22,7 @@ import java.util.concurrent.TimeUnit
 class ResourcesProvider(
     private val conversationRepository: ConversationRepository,
     private val recipesRepository: RecipesRepository,
-    private val llmClient: LLMClient
+    val llmClient: LLMClient
 ) {
     private var executorService: ExecutorService = Executors.newFixedThreadPool(3)
 
