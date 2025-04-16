@@ -85,7 +85,6 @@ class NPCFactory(
             configProvider.getNpcConfig(name).ifPresent { it.isActive = false }
             NPCSpawner.remove(name, playerManager)
             stopLlmClient(npcToRemove.llmClient)
-            npcToRemove.llmClient.stopService()
             npcToRemove.eventHandler.stopService()
             npcToRemove.modeController.setAllIsOn(false)
             npcToRemove.npcController.cancelActions()
@@ -93,7 +92,7 @@ class NPCFactory(
             LogUtil.info("Removed NPC with name: $name")
         }
     }
-    
+
     private fun stopLlmClient(llmClient: LLMClient) {
         val resourceLlmClient = resourcesProvider?.llmClient
         if (resourceLlmClient != null
