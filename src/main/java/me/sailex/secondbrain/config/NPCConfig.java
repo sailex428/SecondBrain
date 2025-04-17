@@ -10,7 +10,7 @@ public class NPCConfig implements Configurable {
 
 	private String npcName = "Steve";
 	private boolean isActive = true;
-	private String llmDefaultPrompt = Instructions.getLlmSystemPrompt(npcName, Instructions.DEFAULT_CHARACTER_TRAITS);
+	private String llmCharacter = Instructions.DEFAULT_CHARACTER_TRAITS;
 	private LLMType llmType = LLMType.OLLAMA;
 	private String ollamaUrl = "http://localhost:11434";
 	private String openaiApiKey = "API_KEY";
@@ -24,14 +24,14 @@ public class NPCConfig implements Configurable {
 	public NPCConfig(
 		String npcName,
 		boolean isActive,
-		String llmDefaultPrompt,
+		String llmCharacter,
 		LLMType llmType,
 		String ollamaUrl,
 		String openaiApiKey
 	) {
 		this.npcName = npcName;
 		this.isActive = isActive;
-		this.llmDefaultPrompt = llmDefaultPrompt;
+		this.llmCharacter = llmCharacter;
 		this.llmType = llmType;
 		this.ollamaUrl = ollamaUrl;
 		this.openaiApiKey = openaiApiKey;
@@ -46,7 +46,7 @@ public class NPCConfig implements Configurable {
 		}
 
 		public Builder llmDefaultPrompt(String llmDefaultPrompt) {
-			npcConfig.setLlmDefaultPrompt(llmDefaultPrompt);
+			npcConfig.setLlmCharacter(llmDefaultPrompt);
 			return this;
 		}
 
@@ -83,8 +83,8 @@ public class NPCConfig implements Configurable {
 		return isActive;
 	}
 
-	public String getLlmDefaultPrompt() {
-		return llmDefaultPrompt;
+	public String getLlmCharacter() {
+		return llmCharacter;
 	}
 
 	public LLMType getLlmType() {
@@ -99,8 +99,8 @@ public class NPCConfig implements Configurable {
 		return openaiApiKey;
 	}
 
-	public void setLlmDefaultPrompt(String llmDefaultPrompt) {
-		this.llmDefaultPrompt = Instructions.getLlmSystemPrompt(npcName, llmDefaultPrompt);
+	public void setLlmCharacter(String llmCharacter) {
+		this.llmCharacter = llmCharacter;
 	}
 
 	public void setLlmType(LLMType llmType) {
@@ -131,7 +131,7 @@ public class NPCConfig implements Configurable {
 	public static final StructEndec<NPCConfig> ENDEC = StructEndecBuilder.of(
 			Endec.STRING.fieldOf("npcName", NPCConfig::getNpcName),
 			Endec.BOOLEAN.fieldOf("isActive", NPCConfig::isActive),
-			Endec.STRING.fieldOf("llmDefaultPrompt", NPCConfig::getLlmDefaultPrompt),
+			Endec.STRING.fieldOf("llmDefaultPrompt", NPCConfig::getLlmCharacter),
 			Endec.forEnum(LLMType.class).fieldOf("llmType", NPCConfig::getLlmType),
 			Endec.STRING.fieldOf("ollamaUrl", NPCConfig::getOllamaUrl),
 			Endec.STRING.fieldOf("openaiApiKey", NPCConfig::getOpenaiApiKey),
@@ -145,12 +145,12 @@ public class NPCConfig implements Configurable {
 				",llmType=" + llmType +
 				",ollamaUrl=" + ollamaUrl +
 				",openaiApiKey=***" +
-				",llmDefaultPrompt=" + llmDefaultPrompt + "}";
+				",llmCharacter=" + llmCharacter + "}";
 	}
 
 	//name for fields for npc config screen
 	public static final String NPC_NAME = "Name of the NPC";
-	public static final String LLM_DEFAULT_PROMPT = "Default Prompt/Instruction";
+	public static final String LLM_CHARACTER = "Characteristics";
 	public static final String LLM_TYPE = "Type of the LLM";
 	public static final String OLLAMA_URL = "Ollama URL";
 	public static final String OPENAI_API_KEY = "OpenAI API Key";

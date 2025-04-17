@@ -120,7 +120,8 @@ class NPCFactory(
 
         return when (config.llmType) {
             LLMType.OLLAMA -> {
-                val llmClient = OllamaClient(config.ollamaUrl, SecondBrain.MOD_ID + "-" + config.npcName, config.llmDefaultPrompt, baseConfig.llmTimeout)
+                val llmClient = OllamaClient(config.ollamaUrl, SecondBrain.MOD_ID + "-" + config.npcName,
+                    Instructions.getLlmSystemPrompt(config.npcName, config.llmCharacter), baseConfig.llmTimeout)
                 val (controller, history) = initBase(llmClient, npcEntity, config.npcName, contextProvider)
                 val functionManager = OllamaFunctionManager(
                     resourcesProvider!!,

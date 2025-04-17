@@ -81,12 +81,12 @@ public class NPCConfigScreen extends ConfigScreen<NPCConfig> {
                 llmInfo.child(llmInfoTextArea);
 
                 //system prompt
-                llmInfo.child(Components.label(Text.of(NPCConfig.LLM_DEFAULT_PROMPT)).shadow(true).margins(Insets.top(7)));
-                TextAreaComponent llmDefaultPrompt =  Components.textArea(Sizing.fill(35), Sizing.fill(25));
-                llmDefaultPrompt.text(config.getLlmDefaultPrompt())
+                llmInfo.child(Components.label(Text.of(NPCConfig.LLM_CHARACTER)).shadow(true).margins(Insets.top(7)));
+                TextAreaComponent llmCharacter = Components.textArea(Sizing.fill(35), Sizing.fill(25));
+                llmCharacter.text(config.getLlmCharacter())
                         .onChanged()
-                        .subscribe(config::setLlmDefaultPrompt);
-                llmInfo.child(llmDefaultPrompt);
+                        .subscribe(config::setLlmCharacter);
+                llmInfo.child(llmCharacter);
 
             }
             case OPENAI -> {
