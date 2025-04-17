@@ -9,7 +9,7 @@
                         <flow-layout direction="vertical">
                             <children>
 
-                                <flow-layout direction="vertical">
+                                <flow-layout direction="vertical" id="npcName">
                                     <children>
                                         <label id="npcName-label">
                                             <shadow>true</shadow>

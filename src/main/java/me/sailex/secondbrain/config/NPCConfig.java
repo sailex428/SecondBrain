@@ -149,6 +149,7 @@ public class NPCConfig implements Configurable {
 	}
 
 	//name for fields for npc config screen
+	public static final String NPC_NAME = "Name of the NPC";
 	public static final String EDIT_NPC = "Edit '%s'";
 	public static final String LLM_CHARACTER = "Characteristics";
 	public static final String LLM_TYPE = "Type of the LLM";

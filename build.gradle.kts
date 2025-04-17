@@ -15,7 +15,7 @@ version =  rootProject.extra["mod.version"] as String
 val mcVersion = property("mc.version").toString()
 val fabricLoaderVersion = property("deps.fabric_loader").toString()
 val stage = rootProject.extra["deps.stage"].toString()
-val jarName = ("second-brain-$mcVersion-v$version-$stage").toString()
+val jarName = ("secondbrain-$mcVersion-v$version-$stage").toString()
 val automatone = rootProject.extra["deps.automatone"].toString()
 
 val javaVersion = if (stonecutter.eval(mcVersion, ">=1.20.6")) JavaVersion.VERSION_21 else JavaVersion.VERSION_17

@@ -13,7 +13,7 @@ class EventListenerRegisterer(
      */
     fun register() {
         listOf<IEventListener>(
-            BlockInteractionListener(npcs),
+//            BlockInteractionListener(npcs),
             EntityLoadListener(npcs),
             ChatMessageListener(npcs),
             CombatEventListener(npcs)

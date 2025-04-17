@@ -24,7 +24,7 @@ class CombatEventListener(
                             hitResult.pos,
                         )
                     }
-                    matchingNpc.eventHandler.onEvent(entityAttackMessage)
+//                    matchingNpc.eventHandler.onEvent(entityAttackMessage)
                 }
             }
             return@register ActionResult.PASS
