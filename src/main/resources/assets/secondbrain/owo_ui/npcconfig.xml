@@ -14,12 +14,6 @@
                                         <label id="npcName-label">
                                             <shadow>true</shadow>
                                         </label>
-                                        <text-area id="npcName">
-                                            <sizing>
-                                                <horizontal method="fill">35</horizontal>
-                                                <vertical method="fill">7</vertical>
-                                            </sizing>
-                                        </text-area>
                                     </children>
                                 </flow-layout>
 
@@ -54,7 +48,7 @@
 
                             <gap>7</gap>
 
-                            <horizontal-alignment>center</horizontal-alignment>
+                            <horizontal-alignment>left</horizontal-alignment>
                             <vertical-alignment>center</vertical-alignment>
 
                         </flow-layout>

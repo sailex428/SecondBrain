@@ -35,11 +35,8 @@ public class NPCConfigScreen extends ConfigScreen<NPCConfig> {
     protected void build(FlowLayout rootComponent) {
         FlowLayout panel = rootComponent.childById(FlowLayout.class, "panel");
 
-        panel.childById(LabelComponent.class, "npcName-label").text(Text.of(NPCConfig.NPC_NAME));
-        panel.childById(TextAreaComponent.class, "npcName")
-                .text(config.getNpcName())
-                .onChanged()
-                .subscribe(config::setNpcName);
+        panel.childById(LabelComponent.class, "npcName-label")
+                .text(Text.of(NPCConfig.EDIT_NPC.formatted(config.getNpcName())));
 
         panel.childById(LabelComponent.class, "llmType-label").text(Text.of(NPCConfig.LLM_TYPE));
         DropdownComponent llmTypeDropDown = panel.childById(DropdownComponent.class, "llmType");
