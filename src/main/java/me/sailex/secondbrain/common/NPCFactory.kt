@@ -22,6 +22,7 @@ import me.sailex.secondbrain.mode.ModeController
 import me.sailex.secondbrain.mode.ModeInitializer
 import me.sailex.secondbrain.model.NPC
 import me.sailex.secondbrain.util.LogUtil
+import net.minecraft.server.MinecraftServer
 import net.minecraft.server.PlayerManager
 import net.minecraft.server.network.ServerPlayerEntity
 import java.util.concurrent.CompletableFuture
@@ -163,21 +164,21 @@ object NPCFactory {
         npcName: String,
         contextProvider: ContextProvider
     ): Pair<NPCController, ConversationHistory> {
-        initResourceProvider(llmClient, npcName)
+        initResourceProvider(llmClient, npcName, npcEntity.server)
         val automatone = BaritoneAPI.getProvider().getBaritone(npcEntity)
         val controller = NPCController(npcEntity, automatone, contextProvider)
         val history = ConversationHistory(resourcesProvider!!, npcName)
         return Pair(controller, history)
     }
 
-    private fun initResourceProvider(llmClient: LLMClient, npcName: String) {
+    private fun initResourceProvider(llmClient: LLMClient, npcName: String, server: MinecraftServer) {
         this.resourcesProvider ?: run {
             this.resourcesProvider = ResourcesProvider(
                 repositoryFactory.conversationRepository,
                 repositoryFactory.recipesRepository,
                 llmClient
             )
-            resourcesProvider?.loadResources(npcName)
+            resourcesProvider?.loadResources(npcName, server)
         }
     }
 

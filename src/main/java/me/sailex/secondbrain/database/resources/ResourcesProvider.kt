@@ -1,6 +1,5 @@
 package me.sailex.secondbrain.database.resources
 
-import me.sailex.secondbrain.SecondBrain.server
 import me.sailex.secondbrain.database.repositories.ConversationRepository
 import me.sailex.secondbrain.database.repositories.RecipesRepository
 import me.sailex.secondbrain.llm.LLMClient
@@ -11,6 +10,7 @@ import me.sailex.secondbrain.util.ResourceRecommender
 
 import net.minecraft.recipe.Ingredient
 import net.minecraft.recipe.RecipeEntry
+import net.minecraft.server.MinecraftServer
 import net.minecraft.util.collection.DefaultedList
 import java.sql.Timestamp
 import java.util.concurrent.CompletableFuture
@@ -32,11 +32,11 @@ class ResourcesProvider(
     /**
      * Loads conversations recipes from db/mc into memory
      */
-    fun loadResources(npcName: String) {
+    fun loadResources(npcName: String, server: MinecraftServer) {
         runAsync {
             LogUtil.info("Loading resources into memory...")
             loadConversations(npcName)
-            loadRecipes()
+            loadRecipes(server)
             executorService.shutdown()
         }
     }
@@ -96,7 +96,7 @@ class ResourcesProvider(
         this.conversations.addAll(conversationRepository.selectByName(npcName))
     }
 
-    private fun loadRecipes() {
+    private fun loadRecipes(server: MinecraftServer) {
         val recipeEntries: Collection<RecipeEntry<*>> = server.recipeManager.values().filter {
             it.value.ingredients.isNotEmpty()
         }

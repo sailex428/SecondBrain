@@ -1,6 +1,6 @@
 package me.sailex.secondbrain.util;
 
-import me.sailex.secondbrain.SecondBrain;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
@@ -9,6 +9,12 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class LogUtil {
+
+	private static MinecraftServer server;
+
+	public static void initialize(MinecraftServer server) {
+		LogUtil.server = server;
+	}
 
 	private LogUtil() {}
 
@@ -52,8 +58,8 @@ public class LogUtil {
 	}
 
 	private static void log(MutableText formattedMessage) {
-		if (SecondBrain.server != null) {
-			SecondBrain.server.getPlayerManager().getPlayerList().stream()
+		if (server != null) {
+			server.getPlayerManager().getPlayerList().stream()
 					.filter(player -> player.hasPermissionLevel(2))
 					.forEach(player -> player.sendMessage(formattedMessage, false));
 		} else {
