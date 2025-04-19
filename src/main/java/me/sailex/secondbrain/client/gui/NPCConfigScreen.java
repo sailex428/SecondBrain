@@ -48,14 +48,14 @@ public class NPCConfigScreen extends ConfigScreen<NPCConfig> {
 
         panel.childById(LabelComponent.class, "llmType-label").text(Text.of(NPCConfig.LLM_TYPE));
         DropdownComponent llmTypeDropDown = panel.childById(DropdownComponent.class, "llmType");
-        LLMType.getEntries().forEach(type ->
+//        LLMType.getEntries().forEach(type ->
             llmTypeDropDown.button(
-                    Text.of(type.toString()),
+                    Text.of(LLMType.OLLAMA.toString()),
                     button -> {
-                        config.setLlmType(type);
+                        config.setLlmType(LLMType.OLLAMA);
                         drawLlmInfo(panel);
-                    })
-        );
+                    });
+//        );
         //draw without any dropdown click the fields of active llmType
         drawLlmInfo(panel);
 

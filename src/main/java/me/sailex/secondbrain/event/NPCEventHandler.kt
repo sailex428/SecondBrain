@@ -39,9 +39,11 @@ class NPCEventHandler<T>(
             val response = llmClient.callFunctions(formattedPrompt, relevantFunctions)
 
             if (llmClient is OllamaClient) {
-                controller.addGoal("chat") { controller.chat(response.finalResponse()) }
+                controller.addGoal("chat") { controller.chat(response.finalResponse) }
+                history.add(response.finalResponse + " - " + response.toolCalls)
+            } else {
+                history.add(response.toolCalls)
             }
-            history.add(response.chatHistory())
         }, executorService)
             .exceptionally {
                 LogUtil.error("Unexpected error occurred handling event", it)

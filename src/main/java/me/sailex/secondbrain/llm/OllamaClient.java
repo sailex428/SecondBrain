@@ -20,7 +20,7 @@ import me.sailex.secondbrain.model.function_calling.FunctionResponse;
 import me.sailex.secondbrain.util.LogUtil;
 import org.apache.commons.lang3.StringUtils;
 
-public class OllamaClient extends ALLMClient<Tools.ToolSpecification> implements FunctionCallable<Tools.ToolSpecification> {
+public class OllamaClient extends ALLMClient<Tools.ToolSpecification> {
 
 	private static final String LLAMA_MODEL_NAME = "llama3.2";
 	private static final List<String> REQUIRED_MODELS = List.of(
@@ -118,6 +118,7 @@ public class OllamaClient extends ALLMClient<Tools.ToolSpecification> implements
 	public FunctionResponse callFunctions(String prompt, List<Tools.ToolSpecification> functions) {
 		try {
 			ollamaAPI.registerTools(functions);
+			ollamaAPI.setVerbose(true);
 
 			OllamaChatRequest toolRequest = OllamaChatRequestBuilder.getInstance(model)
 				.withMessage(OllamaChatMessageRole.USER, prompt)
@@ -125,7 +126,7 @@ public class OllamaClient extends ALLMClient<Tools.ToolSpecification> implements
 			OllamaChatResult response = ollamaAPI.chat(toolRequest);
 
 			String finalResponse = response.getResponseModel().getMessage().getContent();
-			return new FunctionResponse(finalResponse, formatChatHistory(response.getChatHistory()));
+			return new FunctionResponse(finalResponse, formatToolCalls(response.getChatHistory()));
 		} catch (Exception e) {
 			Thread.currentThread().interrupt();
 			LogUtil.error("LLM has not called any functions for prompt: " + prompt, e);
@@ -133,15 +134,19 @@ public class OllamaClient extends ALLMClient<Tools.ToolSpecification> implements
 		}
 	}
 
-	private String formatChatHistory(List<OllamaChatMessage> history) {
-		StringBuilder formattedHistory = new StringBuilder();
+	private String formatToolCalls(List<OllamaChatMessage> history) {
+		StringBuilder formattedToolCallsBuilder = new StringBuilder();
 		history.stream()
-				.filter(msg -> msg.getRole().equals(OllamaChatMessageRole.TOOL))
+				.filter(msg -> msg.getRole().equals(OllamaChatMessageRole.ASSISTANT))
 				.filter(msg -> msg.getToolCalls() != null)
 				.flatMap(msg -> msg.getToolCalls().stream())
 				.map(OllamaChatToolCalls::getFunction)
-				.forEach(function -> appendFunctionDetails(formattedHistory, function));
-		return formattedHistory.toString();
+				.forEach(function -> appendFunctionDetails(formattedToolCallsBuilder, function));
+		String formattedToolCalls = formattedToolCallsBuilder.toString();
+		if (!formattedToolCalls.isEmpty()) {
+			LogUtil.info(formattedToolCalls);
+		}
+		return formattedToolCalls;
 	}
 
 	private void appendFunctionDetails(StringBuilder builder, OllamaToolCallsFunction function) {
