@@ -242,19 +242,11 @@ public class NPCController implements Tickable {
 		}
 	}
 
-	private void autoRespawn() {
-		if (npcEntity.isDead()) {
-//			NPCSpawner.remove(npcEntity.getName().getString(), npcEntity.getServer().getPlayerManager());
-//			NPCSpawner.spawn(npcEntity, npcEntity.getName().getString());
-		}
-	}
-
 	/**
 	 * Processes npc actions on game tick
 	 */
 	@Override
 	public void onTick() {
-		autoRespawn();
 		if (!isActive()) {
 			lookAtPlayer();
 			pollGoal();

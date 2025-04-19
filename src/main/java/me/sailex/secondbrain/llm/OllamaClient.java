@@ -85,6 +85,7 @@ public class OllamaClient extends ALLMClient<Tools.ToolSpecification> implements
 			LogUtil.debugInChat("Removing model: " + model);
 			ollamaAPI.deleteModel(model, false);
 		} catch (Exception e) {
+			Thread.currentThread().interrupt();
 			throw new LLMServiceException("Could not remove model: " + model, e);
 		}
 	}
@@ -127,7 +128,7 @@ public class OllamaClient extends ALLMClient<Tools.ToolSpecification> implements
 			return new FunctionResponse(finalResponse, formatChatHistory(response.getChatHistory()));
 		} catch (Exception e) {
 			Thread.currentThread().interrupt();
-			LogUtil.error("LLM has not called any functions for prompt: " + prompt);
+			LogUtil.error("LLM has not called any functions for prompt: " + prompt, e);
 			return new FunctionResponse("No actions called by LLM.", "");
 		}
 	}
@@ -136,6 +137,7 @@ public class OllamaClient extends ALLMClient<Tools.ToolSpecification> implements
 		StringBuilder formattedHistory = new StringBuilder();
 		history.stream()
 				.filter(msg -> msg.getRole().equals(OllamaChatMessageRole.TOOL))
+				.filter(msg -> msg.getToolCalls() != null)
 				.flatMap(msg -> msg.getToolCalls().stream())
 				.map(OllamaChatToolCalls::getFunction)
 				.forEach(function -> appendFunctionDetails(formattedHistory, function));

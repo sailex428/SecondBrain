@@ -30,7 +30,8 @@ public class SecondBrain implements ModInitializer {
 		RepositoryFactory repositoryFactory = new RepositoryFactory(sqlite);
 		repositoryFactory.initRepositories();
 
-		NPCFactory npcFactory = new NPCFactory(configProvider, repositoryFactory);
+		NPCFactory npcFactory = NPCFactory.INSTANCE;
+		npcFactory.initialize(configProvider, repositoryFactory);
 
 		NetworkHandler networkManager = new NetworkHandler(configProvider, npcFactory);
 		networkManager.registerPacketReceiver();

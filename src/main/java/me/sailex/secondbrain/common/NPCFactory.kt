@@ -31,10 +31,15 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
-class NPCFactory(
-    var configProvider: ConfigProvider,
-    private val repositoryFactory: RepositoryFactory
-) {
+object NPCFactory {
+    lateinit var configProvider: ConfigProvider
+    private lateinit var repositoryFactory: RepositoryFactory
+
+    fun initialize(configProvider: ConfigProvider, repositoryFactory: RepositoryFactory) {
+        this.configProvider = configProvider
+        this.repositoryFactory = repositoryFactory
+    }
+
     val nameToNpc = ConcurrentHashMap<String, NPC>()
     var resourcesProvider: ResourcesProvider? = null
         private set
@@ -46,7 +51,7 @@ class NPCFactory(
             var name = config.npcName
             checkNpcName(name)
 
-            NPCSpawner.spawn(source, name)
+            NPCSpawner.spawn(name, source, false)
             val latch = CountDownLatch(1)
             NPCSpawner.checkPlayerAvailable(name, latch)
             //player spawning runs async so we need to wait here until its avail
