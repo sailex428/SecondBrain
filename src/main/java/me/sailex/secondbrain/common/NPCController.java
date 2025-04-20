@@ -207,11 +207,7 @@ public class NPCController implements Tickable {
 		Optional<ItemData> item = contextProvider.getCachedContext().findItemByType(itemType);
 		if (item.isPresent()) {
 			int slot = item.get().slot();
-			if (dropAll) {
-				automatone.getCommandHelper().executeDropAll(slot);
-			} else {
-				automatone.getCommandHelper().executeDrop(slot);
-			}
+            automatone.getCommandHelper().executeDrop(slot, dropAll);
 		} else {
 			LogUtil.debugInChat("Couldnt find item of type: " + itemType + " to drop!");
 		}
