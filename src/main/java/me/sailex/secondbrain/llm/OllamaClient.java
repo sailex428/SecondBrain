@@ -118,8 +118,6 @@ public class OllamaClient extends ALLMClient<Tools.ToolSpecification> {
 	public FunctionResponse callFunctions(String prompt, List<Tools.ToolSpecification> functions) {
 		try {
 			ollamaAPI.registerTools(functions);
-			ollamaAPI.setVerbose(true);
-
 			OllamaChatRequest toolRequest = OllamaChatRequestBuilder.getInstance(model)
 				.withMessage(OllamaChatMessageRole.USER, prompt)
 				.build();

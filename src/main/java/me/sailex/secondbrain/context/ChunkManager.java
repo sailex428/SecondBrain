@@ -10,7 +10,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
-import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.WorldChunk;
 
 import java.util.*;
@@ -119,7 +118,9 @@ public class ChunkManager {
                     WorldChunk currentChunk = world.getWorldChunk(pos);
 
                     BlockState blockState = currentChunk.getBlockState(pos);
-                    String blockType = blockState.getBlock().getName().getString().toLowerCase();
+                    String blockType = blockState.getBlock()
+                            .getName().getString()
+                            .toLowerCase().replace(" ", "_");
 
                     if (blockType.contains("air")) continue;
 

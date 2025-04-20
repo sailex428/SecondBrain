@@ -127,7 +127,7 @@ public class NPCController implements Tickable {
 		if (entity != null) {
 			this.moveToCoordinates(entity.getBlockPos());
 		} else {
-			LogUtil.error("Unable to move to entity: " + entityName + " - entity not found!");
+			LogUtil.debugInChat("Unable to move to entity: " + entityName + " - entity not found!");
 		}
 	}
 
@@ -186,7 +186,7 @@ public class NPCController implements Tickable {
 		if (entity != null) {
 			this.attack(entity);
 		} else {
-			LogUtil.error("Couldnt find " + entityName + " to attack!");
+			LogUtil.debugInChat("Couldnt find " + entityName + " to attack!");
 		}
 	}
 
