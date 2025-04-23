@@ -135,7 +135,6 @@ public class OllamaClient extends ALLMClient<Tools.ToolSpecification> {
 	private String formatToolCalls(List<OllamaChatMessage> history) {
 		StringBuilder formattedToolCallsBuilder = new StringBuilder();
 		history.stream()
-				.filter(msg -> msg.getRole().equals(OllamaChatMessageRole.ASSISTANT))
 				.filter(msg -> msg.getToolCalls() != null)
 				.flatMap(msg -> msg.getToolCalls().stream())
 				.map(OllamaChatToolCalls::getFunction)

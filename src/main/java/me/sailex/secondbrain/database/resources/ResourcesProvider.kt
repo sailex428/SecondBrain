@@ -42,7 +42,7 @@ class ResourcesProvider(
     }
 
     fun getRelevantRecipes(itemName: String): List<Recipe> {
-        return ResourceRecommender.getRelevantResources(llmClient, itemName, recipes, 5)
+        return ResourceRecommender.getRelevantResources(llmClient, itemName, recipes, 3)
             .filterIsInstance<Recipe>()
     }
 
@@ -135,6 +135,6 @@ class ResourcesProvider(
 
     private fun getItemId(ingredient: Ingredient): String {
         val idString = ingredient.matchingStacks[0].name.toString()
-        return idString.substring(idString.indexOf(".") + 1, idString.lastIndexOf("'"))
+        return idString.substring(idString.lastIndexOf(".") + 1, idString.lastIndexOf("'"))
     }
 }

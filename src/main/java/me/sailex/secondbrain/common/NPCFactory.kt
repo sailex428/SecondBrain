@@ -95,7 +95,7 @@ object NPCFactory {
             npcToRemove.modeController.setAllIsOn(false)
             npcToRemove.npcController.cancelActions()
             nameToNpc.remove(name)
-            LogUtil.info("Removed NPC with name: $name")
+            LogUtil.infoInChat("Removed NPC with name: $name")
         }
     }
 
