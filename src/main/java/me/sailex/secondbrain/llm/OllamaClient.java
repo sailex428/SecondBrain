@@ -83,7 +83,7 @@ public class OllamaClient extends ALLMClient<Tools.ToolSpecification> {
 	public void removeModel() {
 		try {
 			LogUtil.debugInChat("Removing model: " + model);
-			ollamaAPI.deleteModel(model, false);
+			ollamaAPI.deleteModel(model, true);
 		} catch (Exception e) {
 			Thread.currentThread().interrupt();
 			throw new LLMServiceException("Could not remove model: " + model, e);
@@ -118,6 +118,7 @@ public class OllamaClient extends ALLMClient<Tools.ToolSpecification> {
 	public FunctionResponse callFunctions(String prompt, List<Tools.ToolSpecification> functions) {
 		try {
 			ollamaAPI.registerTools(functions);
+			ollamaAPI.setVerbose(true);
 			OllamaChatRequest toolRequest = OllamaChatRequestBuilder.getInstance(model)
 				.withMessage(OllamaChatMessageRole.USER, prompt)
 				.build();

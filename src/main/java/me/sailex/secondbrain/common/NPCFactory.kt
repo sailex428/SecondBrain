@@ -94,6 +94,7 @@ object NPCFactory {
             npcToRemove.eventHandler.stopService()
             npcToRemove.modeController.setAllIsOn(false)
             npcToRemove.npcController.cancelActions()
+            npcToRemove.contextProvider.chunkManager.stopService()
             nameToNpc.remove(name)
             LogUtil.infoInChat("Removed NPC with name: $name")
         }
@@ -101,8 +102,7 @@ object NPCFactory {
 
     private fun stopLlmClient(llmClient: LLMClient) {
         val resourceLlmClient = resourcesProvider?.llmClient
-        if (resourceLlmClient != null
-            && resourceLlmClient != llmClient) {
+        if (resourceLlmClient != llmClient) {
             llmClient.stopService()
         }
     }
@@ -112,12 +112,12 @@ object NPCFactory {
         configProvider.deleteNpcConfig(name)
     }
 
-    fun shutdownNpcs() {
-        nameToNpc.values.forEach {
-            it.eventHandler.stopService()
-            it.llmClient.stopService()
+    fun shutdownNpcs(server: MinecraftServer) {
+        nameToNpc.keys.forEach {
+            removeNpc(it, server.playerManager)
         }
-        executorService.shutdown()
+        resourcesProvider?.llmClient?.stopService()
+        executorService.shutdownNow()
     }
 
     private fun createNpcInstance(npcEntity: ServerPlayerEntity, config: NPCConfig): NPC {

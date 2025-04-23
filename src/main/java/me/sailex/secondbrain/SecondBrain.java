@@ -43,13 +43,13 @@ public class SecondBrain implements ModInitializer {
 		commandManager.registerAll();
 
 		ServerLifecycleEvents.SERVER_STARTED.register(LogUtil::initialize);
-		ServerLifecycleEvents.SERVER_STOPPING.register(i -> onStop(npcFactory, configProvider, sqlite));
+		ServerLifecycleEvents.SERVER_STOPPING.register(server -> onStop(npcFactory, configProvider, sqlite, server));
 	}
 
-	private void onStop(NPCFactory npcFactory, ConfigProvider configProvider, SqliteClient sqlite) {
+	private void onStop(NPCFactory npcFactory, ConfigProvider configProvider, SqliteClient sqlite, MinecraftServer server) {
 		ResourcesProvider resourcesProvider = npcFactory.getResourcesProvider();
 		if (resourcesProvider != null) resourcesProvider.saveResources();
-		npcFactory.shutdownNpcs();
+		npcFactory.shutdownNpcs(server);
 		configProvider.saveAll();
 		sqlite.closeConnection();
 	}

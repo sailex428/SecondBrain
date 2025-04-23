@@ -148,4 +148,8 @@ public class ChunkManager {
         double dist2 = npcEntity.getBlockPos().getSquaredDistance(pos2);
         return dist1 < dist2;
     }
+
+    public void stopService() {
+        this.threadPool.shutdownNow();
+    }
 }

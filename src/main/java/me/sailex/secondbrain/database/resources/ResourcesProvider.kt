@@ -66,15 +66,16 @@ class ResourcesProvider(
     fun saveResources() {
         shutdownServiceNow()
         executorService = Executors.newFixedThreadPool(2)
-        LogUtil.info("Saving resources into db...")
         val recipesFuture = runAsync {
             recipes.forEach { recipe -> recipesRepository.insert(recipe) }
+            LogUtil.info("Saved recipes to db")
         }
         val conversationFuture = runAsync {
             conversations.forEach { conversation -> conversationRepository.insert(conversation) }
+            LogUtil.info("Saved conversations to db")
         }
         CompletableFuture.allOf(recipesFuture, conversationFuture).get()
-        executorService.shutdown()
+        executorService.shutdownNow()
     }
 
     private fun shutdownServiceNow() {
