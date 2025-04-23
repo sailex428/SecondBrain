@@ -3,7 +3,7 @@
   "id": "secondbrain",
   "version": "${version}",
   "name": "SecondBrain",
-  "description": "A Minecraft NPC thats controlled by a LLM.",
+  "description": "A Fabric mod that brings intelligent NPCs to your minecraft world.",
   "authors": ["sailex428"],
   "contact": {},
   "icon": "assets/secondbrain/icon.png",
@@ -21,10 +21,11 @@
     "me.sailex.secondbrain.mixins.json"
   ],
   "depends": {
-    "fabric-language-kotlin": ">=1.13.0+kotlin.2.1.0",
-    "fabricloader": ">=${loader_version}",
+    "fabric-language-kotlin": ">=${fabricLangKotlin}",
+    "fabricloader": ">=${fabricLoader}",
     "fabric": "*",
     "minecraft": "${mcDep}",
-    "automatone": "${automatone}"
+    "automatone": "${automatone}",
+    "owo-lib": "${owoLib}"
   }
 }
