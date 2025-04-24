@@ -37,7 +37,7 @@ public class ConfigProvider {
                     .findFirst()
                     .orElseGet(BaseConfig::new);
         } catch (IOException e) {
-            LogUtil.error("Failed to load config: " + e.getMessage(), true);
+            LogUtil.error("Failed to load config: " + e.getMessage());
         }
     }
 
@@ -64,12 +64,12 @@ public class ConfigProvider {
         try (Writer writer = Files.newBufferedWriter(configPath)) {
             GSON.toJson(config, writer);
         } catch (IOException e) {
-            LogUtil.error("Failed to save config for: " + config.getConfigName(), true);
+            LogUtil.error("Failed to save config for: " + config.getConfigName());
         }
     }
 
     private void delete(String configName) {
-        Path configPath = CONFIG_DIR.resolve(configName + JSON_EXTENSION);
+        Path configPath = NPC_CONFIG_DIR.resolve(configName + JSON_EXTENSION);
         try {
             Files.deleteIfExists(configPath);
         } catch (IOException e) {
@@ -90,15 +90,20 @@ public class ConfigProvider {
 
     public void addNpcConfig(NPCConfig npcConfig) {
         npcConfigs.add(npcConfig);
-        save(NPC_CONFIG_DIR, npcConfig);
     }
 
     public void updateNpcConfig(NPCConfig updatedConfig) {
         npcConfigs.forEach(config -> {
-            if (config.getUuid().equals(updatedConfig.getUuid())) {
+            if (config.getNpcName().equals(updatedConfig.getNpcName())) {
                 npcConfigs.set(npcConfigs.indexOf(config), updatedConfig);
             }
         });
+    }
+
+    public Optional<NPCConfig> getNpcConfig(String npcName) {
+        return npcConfigs.stream()
+                .filter(config -> config.getNpcName().equals(npcName))
+                .findFirst();
     }
 
     public List<NPCConfig> getNpcConfigs() {

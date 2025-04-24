@@ -18,6 +18,7 @@ public class GuiCommand {
         ServerPlayerEntity targetClient = context.getSource().getPlayer();
         if (targetClient != null) {
             ConfigPacket packet = new ConfigPacket(configProvider.getBaseConfig(), configProvider.getNpcConfigs());
+            packet.hideSecret();
             networkHandler.sendPacket(packet, targetClient);
             return 1;
         }

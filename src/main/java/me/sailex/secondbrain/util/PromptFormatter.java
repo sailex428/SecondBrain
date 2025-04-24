@@ -22,8 +22,8 @@ public class PromptFormatter {
 	public static String format(String prompt, WorldContext worldContext) {
 		return Instructions.PROMPT_TEMPLATE.formatted(
 				prompt,
-				formatEntities(worldContext.nearbyEntities(), 5),
-				formatBlocks(worldContext.nearbyBlocks(), 10),
+				formatEntities(worldContext.nearbyEntities(), 10),
+				formatBlocks(worldContext.nearbyBlocks(), 15),
 				formatInventory(worldContext.inventory()),
 				formatNPCState(worldContext.state())
 		);
@@ -46,7 +46,10 @@ public class PromptFormatter {
 	}
 
 	public static String formatEntities(List<EntityData> entities, int limit) {
-		return formatList(entities.stream().limit(limit).toList(), EntityData::name);
+		return formatList(entities.stream()
+				.distinct()
+				.limit(limit)
+				.toList(), EntityData::name);
 	}
 
 	public static String formatInventory(InventoryData inventory) {
@@ -55,7 +58,7 @@ public class PromptFormatter {
 		addInventoryPart(inventory.mainInventory(), "main inventory: ", invParts);
 		addInventoryPart(inventory.armor(), "armor: ", invParts);
 		addInventoryPart(inventory.offHand(), "offhand: ", invParts);
-		if (!invParts.isEmpty()) {
+		if (invParts.isEmpty()) {
 			invParts.add("<no items in inventory>");
 		}
 		return String.join("\n", invParts);

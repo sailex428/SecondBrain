@@ -20,7 +20,7 @@ import me.sailex.secondbrain.model.function_calling.FunctionResponse;
 import me.sailex.secondbrain.util.LogUtil;
 import org.apache.commons.lang3.StringUtils;
 
-public class OllamaClient extends ALLMClient<Tools.ToolSpecification> implements FunctionCallable<Tools.ToolSpecification> {
+public class OllamaClient extends ALLMClient<Tools.ToolSpecification> {
 
 	private static final String LLAMA_MODEL_NAME = "llama3.2";
 	private static final List<String> REQUIRED_MODELS = List.of(
@@ -31,17 +31,12 @@ public class OllamaClient extends ALLMClient<Tools.ToolSpecification> implements
 	private final ExecutorService service;
 	private final String model;
 
-	/**
-	 * Constructor for OllamaClient.
-	 *
-	 * @param url  the ollama url
-	 */
 	public OllamaClient(String url, String customModelName, String defaultPrompt, int timeout) {
 		this.ollamaAPI = new OllamaAPI(url);
 		this.model = customModelName;
-		checkServiceIsReachable();
+		checkServiceIsReachable(url);
 		this.service = Executors.newFixedThreadPool(3);
-		ollamaAPI.setVerbose(true);
+		ollamaAPI.setVerbose(false);
 		ollamaAPI.setMaxChatToolCallRetries(4);
 		ollamaAPI.setRequestTimeoutSeconds(timeout);
 		initModels(defaultPrompt);
@@ -88,8 +83,9 @@ public class OllamaClient extends ALLMClient<Tools.ToolSpecification> implements
 	public void removeModel() {
 		try {
 			LogUtil.debugInChat("Removing model: " + model);
-			ollamaAPI.deleteModel(model, false);
+			ollamaAPI.deleteModel(model, true);
 		} catch (Exception e) {
+			Thread.currentThread().interrupt();
 			throw new LLMServiceException("Could not remove model: " + model, e);
 		}
 	}
@@ -99,16 +95,14 @@ public class OllamaClient extends ALLMClient<Tools.ToolSpecification> implements
 	 * @throws LLMServiceException if server is not reachable
 	 */
 	@Override
-	public void checkServiceIsReachable() {
+	public void checkServiceIsReachable(String url) {
 		try {
 			boolean isOllamaServerReachable = ollamaAPI.ping();
 			if (!isOllamaServerReachable) {
-				LogUtil.error("Ollama server is not reachable");
+				throw new LLMServiceException();
 			}
 		} catch (Exception e) {
-			String errorMsg = "Ollama server is not reachable";
-			LogUtil.error(errorMsg);
-			throw new LLMServiceException(errorMsg);
+			throw new LLMServiceException("Ollama server is not reachable at: " +  url, e);
 		}
 	}
 
@@ -124,29 +118,33 @@ public class OllamaClient extends ALLMClient<Tools.ToolSpecification> implements
 	public FunctionResponse callFunctions(String prompt, List<Tools.ToolSpecification> functions) {
 		try {
 			ollamaAPI.registerTools(functions);
-
+			ollamaAPI.setVerbose(true);
 			OllamaChatRequest toolRequest = OllamaChatRequestBuilder.getInstance(model)
 				.withMessage(OllamaChatMessageRole.USER, prompt)
 				.build();
 			OllamaChatResult response = ollamaAPI.chat(toolRequest);
 
 			String finalResponse = response.getResponseModel().getMessage().getContent();
-			return new FunctionResponse(finalResponse, formatChatHistory(response.getChatHistory()));
+			return new FunctionResponse(finalResponse, formatToolCalls(response.getChatHistory()));
 		} catch (Exception e) {
 			Thread.currentThread().interrupt();
-			LogUtil.error("LLM has not called any functions for prompt: " + prompt, true);
+			LogUtil.error("LLM has not called any functions for prompt: " + prompt, e);
 			return new FunctionResponse("No actions called by LLM.", "");
 		}
 	}
 
-	private String formatChatHistory(List<OllamaChatMessage> history) {
-		StringBuilder formattedHistory = new StringBuilder();
+	private String formatToolCalls(List<OllamaChatMessage> history) {
+		StringBuilder formattedToolCallsBuilder = new StringBuilder();
 		history.stream()
-				.filter(msg -> msg.getRole().equals(OllamaChatMessageRole.ASSISTANT))
+				.filter(msg -> msg.getToolCalls() != null)
 				.flatMap(msg -> msg.getToolCalls().stream())
 				.map(OllamaChatToolCalls::getFunction)
-				.forEach(function -> appendFunctionDetails(formattedHistory, function));
-		return formattedHistory.toString();
+				.forEach(function -> appendFunctionDetails(formattedToolCallsBuilder, function));
+		String formattedToolCalls = formattedToolCallsBuilder.toString();
+		if (!formattedToolCalls.isEmpty()) {
+			LogUtil.info(formattedToolCalls);
+		}
+		return formattedToolCalls;
 	}
 
 	private void appendFunctionDetails(StringBuilder builder, OllamaToolCallsFunction function) {
@@ -164,13 +162,12 @@ public class OllamaClient extends ALLMClient<Tools.ToolSpecification> implements
 					return convertEmbedding(responseModel.getEmbeddings());
 				} catch (Exception e) {
 					Thread.currentThread().interrupt();
-					throw new CompletionException(
+					throw new LLMServiceException(
 							"Error generating embedding for prompt: " + prompt, e);
 				}
-			},
-				service)
+			}, service)
 		.exceptionally(exception -> {
-			LOGGER.error(exception.getMessage());
+			LogUtil.error(exception.getMessage());
 			return new double[] {};
 		})
 		.join();
@@ -179,10 +176,14 @@ public class OllamaClient extends ALLMClient<Tools.ToolSpecification> implements
 	@Override
 	public void stopService() {
         try {
-            this.ollamaAPI.deleteModel(model, false);
+            removeModel();
         } catch (Exception e) {
             LogUtil.error("Could not delete model: " + e.getMessage());
         }
 		this.service.shutdown();
+	}
+
+	public void setVerbose(boolean verbose) {
+		this.ollamaAPI.setVerbose(verbose);
 	}
 }

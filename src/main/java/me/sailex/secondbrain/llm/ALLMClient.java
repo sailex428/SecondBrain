@@ -9,8 +9,6 @@ import org.apache.logging.log4j.Logger;
 @Setter
 public abstract class ALLMClient<T> implements FunctionCallable<T> {
 
-	protected static final Logger LOGGER = LogManager.getLogger(ALLMClient.class);
-
 	protected double[] convertEmbedding(List<List<Double>> embedding) {
 		return embedding.stream()
 				.flatMapToDouble(innerList -> innerList.stream().mapToDouble(Double::doubleValue))
@@ -18,7 +16,7 @@ public abstract class ALLMClient<T> implements FunctionCallable<T> {
 	}
 
 	@Override
-	public void checkServiceIsReachable() {
+	public void checkServiceIsReachable(String url) {
 		// To be implemented by the child classes
 	}
 

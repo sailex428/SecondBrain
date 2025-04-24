@@ -13,18 +13,7 @@ class EntityLoadListener(
             if (entity !is PlayerEntity) {
                 return@register
             }
-            val matchingNpc = getMatchingNpc(entity)
-            if (matchingNpc != null) {
-                val entityLoadMessage =
-                    String.format(
-                        "A Player with the name: %s loaded in world at x: %s y: %s z: %s",
-                        entity.name.string,
-                        entity.pos.x,
-                        entity.pos.y,
-                        entity.pos.z,
-                    )
-                matchingNpc.eventHandler.onEvent(entityLoadMessage)
-            }
+            getMatchingNpc(entity)?.eventHandler?.onEvent(entity.name.string + " joined the server!")
         }
     }
 }

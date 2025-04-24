@@ -80,7 +80,7 @@
 
                             <gap>7</gap>
 
-                            <horizontal-alignment>center</horizontal-alignment>
+                            <horizontal-alignment>left</horizontal-alignment>
                             <vertical-alignment>center</vertical-alignment>
 
                         </flow-layout>

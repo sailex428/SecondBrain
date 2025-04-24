@@ -4,6 +4,7 @@ import me.sailex.secondbrain.common.NPCController
 import me.sailex.secondbrain.context.ContextProvider
 import me.sailex.secondbrain.history.ConversationHistory
 import me.sailex.secondbrain.llm.FunctionCallable
+import me.sailex.secondbrain.llm.OllamaClient
 import me.sailex.secondbrain.llm.function_calling.FunctionManager
 import me.sailex.secondbrain.util.LogUtil
 import me.sailex.secondbrain.util.PromptFormatter
@@ -28,7 +29,7 @@ class NPCEventHandler<T>(
      */
     override fun onEvent(prompt: String) {
         CompletableFuture.runAsync({
-            LogUtil.info("onEvent: $prompt", true)
+            LogUtil.info("onEvent: $prompt")
             history.add(prompt)
 
             val relevantFunctions = functionManager.getRelevantFunctions(prompt)
@@ -36,11 +37,16 @@ class NPCEventHandler<T>(
             val formattedPrompt = PromptFormatter.format(prompt, context)
 
             val response = llmClient.callFunctions(formattedPrompt, relevantFunctions)
-            controller.chat(response.finalResponse())
-            history.add(response.chatHistory())
+
+            if (llmClient is OllamaClient) {
+                controller.addGoal("chat") { controller.chat(response.finalResponse) }
+                history.add(response.finalResponse + " - " + response.toolCalls)
+            } else {
+                history.add(response.toolCalls)
+            }
         }, executorService)
             .exceptionally {
-                LogUtil.error("Unexpected error occurred handling event: $it", true)
+                LogUtil.error("Unexpected error occurred handling event", it)
                 null
             }
     }

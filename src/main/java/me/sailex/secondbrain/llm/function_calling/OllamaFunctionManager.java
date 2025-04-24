@@ -135,17 +135,17 @@ public class OllamaFunctionManager extends AFunctionManager<Tools.ToolSpecificat
 //        }
 
         public static String moveToCoordinates(Map<String, Object> arguments) {
-            int x = (Integer) arguments.get(Property.Name.X);
-            int y = (Integer) arguments.get(Property.Name.Y);
-            int z = (Integer) arguments.get(Property.Name.Z);
+            int x = ArgumentParser.getInt(arguments, Property.Name.X);
+            int y = ArgumentParser.getInt(arguments, Property.Name.Y);
+            int z = ArgumentParser.getInt(arguments, Property.Name.Z);
 
             controller.addGoal(Function.Name.MOVE_TO_COORDINATES, () -> controller.moveToCoordinates(new BlockPos(x, y, z)));
             return "moving to " + x + ", " + y + ", " + z;
         }
 
         public static String moveToEntity(Map<String, Object> arguments) {
-            String entityName = (String) arguments.get(Property.Name.ENTITY_NAME);
-            boolean isPlayer = (Boolean) arguments.get(Property.Name.IS_PLAYER);
+            String entityName = ArgumentParser.getString(arguments,Property.Name.ENTITY_NAME);
+            boolean isPlayer = ArgumentParser.getBoolean(arguments, Property.Name.IS_PLAYER);
 
             controller.addGoal(Function.Name.MOVE_TO_ENTITY, () -> controller.moveToEntity(entityName, isPlayer));
             return "moving to " + entityName;
@@ -157,24 +157,24 @@ public class OllamaFunctionManager extends AFunctionManager<Tools.ToolSpecificat
         }
 
         public static String mineBlock(Map<String, Object> arguments) {
-            String blockType = (String) arguments.get(Property.Name.BLOCK_TYPE);
-            int numberOfBlocks = (Integer) arguments.get(Property.Name.NUMBER_OF_BLOCKS);
+            String blockType = ArgumentParser.getString(arguments,Property.Name.BLOCK_TYPE);
+            int numberOfBlocks = ArgumentParser.getInt(arguments, Property.Name.NUMBER_OF_BLOCKS);
 
             controller.addGoal(Function.Name.MINE_BLOCK, () -> controller.mineBlock(blockType, numberOfBlocks));
             return "mining block of name " + blockType;
         }
 
         public static String dropItem(Map<String, Object> arguments) {
-            String itemName = (String) arguments.get(Property.Name.ITEM_NAME);
-            boolean dropAll = (Boolean) arguments.get(Property.Name.DROP_ALL);
+            String itemName = ArgumentParser.getString(arguments,Property.Name.ITEM_NAME);
+            boolean dropAll = ArgumentParser.getBoolean(arguments, Property.Name.DROP_ALL);
 
             controller.addGoal(Function.Name.DROP_ITEM, () -> controller.dropItem(itemName, dropAll));
             return "drops item/s of name " + itemName;
         }
 
         public static String attackEntity(Map<String, Object> arguments) {
-            String entityName = (String) arguments.get(Property.Name.ENTITY_NAME);
-            boolean isPlayer = (Boolean) arguments.get(Property.Name.IS_PLAYER);
+            String entityName = ArgumentParser.getString(arguments,Property.Name.ENTITY_NAME);
+            boolean isPlayer = ArgumentParser.getBoolean(arguments, Property.Name.IS_PLAYER);
 
             controller.addGoal(Function.Name.ATTACK_ENTITY, () -> controller.attackEntity(entityName, isPlayer));
             return "tries to attack the entity " + entityName;
@@ -189,13 +189,13 @@ public class OllamaFunctionManager extends AFunctionManager<Tools.ToolSpecificat
         }
 
         public static String getRecipes(Map<String, Object> arguments) {
-            String itemName = (String) arguments.get(Property.Name.ITEM_NAME);
+            String itemName = ArgumentParser.getString(arguments, Property.Name.ITEM_NAME);
 
             return PromptFormatter.formatRecipes(resourcesProvider.getRelevantRecipes(itemName));
         }
 
         public static String getConversations(Map<String, Object> arguments) {
-            String topic = (String) arguments.get(Property.Name.TOPIC);
+            String topic = ArgumentParser.getString(arguments, Property.Name.TOPIC);
 
             return PromptFormatter.formatConversation(resourcesProvider.getRelevantConversations(topic));
         }

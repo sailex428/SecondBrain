@@ -72,7 +72,7 @@ class ModeInitializer(
 
     private fun farmingMode(): NPCMode {
         return NPCMode.Builder()
-            .isOn(true)
+            .isOn(false)
             .name("farming").onTick {
                 null
             }.build()

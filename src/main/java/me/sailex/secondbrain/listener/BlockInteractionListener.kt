@@ -6,6 +6,7 @@ import net.fabricmc.fabric.api.event.player.UseBlockCallback
 import net.minecraft.util.ActionResult
 
 /**
+ * @deprecated Will be removed, cause this layer doesnt handle the llm anymore
  * Listens to block interactions of this npc
  */
 class BlockInteractionListener(

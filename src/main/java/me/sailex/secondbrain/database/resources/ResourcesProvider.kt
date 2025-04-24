@@ -1,6 +1,5 @@
 package me.sailex.secondbrain.database.resources
 
-import me.sailex.secondbrain.SecondBrain.server
 import me.sailex.secondbrain.database.repositories.ConversationRepository
 import me.sailex.secondbrain.database.repositories.RecipesRepository
 import me.sailex.secondbrain.llm.LLMClient
@@ -23,7 +22,7 @@ import java.util.concurrent.TimeUnit
 class ResourcesProvider(
     private val conversationRepository: ConversationRepository,
     private val recipesRepository: RecipesRepository,
-    private val llmClient: LLMClient
+    val llmClient: LLMClient
 ) {
     private var executorService: ExecutorService = Executors.newFixedThreadPool(3)
 
@@ -33,17 +32,17 @@ class ResourcesProvider(
     /**
      * Loads conversations recipes from db/mc into memory
      */
-    fun loadResources(npcName: String) {
+    fun loadResources(npcName: String, server: MinecraftServer) {
         runAsync {
             LogUtil.info("Loading resources into memory...")
             loadConversations(npcName)
-            loadRecipes()
+            loadRecipes(server)
             executorService.shutdown()
         }
     }
 
     fun getRelevantRecipes(itemName: String): List<Recipe> {
-        return ResourceRecommender.getRelevantResources(llmClient, itemName, recipes, 5)
+        return ResourceRecommender.getRelevantResources(llmClient, itemName, recipes, 3)
             .filterIsInstance<Recipe>()
     }
 
@@ -67,29 +66,30 @@ class ResourcesProvider(
     fun saveResources() {
         shutdownServiceNow()
         executorService = Executors.newFixedThreadPool(2)
-        LogUtil.info("Saving resources into db...", true)
         val recipesFuture = runAsync {
             recipes.forEach { recipe -> recipesRepository.insert(recipe) }
+            LogUtil.info("Saved recipes to db")
         }
         val conversationFuture = runAsync {
             conversations.forEach { conversation -> conversationRepository.insert(conversation) }
+            LogUtil.info("Saved conversations to db")
         }
         CompletableFuture.allOf(recipesFuture, conversationFuture).get()
-        executorService.shutdown()
+        executorService.shutdownNow()
     }
 
     private fun shutdownServiceNow() {
         if (!executorService.isTerminated) {
             executorService.shutdownNow()
-            LogUtil.error("Initial loading of resources interrupted - Wait for termination", true)
+            LogUtil.error("Initial loading of resources interrupted - Wait for termination")
             executorService.awaitTermination(500, TimeUnit.MILLISECONDS)
         }
     }
 
     private fun runAsync(task: () -> Unit): CompletableFuture<Void> {
         return CompletableFuture.runAsync(task , executorService).exceptionally {
-            LogUtil.error("Error loading/saving resources into memory: ${it.stackTraceToString()}", true)
-            return@exceptionally null
+            LogUtil.error("Error loading/saving resources into memory", it)
+            null
         }
     }
 
@@ -97,7 +97,7 @@ class ResourcesProvider(
         this.conversations.addAll(conversationRepository.selectByName(npcName))
     }
 
-    private fun loadRecipes() {
+    private fun loadRecipes(server: MinecraftServer) {
         val recipeEntries: Collection<RecipeEntry<*>> = server.recipeManager.values().filter {
             it.value.ingredients.isNotEmpty()
         }
@@ -136,6 +136,6 @@ class ResourcesProvider(
 
     private fun getItemId(ingredient: Ingredient): String {
         val idString = ingredient.matchingStacks[0].name.toString()
-        return idString.substring(idString.indexOf(".") + 1, idString.lastIndexOf("'"))
+        return idString.substring(idString.lastIndexOf(".") + 1, idString.lastIndexOf("'"))
     }
 }

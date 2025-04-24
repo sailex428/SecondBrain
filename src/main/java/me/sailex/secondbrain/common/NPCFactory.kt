@@ -22,77 +22,102 @@ import me.sailex.secondbrain.mode.ModeController
 import me.sailex.secondbrain.mode.ModeInitializer
 import me.sailex.secondbrain.model.NPC
 import me.sailex.secondbrain.util.LogUtil
-import net.minecraft.entity.player.PlayerEntity
+import net.minecraft.server.MinecraftServer
 import net.minecraft.server.PlayerManager
 import net.minecraft.server.network.ServerPlayerEntity
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CountDownLatch
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
-class NPCFactory(
-    private val configProvider: ConfigProvider,
-    private val repositoryFactory: RepositoryFactory
-) {
-    val npcSpawner = NPCSpawner()
-    val nameToNpc = mutableMapOf<String, NPC>()
+object NPCFactory {
+    lateinit var configProvider: ConfigProvider
+    private lateinit var repositoryFactory: RepositoryFactory
+
+    fun initialize(configProvider: ConfigProvider, repositoryFactory: RepositoryFactory) {
+        this.configProvider = configProvider
+        this.repositoryFactory = repositoryFactory
+    }
+
+    val nameToNpc = ConcurrentHashMap<String, NPC>()
     var resourcesProvider: ResourcesProvider? = null
         private set
+    val executorService: ExecutorService = Executors.newSingleThreadExecutor()
 
-    fun createNpc(config: NPCConfig, source: PlayerEntity) {
-        val name = config.npcName
-        checkNpcName(name)
+    fun createNpc(config: NPCConfig, source: ServerPlayerEntity) {
+        CompletableFuture.runAsync({
+            checkLimit()
+            var name = config.npcName
+            checkNpcName(name)
 
-        npcSpawner.spawn(source, name)
-        val latch = CountDownLatch(1)
-        npcSpawner.checkPlayerAvailable(name, latch)
-
-        Thread {
-            try {
-                //player spawning is nonblocking so we need to wait here until its avail
-                val npcWasCreated = latch.await(3, TimeUnit.SECONDS)
-                val npcEntity = source.server?.playerManager?.getPlayer(name)
-                if (!npcWasCreated || npcEntity == null) {
-                    throw NPCCreationException("NPCEntity with name: $name could not be spawned.")
-                }
-                createNpc(npcEntity, config)
-            } catch (e: Exception) {
-                Thread.currentThread().interrupt()
-                LogUtil.error(e.message)
+            NPCSpawner.spawn(name, source, false)
+            val latch = CountDownLatch(1)
+            NPCSpawner.checkPlayerAvailable(name, latch)
+            //player spawning runs async so we need to wait here until its avail
+            val npcWasCreated = latch.await(3, TimeUnit.SECONDS)
+            if (!npcWasCreated) {
+                throw NPCCreationException("NPCEntity with name $name could not be spawned within 3 seconds. Operation timed out.")
             }
-        }.start()
-        config.isActive = true
+            val npcEntity = source.server?.playerManager?.getPlayer(name)
+            if (npcEntity == null) {
+                throw NPCCreationException("NPCEntity with name: $name could not be spawned.")
+            }
+            name = npcEntity.name.string //FIXME: npcSpawner should create npc with same casing as typed in
+
+            val npc = createNpcInstance(npcEntity, config)
+            val matchingConfig = configProvider.getNpcConfig(name)
+            if (matchingConfig.isEmpty) {
+                configProvider.addNpcConfig(config)
+            } else {
+                matchingConfig.get().isActive = true
+            }
+            nameToNpc[name] = npc
+            handleInitMessage(npc.eventHandler)
+
+            LogUtil.infoInChat(("Added NPC with name: ${config.npcName}"))
+        }, executorService).exceptionally {
+            val errorMsg = "Failed to create NPC"
+            LogUtil.errorInChat(errorMsg)
+            LogUtil.error(errorMsg, it)
+            null
+        }
     }
 
-    private fun createNpc(
-        npcEntity: ServerPlayerEntity,
-        config: NPCConfig,
-    ) {
-        val npc = createNpcInstance(npcEntity, config)
-        handleInitMessage(npc.eventHandler)
-        nameToNpc[config.npcName] = npc
-
-        LogUtil.info(("Created NPC with name: ${config.npcName}"))
-    }
-
-    fun deleteNpc(name: String, playerManager: PlayerManager) {
+    fun removeNpc(name: String, playerManager: PlayerManager) {
         val npcToRemove = nameToNpc[name]
         if (npcToRemove != null) {
-            npcSpawner.despawn(name, playerManager)
-            npcToRemove.llmClient.stopService()
+            configProvider.getNpcConfig(name).ifPresent { it.isActive = false }
+            NPCSpawner.remove(name, playerManager)
+            stopLlmClient(npcToRemove.llmClient)
             npcToRemove.eventHandler.stopService()
             npcToRemove.modeController.setAllIsOn(false)
             npcToRemove.npcController.cancelActions()
-            npcToRemove.config.isActive = false
+            npcToRemove.contextProvider.chunkManager.stopService()
             nameToNpc.remove(name)
-
-            LogUtil.info("Removed NPC with name: $name")
+            LogUtil.infoInChat("Removed NPC with name: $name")
         }
     }
 
-    fun shutdownNpcs() {
-        nameToNpc.values.forEach {
-            it.eventHandler.stopService()
-            it.llmClient.stopService()
+    private fun stopLlmClient(llmClient: LLMClient) {
+        val resourceLlmClient = resourcesProvider?.llmClient
+        if (resourceLlmClient != llmClient) {
+            llmClient.stopService()
         }
+    }
+
+    fun deleteNpc(name: String, playerManager: PlayerManager) {
+        removeNpc(name, playerManager)
+        configProvider.deleteNpcConfig(name)
+    }
+
+    fun shutdownNpcs(server: MinecraftServer) {
+        nameToNpc.keys.forEach {
+            removeNpc(it, server.playerManager)
+        }
+        resourcesProvider?.llmClient?.stopService()
+        executorService.shutdownNow()
     }
 
     private fun createNpcInstance(npcEntity: ServerPlayerEntity, config: NPCConfig): NPC {
@@ -101,7 +126,8 @@ class NPCFactory(
 
         return when (config.llmType) {
             LLMType.OLLAMA -> {
-                val llmClient = OllamaClient(config.ollamaUrl, SecondBrain.MOD_ID + "-" + config.npcName, config.llmDefaultPrompt, baseConfig.llmTimeout)
+                val llmClient = OllamaClient(config.ollamaUrl, SecondBrain.MOD_ID + "-" + config.npcName,
+                    Instructions.getLlmSystemPrompt(config.npcName, config.llmCharacter), baseConfig.llmTimeout)
                 val (controller, history) = initBase(llmClient, npcEntity, config.npcName, contextProvider)
                 val functionManager = OllamaFunctionManager(
                     resourcesProvider!!,
@@ -138,21 +164,21 @@ class NPCFactory(
         npcName: String,
         contextProvider: ContextProvider
     ): Pair<NPCController, ConversationHistory> {
-        initResourceProvider(llmClient, npcName)
+        initResourceProvider(llmClient, npcName, npcEntity.server)
         val automatone = BaritoneAPI.getProvider().getBaritone(npcEntity)
         val controller = NPCController(npcEntity, automatone, contextProvider)
         val history = ConversationHistory(resourcesProvider!!, npcName)
         return Pair(controller, history)
     }
 
-    private fun initResourceProvider(llmClient: LLMClient, npcName: String) {
+    private fun initResourceProvider(llmClient: LLMClient, npcName: String, server: MinecraftServer) {
         this.resourcesProvider ?: run {
             this.resourcesProvider = ResourcesProvider(
                 repositoryFactory.conversationRepository,
                 repositoryFactory.recipesRepository,
                 llmClient
             )
-            resourcesProvider?.loadResources(npcName)
+            resourcesProvider?.loadResources(npcName, server)
         }
     }
 
@@ -174,6 +200,12 @@ class NPCFactory(
     fun checkNpcName(npcName: String) {
         if (nameToNpc.containsKey(npcName)) {
             throw NPCCreationException("A NPC with the name '$npcName' already exists.")
+        }
+    }
+
+    fun checkLimit() {
+        if (nameToNpc.size == 3) {
+            throw NPCCreationException("Currently there are no more than 3 parallel running NPCs supported!")
         }
     }
 

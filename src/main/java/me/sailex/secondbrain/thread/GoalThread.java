@@ -39,8 +39,7 @@ public class GoalThread extends Thread {
         try {
             goalTask.run();
         } catch (Exception e) {
-            LogUtil.error(("Error executing goal <%s>: %s").formatted(goalName, e.getMessage()),
-                    true);
+            LogUtil.error(("Error executing goal %s").formatted(goalName), e);
         } finally {
             completionLatch.countDown();
         }

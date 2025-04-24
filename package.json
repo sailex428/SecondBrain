@@ -1,0 +1,16 @@
+{
+  "name": "secondbrain",
+  "type": "module",
+  "scripts": {
+    "prepare": "husky",
+    "test": "",
+    "commitlint": "commitlint --edit"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^19.8.0",
+    "@commitlint/config-conventional": "^19.8.0",
+    "@commitlint/types": "^19.8.0",
+    "commitlint": "^19.8.0",
+    "husky": "^9.1.7"
+  }
+}

@@ -6,9 +6,11 @@ import me.sailex.secondbrain.common.NPCFactory;
 import me.sailex.secondbrain.config.BaseConfig;
 import me.sailex.secondbrain.config.ConfigProvider;
 import me.sailex.secondbrain.config.NPCConfig;
+import me.sailex.secondbrain.exception.NPCCreationException;
 import me.sailex.secondbrain.networking.packet.*;
 import me.sailex.secondbrain.util.LogUtil;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.server.PlayerManager;
 import net.minecraft.util.Identifier;
 
 import static me.sailex.secondbrain.SecondBrain.MOD_ID;
@@ -56,7 +58,7 @@ public class NetworkHandler {
         CHANNEL.registerServerbound(UpdateBaseConfigPacket.class, (configPacket, clientAccess) -> {
             if (isPlayerAuthorized(clientAccess)) {
                 configProvider.setBaseConfig(configPacket.baseConfig());
-                LogUtil.info("Updated base config to: " + configPacket, true);
+                LogUtil.info("Updated base config to: " + configPacket);
             }
         });
     }
@@ -65,19 +67,15 @@ public class NetworkHandler {
         CHANNEL.registerServerbound(UpdateNpcConfigPacket.class, (configPacket, clientAccess) -> {
             if (isPlayerAuthorized(clientAccess)) {
                 configProvider.updateNpcConfig(configPacket.npcConfig());
-                LogUtil.info("Updated npc config to: " + configPacket, true);
+                LogUtil.info("Updated npc config to: " + configPacket);
             }
         });
     }
 
     private void registerAddNpc() {
-        CHANNEL.registerServerbound(AddNpcPacket.class, (addNpcPacket, clientAccess) -> {
+        CHANNEL.registerServerbound(CreateNpcPacket.class, (createNpcPacket, clientAccess) -> {
             if (isPlayerAuthorized(clientAccess)) {
-                npcFactory.createNpc(addNpcPacket.npcConfig(), clientAccess.player());
-                if (addNpcPacket.isNewConfig()) {
-                    configProvider.addNpcConfig(addNpcPacket.npcConfig());
-                }
-                LogUtil.info("Added npc: " + addNpcPacket, true);
+                npcFactory.createNpc(createNpcPacket.npcConfig(), clientAccess.player());
             }
         });
     }
@@ -85,11 +83,14 @@ public class NetworkHandler {
     private void registerDeleteNpc() {
         CHANNEL.registerServerbound(DeleteNpcPacket.class, (configPacket, clientAccess) -> {
             if (isPlayerAuthorized(clientAccess)) {
-                npcFactory.deleteNpc(configPacket.npcName(), clientAccess.player().getServer().getPlayerManager());
-                if (configPacket.isDeleteConfig()) {
-                    configProvider.deleteNpcConfig(configPacket.npcName());
+                PlayerManager playerManager = clientAccess.player().getServer().getPlayerManager();
+                String npcName = configPacket.npcName();
+
+                if (configPacket.isDelete()) {
+                    npcFactory.deleteNpc(npcName, playerManager);
+                } else {
+                    npcFactory.removeNpc(npcName, playerManager);
                 }
-                LogUtil.info("Deleted npc with uuid: " + configPacket, true);
             }
         });
     }
@@ -99,7 +100,7 @@ public class NetworkHandler {
             builder.register(ConfigPacket.ENDEC, ConfigPacket.class);
             builder.register(BaseConfig.ENDEC, BaseConfig.class);
             builder.register(NPCConfig.ENDEC, NPCConfig.class);
-            builder.register(AddNpcPacket.ENDEC, AddNpcPacket.class);
+            builder.register(CreateNpcPacket.ENDEC, CreateNpcPacket.class);
             builder.register(DeleteNpcPacket.ENDEC, DeleteNpcPacket.class);
             builder.register(UpdateNpcConfigPacket.ENDEC, UpdateNpcConfigPacket.class);
             builder.register(UpdateBaseConfigPacket.ENDEC, UpdateBaseConfigPacket.class);

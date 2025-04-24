@@ -1,11 +1,12 @@
 package me.sailex.secondbrain.common;
 
 import carpet.patches.EntityPlayerMPFake;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
-import net.minecraft.entity.player.PlayerEntity;
+import me.sailex.secondbrain.exception.NPCCreationException;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.GameMode;
 import net.minecraft.world.World;
 
@@ -13,27 +14,33 @@ import java.util.concurrent.CountDownLatch;
 
 public class NPCSpawner {
 
-    public void spawn(PlayerEntity player, String name) {
-        RegistryKey<World> dimensionKey = player.getWorld().getRegistryKey();
+    private NPCSpawner() {}
+
+    public static void spawn(String name, ServerPlayerEntity player, boolean useSpawnPos) {
+        World world = player.getWorld();
+        RegistryKey<World> dimensionKey = world.getRegistryKey();
+
+        Vec3d spawnPos = useSpawnPos ? world.getSpawnPos().toCenterPos() : player.getPos();
 
         boolean isSuccessful = EntityPlayerMPFake.createFake(name, player.getServer(),
-                player.getPos(), player.getYaw(), player.getPitch(),
+                spawnPos, player.getYaw(), player.getPitch(),
                 dimensionKey, GameMode.SURVIVAL, false);
         if (!isSuccessful) {
-            throw new NullPointerException("Player profile doesn't exist!");
+            throw new NPCCreationException("Player profile doesn't exist!");
         }
     }
 
-    public void despawn(String name, PlayerManager playerManager) {
+    public static void remove(String name, PlayerManager playerManager) {
         ServerPlayerEntity player = playerManager.getPlayer(name);
         if (player != null) {
             playerManager.remove(player);
         }
     }
 
-    public void checkPlayerAvailable(String npcName, CountDownLatch latch) {
-        ServerTickEvents.END_SERVER_TICK.register(server -> {
-            if (server.getPlayerManager().getPlayer(npcName) != null) {
+    public static void checkPlayerAvailable(String npcName, CountDownLatch latch) {
+        ServerEntityEvents.ENTITY_LOAD.register((entity, world) -> {
+            if (entity instanceof ServerPlayerEntity
+                    && entity.getName().getString().equals(npcName)) {
                 latch.countDown();
             }
         });

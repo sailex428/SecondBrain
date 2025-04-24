@@ -78,10 +78,10 @@ public class OpenAiClient extends ALLMClient<FunctionDef> {
 				executeFunctionCalls(toolCall);
 				removeCalledFunctions(functions, toolCall.getFunction().getName());
             }
-			return new FunctionResponse(responseMessage.getContent(), calledFunctions.toString());
+			return new FunctionResponse(null, calledFunctions.toString());
         } catch (Exception e) {
 			Thread.currentThread().interrupt();
-			LogUtil.error("LLM has not called any functions for prompt: " + prompt, true);
+			LogUtil.error("LLM has not called any functions for prompt: " + prompt, e);
 			return new FunctionResponse("No actions called by LLM", "");
 		}
 	}
@@ -98,7 +98,7 @@ public class OpenAiClient extends ALLMClient<FunctionDef> {
 
 	private void executeFunctionCalls(ToolCall toolCall) {
 		FunctionCall function = toolCall.getFunction();
-		LOGGER.info("Executed function: {} - {}", function.getName(), function.getArguments());
+		LogUtil.info(("Executed function: %s - %s").formatted(function.getName(), function.getArguments()));
 		functionExecutor.execute(function);
 	}
 
@@ -118,7 +118,7 @@ public class OpenAiClient extends ALLMClient<FunctionDef> {
 					.toList());
 		} catch (Exception e) {
 			Thread.currentThread().interrupt();
-			LOGGER.error("Could not generate embedding for prompt: {}", prompt.getFirst(), e);
+			LogUtil.error("Could not generate embedding for prompt " + prompt.getFirst(), e);
 			return new double[] {};
 		}
 	}

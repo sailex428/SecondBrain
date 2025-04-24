@@ -12,8 +12,8 @@ import me.sailex.secondbrain.llm.LLMType;
 import me.sailex.secondbrain.common.NPCFactory;
 import me.sailex.secondbrain.util.LogUtil;
 
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.server.network.ServerPlayerEntity;
 
 @AllArgsConstructor
 public class NPCCreateCommand {
@@ -36,23 +36,18 @@ public class NPCCreateCommand {
 	}
 
 	private int createNpcWithLLM(CommandContext<ServerCommandSource> context) {
-		PlayerEntity source = context.getSource().getPlayer();
+		ServerPlayerEntity source = context.getSource().getPlayer();
 		if (source == null) {
 			context.getSource().sendFeedback(() -> LogUtil.formatError("Command must be executed as a Player!"), false);
 			return 0;
 		}
 
-		try {
-			String name = StringArgumentType.getString(context, "name");
-			LLMType llmType = LLMType.valueOf(StringArgumentType.getString(context, LLM_TYPE));
+		String name = StringArgumentType.getString(context, "name");
+		LLMType llmType = LLMType.valueOf(StringArgumentType.getString(context, LLM_TYPE));
 
-			NPCConfig config = NPCConfig.builder(name).llmType(llmType).build();
-			npcFactory.createNpc(config, source);
-			return 1;
-		} catch (Exception e) {
-			context.getSource().sendFeedback(() -> LogUtil.formatError(e.getMessage()), false);
-			return 0;
-		}
+		NPCConfig config = NPCConfig.builder(name).llmType(llmType).build();
+		npcFactory.createNpc(config, source);
+		return 1;
 	}
 
 }

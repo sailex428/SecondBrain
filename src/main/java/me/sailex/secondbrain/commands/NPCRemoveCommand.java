@@ -26,7 +26,7 @@ public class NPCRemoveCommand {
 	private int removeNPC(CommandContext<ServerCommandSource> context) {
 		String name = StringArgumentType.getString(context, "name");
 
-		npcFactory.deleteNpc(name, context.getSource().getServer().getPlayerManager());
+		npcFactory.removeNpc(name, context.getSource().getServer().getPlayerManager());
 		return 1;
 	}
 }
