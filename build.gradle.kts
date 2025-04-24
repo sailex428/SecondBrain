@@ -67,10 +67,10 @@ dependencies {
     include(modRuntimeOnly("io.github.sashirestela:cleverclient:1.4.4")!!)
     include(modImplementation("io.github.sashirestela:simple-openai:3.9.0")!!)
 
-    modImplementation("io.github.ladysnake:automatone:$automatone")
-    modImplementation("org.ladysnake.cardinal-components-api:cardinal-components-base:${property("cca_version")}")
-    modImplementation("org.ladysnake.cardinal-components-api:cardinal-components-entity:${property("cca_version")}")
-    modImplementation("org.ladysnake.cardinal-components-api:cardinal-components-world:${property("cca_version")}")
+    include(modImplementation("io.github.ladysnake:automatone:$automatone")!!)
+    include(modImplementation("org.ladysnake.cardinal-components-api:cardinal-components-base:${property("cca_version")}")!!)
+    include(modImplementation("org.ladysnake.cardinal-components-api:cardinal-components-entity:${property("cca_version")}")!!)
+    include(modImplementation("org.ladysnake.cardinal-components-api:cardinal-components-world:${property("cca_version")}")!!)
     include(modImplementation("com.github.gnembon:fabric-carpet:${property("carpet_version")}")!!)
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.11.3")
@@ -115,7 +115,6 @@ tasks.processResources {
     inputs.property("version", version)
     inputs.property("mcDep", mcVersion)
     inputs.property("fabricLoader", fabricLoaderVersion)
-    inputs.property("automatone", automatone)
     inputs.property("owoLib", owoLib)
     inputs.property("fabricLangKotlin", fabricLangKotlin)
     filteringCharset = "UTF-8"
@@ -125,7 +124,6 @@ tasks.processResources {
             "version" to version,
             "mcDep" to mcVersion,
             "fabricLoader" to fabricLoaderVersion,
-            "automatone" to automatone,
             "owoLib" to owoLib,
             "fabricLangKotlin" to fabricLangKotlin,
         )
@@ -188,11 +186,13 @@ publishMods {
     }
 
     modrinth {
+        file.set(tasks.named<RemapJarTask>("remapJar").get().archiveFile)
         displayName.set("v$modVersion [$mcVersion] SecondBrain")
         accessToken.set(providers.gradleProperty("MODRINTH_TOKEN"))
         projectId.set(property("publish.modrinth").toString())
         minecraftVersions.add(mcVersion)
         requires("fabric-api")
+        requires("owo-lib")
     }
 }
 

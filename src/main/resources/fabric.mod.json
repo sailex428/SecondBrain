@@ -25,7 +25,6 @@
     "fabricloader": ">=${fabricLoader}",
     "fabric": "*",
     "minecraft": "${mcDep}",
-    "automatone": "${automatone}",
-    "owo-lib": "${owoLib}"
+    "owo-lib": ">=${owoLib}"
   }
 }
