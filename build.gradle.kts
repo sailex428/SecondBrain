@@ -11,7 +11,8 @@ plugins {
     id("com.diffplug.spotless") version "7.0.0.BETA4"
 }
 
-version =  rootProject.extra["mod.version"] as String
+version = rootProject.extra["mod.version"] as String
+val modVersion = version as String
 val mcVersion = property("mc.version").toString()
 val fabricLoaderVersion = property("deps.fabric_loader").toString()
 val stage = rootProject.extra["deps.stage"].toString()
@@ -166,16 +167,16 @@ publishing {
 
 publishMods {
     changelog.set(rootProject.file("CHANGELOG.md").readText())
-    displayName.set("v$version SecondBrain")
+    displayName.set("v$modVersion SecondBrain")
     type.set(ReleaseType.ALPHA)
-    version.set(version)
+    version.set(modVersion)
     modLoaders.add("fabric")
 
     github {
         file.set(tasks.named<RemapJarTask>("remapJar").get().archiveFile)
         accessToken.set(providers.gradleProperty("GITHUB_TOKEN"))
         repository.set(providers.gradleProperty("GITHUB_REPOSITORY"))
-        tagName.set("v$version")
+        tagName.set("v$modVersion")
         commitish.set("main")
     }
 
@@ -183,11 +184,11 @@ publishMods {
         webhookUrl.set(providers.gradleProperty("DISCORD_WEBHOOK"))
         username.set("Update Bot")
         avatarUrl.set("https://www.sailex.me/img/sailex_head.png")
-        content.set(changelog.map { "## New version of SecondBrain is out! [$version] \n$it" })
+        content.set(changelog.map { "## New version of SecondBrain is out! [$modVersion] \n$it" })
     }
 
     modrinth {
-        displayName.set("v$version [$mcVersion] SecondBrain")
+        displayName.set("v$modVersion [$mcVersion] SecondBrain")
         accessToken.set(providers.gradleProperty("MODRINTH_TOKEN"))
         projectId.set(property("publish.modrinth").toString())
         minecraftVersions.add(mcVersion)
