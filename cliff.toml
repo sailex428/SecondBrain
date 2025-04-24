@@ -19,7 +19,7 @@ body = """
     {% endfor %}
 {% endfor %}\n
 """
-footer = """"""
+footer = """Download the new release on [Modrinth](https://modrinth.com/mod/secondbrain/versions)."""
 
 trim = true
 
