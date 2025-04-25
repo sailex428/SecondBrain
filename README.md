@@ -1,4 +1,5 @@
-# Secondbrain
+<h1 align="center" style="font-weight: normal;"><b>SecondBrain</b></h1>
+<p align="center"><img src="logo.png" alt="mod-logo"></p>
 
 A Fabric mod that brings intelligent NPCs to your minecraft world. Create player-like characters controlled by LLMs that respond to your chat messages and perform nearly all player actions.
 
