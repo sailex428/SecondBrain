@@ -6,7 +6,6 @@ import me.sailex.secondbrain.common.NPCFactory;
 import me.sailex.secondbrain.config.BaseConfig;
 import me.sailex.secondbrain.config.ConfigProvider;
 import me.sailex.secondbrain.config.NPCConfig;
-import me.sailex.secondbrain.exception.NPCCreationException;
 import me.sailex.secondbrain.networking.packet.*;
 import me.sailex.secondbrain.util.LogUtil;
 import net.minecraft.entity.player.PlayerEntity;
