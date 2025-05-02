@@ -172,14 +172,14 @@ publishMods {
 
     github {
         file.set(tasks.named<RemapJarTask>("remapJar").get().archiveFile)
-        accessToken.set(providers.gradleProperty("GITHUB_TOKEN"))
-        repository.set(providers.gradleProperty("GITHUB_REPOSITORY"))
+        accessToken.set(providers.environmentVariable("PUBLISH_GITHUB_TOKEN"))
+        repository.set(providers.environmentVariable("REPOSITORY_NAME"))
         tagName.set("v$modVersion")
         commitish.set("main")
     }
 
     discord {
-        webhookUrl.set(providers.gradleProperty("DISCORD_WEBHOOK"))
+        webhookUrl.set(providers.environmentVariable("DISCORD_WEBHOOK"))
         username.set("Update Bot")
         avatarUrl.set("https://www.sailex.me/img/sailex_head.png")
         content.set(changelog.map { "## New version of SecondBrain is out! [$modVersion] \n$it" })
@@ -188,7 +188,7 @@ publishMods {
     modrinth {
         file.set(tasks.named<RemapJarTask>("remapJar").get().archiveFile)
         displayName.set("v$modVersion [$mcVersion] SecondBrain")
-        accessToken.set(providers.gradleProperty("MODRINTH_TOKEN"))
+        accessToken.set(providers.environmentVariable("MODRINTH_TOKEN"))
         projectId.set(property("publish.modrinth").toString())
         minecraftVersions.add(mcVersion)
         requires("fabric-api")
