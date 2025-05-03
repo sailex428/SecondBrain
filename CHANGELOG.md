@@ -2,17 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
-## [2.0.2] - 2025-04-24
-
-### 🚀 Features
-
-- Add commitlinting
+## [2.0.3] - 2025-05-02
 
 ### 🐛 Bug Fixes
 
-- Fix runtime issues in prod Environment
+- Runtime issues of automatone in singleplayer
+
+### 📚 Documentation
+
+- Add footer git cliff config
+- Update readme
 
 ### ⚙️ Miscellaneous Tasks
 
-- Clean up build.gradle and mod.json
-- Add gitcliff config for generating changelogs from commits
+- Add publish workflow
+- Bump dawidd6/action-download-artifact from 2 to 6 in /.github/workflows
+
+Download the new release on [Modrinth](https://modrinth.com/mod/secondbrain/versions).
