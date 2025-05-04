@@ -11,7 +11,6 @@ on:
 
 permissions:
   contents: write
-
 jobs:
   publish:
     if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
@@ -21,8 +20,11 @@ jobs:
       options: --user root
 
     steps:
+      - uses: actions/checkout@v4
       - name: Checkout repository
-        uses: actions/checkout@v4
+        run: |
+          git config --global user.email "${{ vars.GIT_EMAIL }}"
+          git config --global user.name "${{ vars.GIT_USERNAME }}"
         with:
           fetch-depth: 0
 
@@ -40,11 +42,6 @@ jobs:
         run: |
           chmod +x ./gradlew
           ./gradlew build
-
-      - name: Set Git User Config
-        run: |
-          git config --global user.email "${{ vars.GIT_EMAIL }}"
-          git config --global user.name "${{ vars.GIT_USERNAME }}"
 
       - name: Get version from properties
         id: get_version
