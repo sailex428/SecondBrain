@@ -26,7 +26,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Download build artifacts
+      - name: Download build Artifacts
         if: ${{ github.event_name == 'workflow_run' }}
         uses: dawidd6/action-download-artifact@v6
         with:
@@ -41,18 +41,18 @@ jobs:
           chmod +x ./gradlew
           ./gradlew build
 
-      - name: Set User Config
+      - name: Set Git User Config
         run: |
-          git config --local user.email ${{ env.GIT_EMAIL }}
-          git config --local user.name ${{ env.GIT_USERNAME }}
+          git config --global user.email "${{ env.GIT_EMAIL }}"
+          git config --global user.name "${{ env.GIT_USERNAME }}"
 
-      - name: Get version from gradle.properties
+      - name: Get version from properties
         id: get_version
         run: |
           VERSION=$(grep "mod.version" gradle.properties | cut -d'=' -f2)
           echo "MOD_VERSION=$VERSION" >> $GITHUB_ENV
 
-      - name: Generate a changelog
+      - name: Generate Changelog
         uses: orhun/git-cliff-action@v3
         with:
           config: cliff.toml
@@ -61,13 +61,13 @@ jobs:
           OUTPUT: CHANGELOG.md
           GITHUB_REPO: ${{ env.REPOSITORY_NAME }}
 
-      - name: Commit and push changelog
+      - name: Commit Changelog
         run: |
           git add CHANGELOG.md
           git commit -m "docs: update changelog for version ${{ env.MOD_VERSION }}"
           git push origin main
 
-      - name: Release Mod JAR
+      - name: Release Mod
         run: ./gradlew publishGithub
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
