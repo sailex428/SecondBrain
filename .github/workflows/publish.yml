@@ -43,8 +43,8 @@ jobs:
 
       - name: Set Git User Config
         run: |
-          git config --global user.email "${{ env.GIT_EMAIL }}"
-          git config --global user.name "${{ env.GIT_USERNAME }}"
+          git config --global user.email "${{ vars.GIT_EMAIL }}"
+          git config --global user.name "${{ vars.GIT_USERNAME }}"
 
       - name: Get version from properties
         id: get_version
@@ -56,15 +56,15 @@ jobs:
         uses: orhun/git-cliff-action@v3
         with:
           config: cliff.toml
-          args: --verbose --unreleased --tag ${{ env.MOD_VERSION }}
+          args: --verbose --unreleased --tag ${{ vars.MOD_VERSION }}
         env:
           OUTPUT: CHANGELOG.md
-          GITHUB_REPO: ${{ env.REPOSITORY_NAME }}
+          GITHUB_REPO: ${{ vars.REPOSITORY_NAME }}
 
       - name: Commit Changelog
         run: |
           git add CHANGELOG.md
-          git commit -m "docs: update changelog for version ${{ env.MOD_VERSION }}"
+          git commit -m "docs: update changelog for version ${{ vars.MOD_VERSION }}"
           git push origin main
 
       - name: Release Mod
