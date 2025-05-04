@@ -24,13 +24,14 @@ jobs:
         id: get_version
         run: |
           VERSION=$(grep "mod.version" gradle.properties | cut -d'=' -f2)
-          echo "MOD_VERSION=$VERSION" >> $GITHUB_ENV
+          echo "MOD_VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "set Release Version to: $VERSION"
 
       - name: Generate Changelog
         uses: orhun/git-cliff-action@v3
         with:
           config: cliff.toml
-          args: --verbose --unreleased --tag ${{ vars.MOD_VERSION }}
+          args: --verbose --unreleased --tag ${{ steps.get_version.outputs.MOD_VERSION }}
         env:
           OUTPUT: CHANGELOG.md
           GITHUB_REPO: ${{ vars.REPOSITORY_NAME }}
@@ -40,7 +41,7 @@ jobs:
           git config --global user.email "${{ vars.GIT_EMAIL }}"
           git config --global user.name "${{ vars.GIT_USERNAME }}"
           git add CHANGELOG.md
-          git commit -m "docs: update changelog for version ${{ vars.MOD_VERSION }}"
+          git commit -m "docs: update changelog for version ${{ steps.get_version.outputs.MOD_VERSION }}"
           git push origin main
 
       - uses: actions/setup-java@v4
