@@ -6,6 +6,7 @@ on:
       - completed
     branches:
       - main
+      - v2/add-publish-workflow
   workflow_dispatch:
 
 permissions:
