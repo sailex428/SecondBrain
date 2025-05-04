@@ -169,10 +169,10 @@ publishMods {
     type.set(ReleaseType.ALPHA)
     version.set(modVersion)
     modLoaders.add("fabric")
+    file.set(tasks.named<RemapJarTask>("remapJar").get().archiveFile)
 
     github {
-        file.set(tasks.named<RemapJarTask>("remapJar").get().archiveFile)
-        accessToken.set(providers.environmentVariable("PUBLISH_GITHUB_TOKEN"))
+        accessToken.set(providers.environmentVariable("GITHUB_TOKEN"))
         repository.set(providers.environmentVariable("REPOSITORY_NAME"))
         tagName.set("v$modVersion")
         commitish.set("main")
@@ -186,7 +186,6 @@ publishMods {
     }
 
     modrinth {
-        file.set(tasks.named<RemapJarTask>("remapJar").get().archiveFile)
         displayName.set("v$modVersion [$mcVersion] SecondBrain")
         accessToken.set(providers.environmentVariable("MODRINTH_TOKEN"))
         projectId.set(property("publish.modrinth").toString())
