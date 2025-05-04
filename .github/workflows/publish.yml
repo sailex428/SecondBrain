@@ -1,74 +1,59 @@
-  name: Publish
-  on:
-    workflow_run:
-      workflows: ["Build"]
-      types:
-        - completed
-      branches:
-        - main
-    workflow_dispatch:
+name: Publish
+on:
+  workflow_dispatch:
 
-  permissions:
-    contents: write
+permissions:
+  contents: write
 
-  jobs:
-    publish:
-      if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push' }}
-      runs-on: ubuntu-22.04
-      container:
-        image: mcr.microsoft.com/openjdk/jdk:21-ubuntu
-        options: --user root
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
+  DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
 
-      steps:
-        - name: Checkout repository
-          uses: actions/checkout@v4
-          with:
-            fetch-depth: 0
+jobs:
+  publish:
+    runs-on: ubuntu-22.04
 
-        - name: Download build artifacts
-          if: ${{ github.event_name == 'workflow_run' }}
-          uses: dawidd6/action-download-artifact@v6
-          with:
-            workflow: Build
-            run_id: ${{ github.event.workflow_run.id }}
-            name: build-artifacts
-            path: artifacts
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-        - name: Build manually
-          if: ${{ github.event_name == 'workflow_dispatch' }}
-          run: |
-            chmod +x ./gradlew
-            ./gradlew build
+      - name: Get version from properties
+        id: get_version
+        run: |
+          VERSION=$(grep "mod.version" gradle.properties | cut -d'=' -f2)
+          echo "MOD_VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "set Release Version to: $VERSION"
 
-        - name: Set User Config
-          run: |
-            git config --local user.email ${{ env.GIT_EMAIL }}
-            git config --local user.name ${{ env.GIT_USERNAME }}
+      - name: Generate Changelog
+        uses: orhun/git-cliff-action@v3
+        with:
+          config: cliff.toml
+          args: --verbose --unreleased --tag ${{ steps.get_version.outputs.MOD_VERSION }}
+        env:
+          OUTPUT: CHANGELOG.md
+          GITHUB_REPO: ${{ vars.REPOSITORY_NAME }}
 
-        - name: Get version from gradle.properties
-          id: get_version
-          run: |
-            VERSION=$(grep "mod.version" gradle.properties | cut -d'=' -f2)
-            echo "MOD_VERSION=$VERSION" >> $GITHUB_ENV
+      - name: Commit Changelog
+        run: |
+          git config --global user.email "${{ vars.GIT_EMAIL }}"
+          git config --global user.name "${{ vars.GIT_USERNAME }}"
+          set +e
+          git checkout -b main
+          git add CHANGELOG.md
+          git commit -m "docs: update changelog for version ${{ steps.get_version.outputs.MOD_VERSION }}"
+          git push https://${{ secrets.GITHUB_TOKEN }}@github.com/${{ vars.REPOSITORY_NAME }}.git main
 
-        - name: Generate a changelog
-          uses: orhun/git-cliff-action@v3
-          with:
-            config: cliff.toml
-            args: --verbose --unreleased --tag ${{ env.MOD_VERSION }}
-          env:
-            OUTPUT: CHANGELOG.md
-            GITHUB_REPO: ${{ env.REPOSITORY_NAME }}
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'oracle'
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v4
 
-        - name: Commit and push changelog
-          run: |
-            git add CHANGELOG.md
-            git commit -m "docs: update changelog for version ${{ env.MOD_VERSION }}"
-            git push origin main
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
 
-        - name: Release Mod JAR
-          run: ./gradlew publishGithub
-          env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-            MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
-            DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+      - name: Release Mod
+        run: gradle chiseledPublishMod
