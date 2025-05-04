@@ -40,10 +40,11 @@ jobs:
         run: |
           git config --global user.email "${{ vars.GIT_EMAIL }}"
           git config --global user.name "${{ vars.GIT_USERNAME }}"
-          git pull --rebase origin main
+          set +e
+          git checkout -b v2/add-publish-workflow
           git add CHANGELOG.md
           git commit -m "docs: update changelog for version ${{ steps.get_version.outputs.MOD_VERSION }}"
-          git push origin main
+          git push https://${{ secrets.GITHUB_TOKEN }}@github.com/${{ vars.REPOSITORY_NAME }}.git v2/add-publish-workflow
 
       - uses: actions/setup-java@v4
         with:
