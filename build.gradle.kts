@@ -173,7 +173,7 @@ publishMods {
 
     github {
         accessToken.set(providers.environmentVariable("GITHUB_TOKEN"))
-        repository.set(providers.environmentVariable("REPOSITORY_NAME"))
+        repository.set(providers.gradleProperty("github.repo"))
         tagName.set("v$modVersion")
         commitish.set("main")
     }
