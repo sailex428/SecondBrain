@@ -55,9 +55,5 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
-      - name: Build manually
-        if: ${{ github.event_name == 'workflow_dispatch' }}
-        run: gradle chiseledBuild
-
       - name: Release Mod
         run: gradle chiseledPublishMod
