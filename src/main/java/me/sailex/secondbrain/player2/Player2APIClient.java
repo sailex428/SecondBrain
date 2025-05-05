@@ -49,7 +49,7 @@ public class Player2APIClient {
         try {
             return sendGetRequest(API_ENDPOINT.SELECT_CHARACTERS.getUrl(), Characters.class);
         } catch (Exception e) {
-            throw new LLMServiceException("Failed", e);
+            throw new LLMServiceException("Failed to fetch selected characters", e);
         }
     }
 
