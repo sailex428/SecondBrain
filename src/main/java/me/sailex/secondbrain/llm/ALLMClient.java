@@ -3,8 +3,6 @@ package me.sailex.secondbrain.llm;
 import java.util.List;
 
 import lombok.Setter;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 @Setter
 public abstract class ALLMClient<T> implements FunctionCallable<T> {
