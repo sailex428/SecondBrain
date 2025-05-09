@@ -1,4 +1,4 @@
-package me.sailex.secondbrain.llm.function_calling;
+package me.sailex.secondbrain.llm.function_calling.util;
 
 import java.util.Map;
 

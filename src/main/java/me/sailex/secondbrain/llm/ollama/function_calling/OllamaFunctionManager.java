@@ -1,4 +1,4 @@
-package me.sailex.secondbrain.llm.function_calling;
+package me.sailex.secondbrain.llm.ollama.function_calling;
 
 import io.github.ollama4j.tools.ToolFunction;
 import io.github.ollama4j.tools.Tools;
@@ -8,6 +8,8 @@ import me.sailex.secondbrain.common.NPCController;
 import me.sailex.secondbrain.context.ContextProvider;
 import me.sailex.secondbrain.database.resources.ResourcesProvider;
 import me.sailex.secondbrain.llm.LLMClient;
+import me.sailex.secondbrain.llm.function_calling.AFunctionManager;
+import me.sailex.secondbrain.llm.function_calling.util.ArgumentParser;
 import me.sailex.secondbrain.llm.function_calling.constant.Function;
 import me.sailex.secondbrain.llm.function_calling.constant.Property;
 import me.sailex.secondbrain.model.function_calling.OllamaFunction;

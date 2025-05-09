@@ -18,7 +18,7 @@ class ModeInitializer(
      * @return mode names mapped to mode
      */
     fun initModes(): Map<String, NPCMode> {
-        val modes = listOf<NPCMode>(
+        val modes = listOf(
             cheatMode(),
             selfRelianceMode()
         )
