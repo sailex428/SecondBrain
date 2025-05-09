@@ -68,6 +68,20 @@
                                     </children>
                                 </flow-layout>
 
+                                <flow-layout direction="vertical">
+                                    <children>
+                                        <label id="verbose-label">
+                                            <shadow>true</shadow>
+                                        </label>
+                                        <checkbox id="verbose">
+                                            <sizing>
+                                                <horizontal method="fill">25</horizontal>
+                                                <vertical method="fill">7</vertical>
+                                            </sizing>
+                                        </checkbox>
+                                    </children>
+                                </flow-layout>
+
                                 <button id="save">
                                     <text>Save</text>
                                 </button>

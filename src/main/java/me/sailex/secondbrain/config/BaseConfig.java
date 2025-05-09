@@ -13,6 +13,7 @@ public class BaseConfig implements Configurable {
     private int contextChunkRadius = 4;
     private int contextVerticalScanRange = 8;
     private int chunkExpiryTime = 60;
+    private boolean verbose = false;
 
     public int getLlmTimeout() {
         return llmTimeout;
@@ -46,6 +47,14 @@ public class BaseConfig implements Configurable {
         this.llmTimeout = llmTimeout;
     }
 
+    public boolean isVerbose() {
+        return verbose;
+    }
+
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
+
     @Override
     public String getConfigName() {
         return "base";
@@ -56,6 +65,7 @@ public class BaseConfig implements Configurable {
             Endec.INT.fieldOf("contextChunkRadius", BaseConfig::getContextChunkRadius),
             Endec.INT.fieldOf("contextVerticalScanRange", BaseConfig::getContextVerticalScanRange),
             Endec.INT.fieldOf("chunkExpiryTime", BaseConfig::getChunkExpiryTime),
+            Endec.BOOLEAN.fieldOf("verbose", BaseConfig::isVerbose),
             BaseConfig::new
     );
 
@@ -65,11 +75,13 @@ public class BaseConfig implements Configurable {
                 "llmTimeout=" + llmTimeout +
                 ",contextChunkRadius=" + contextChunkRadius +
                 ",contextVerticalScanRange=" + contextVerticalScanRange +
-                ",chunkExpiryTime=" + chunkExpiryTime + "}";
+                ",chunkExpiryTime=" + chunkExpiryTime +
+                ",verbose=" + verbose +"}";
     }
 
     public static final String LLM_TIMEOUT_KEY = "LLM Timeout";
     public static final String CONTEXT_CHUNK_RADIUS_KEY = "Chunk Radius";
     public static final String CONTEXT_VERTICAL_RANGE_KEY = "Vertical Scan Range";
     public static final String CHUNK_EXPIRY_TIME_KEY = "Chunk Expiry Time";
+    public static final String VERBOSE_KEY = "Debug Mode";
 }
