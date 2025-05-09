@@ -1,11 +1,21 @@
-package me.sailex.secondbrain.player2;
+package me.sailex.secondbrain.llm.player2;
 
 import com.google.gson.*;
+import io.github.sashirestela.openai.common.function.FunctionCall;
+import io.github.sashirestela.openai.common.function.FunctionDef;
+import io.github.sashirestela.openai.common.function.FunctionExecutor;
+import io.github.sashirestela.openai.common.tool.ToolCall;
+import io.github.sashirestela.openai.domain.chat.Chat;
+import io.github.sashirestela.openai.domain.chat.ChatMessage;
 import lombok.Getter;
 import me.sailex.secondbrain.exception.LLMServiceException;
-import me.sailex.secondbrain.player2.model.*;
+import me.sailex.secondbrain.llm.ALLMClient;
+import me.sailex.secondbrain.llm.player2.model.*;
+import me.sailex.secondbrain.model.function_calling.FunctionResponse;
+import me.sailex.secondbrain.util.LogUtil;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -16,19 +26,23 @@ import java.util.List;
 /**
  * This class acts as a client for interacting with the Player2 API.
  */
-public class Player2APIClient {
+public class Player2APIClient extends ALLMClient<FunctionDef> {
 
     private static final String BASE_URL = "http://127.0.0.1:4315";
+    private static final int MAX_CHAT_TOOL_CALL_RETRIES = 4;
     private final Gson gson;
     private final HttpClient client;
+    private final FunctionExecutor functionExecutor;
 
     public Player2APIClient() {
         this.gson = new Gson();
         this.client = HttpClient.newHttpClient();
+        this.functionExecutor = new FunctionExecutor();
     }
 
     @Getter
     private enum API_ENDPOINT {
+        CHAT_COMPLETION("/v1/chat/completions"),
         SELECT_CHARACTERS("/v1/selected_characters"),
         TTS_START("/v1/tts/speak"),
         STT_START("/v1/stt/start"),
@@ -40,6 +54,63 @@ public class Player2APIClient {
         API_ENDPOINT(String url) {
             this.url = url;
         }
+    }
+
+    /**
+     * Executes functions that the LLM called based on the prompt and registered functions.
+     *
+     * @param 	prompt 	   the user prompt
+     * @param 	functions  functions that the llm is allowed to call
+     * @return             the formatted results of the function calls.
+     */
+    @Override
+    public FunctionResponse callFunctions(String prompt, List<FunctionDef> functions) throws LLMServiceException {
+        try {
+            functionExecutor.enrollFunctions(functions);
+            StringBuilder calledFunctions = new StringBuilder();
+
+            ChatRequest chatRequest = ChatRequest.builder()
+                    .tools(functions)
+                    .message(List.of(ChatMessage.UserMessage.of(prompt)))
+                    .build();
+            ChatMessage.ResponseMessage result = sendPostRequest(
+                    API_ENDPOINT.CHAT_COMPLETION.getUrl(),
+                    chatRequest,
+                    Chat.class
+            ).firstMessage();
+
+            List<ToolCall> toolCalls = result.getToolCalls();
+
+            for (int toolCallTries = 0; toolCalls != null && !toolCalls.isEmpty() && toolCallTries < MAX_CHAT_TOOL_CALL_RETRIES; ++toolCallTries) {
+                for (ToolCall toolCall : toolCalls) {
+                    executeFunction(toolCall, chatRequest, calledFunctions);
+
+                    result = sendPostRequest(
+                            API_ENDPOINT.CHAT_COMPLETION.getUrl(),
+                            chatRequest,
+                            Chat.class
+                    ).firstMessage();
+                    toolCalls = result.getToolCalls();
+                }
+            }
+            return new FunctionResponse(result.getContent(), calledFunctions.toString());
+        } catch (Exception e) {
+            throw new LLMServiceException("Could not call functions for prompt: " + prompt, e);
+        }
+    }
+
+    private void executeFunction(ToolCall toolCall, ChatRequest chatRequest, StringBuilder calledFunctions) throws LLMServiceException {
+        FunctionCall function = toolCall.getFunction();
+        String functionName = function.getName();
+        String arguments = function.getArguments();
+
+        String result = functionExecutor.execute(function);
+
+        String toolResult = functionName + "(" + arguments + ") : " + result;
+        calledFunctions.append(toolResult).append("; ");
+        LogUtil.info(toolResult);
+
+        chatRequest.addMessage(ChatMessage.UserMessage.of("[TOOL_RESULTS]" + toolResult + "[/TOOL_RESULTS]"));
     }
 
     /**
@@ -106,6 +177,23 @@ public class Player2APIClient {
         } catch(Exception e) {
             throw new LLMServiceException("Failed to send health check", e);
         }
+    }
+
+    @Override
+    public void checkServiceIsReachable(String url) throws LLMServiceException {
+        try {
+            InetAddress inetAddress = InetAddress.getByName(url);
+            if (!inetAddress.isReachable(3000)) {
+                throw new LLMServiceException("Player2 API is not reachable");
+            }
+        } catch (Exception e) {
+            throw new LLMServiceException("Failed to check Player2 API is reachable", e);
+        }
+    }
+
+    @Override
+    public double[] generateEmbedding(List<String> prompt) {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     private <T> T sendPostRequest(String url, Object requestBody, Class<T> responseType) throws IOException {

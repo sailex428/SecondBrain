@@ -14,10 +14,10 @@ import me.sailex.secondbrain.exception.NPCCreationException
 import me.sailex.secondbrain.history.ConversationHistory
 import me.sailex.secondbrain.llm.LLMClient
 import me.sailex.secondbrain.llm.LLMType
-import me.sailex.secondbrain.llm.OllamaClient
-import me.sailex.secondbrain.llm.OpenAiClient
-import me.sailex.secondbrain.llm.function_calling.OllamaFunctionManager
-import me.sailex.secondbrain.llm.function_calling.OpenAiFunctionManager
+import me.sailex.secondbrain.llm.ollama.OllamaClient
+import me.sailex.secondbrain.llm.ollama.function_calling.OllamaFunctionManager
+import me.sailex.secondbrain.llm.player2.Player2APIClient
+import me.sailex.secondbrain.llm.player2.function_calling.Player2FunctionManager
 import me.sailex.secondbrain.mode.ModeController
 import me.sailex.secondbrain.mode.ModeInitializer
 import me.sailex.secondbrain.model.NPC
@@ -126,9 +126,11 @@ object NPCFactory {
 
         return when (config.llmType) {
             LLMType.OLLAMA -> {
+                val defaultPrompt = Instructions.getLlmSystemPrompt(config.npcName, config.llmCharacter)
                 val llmClient = OllamaClient(config.ollamaUrl, SecondBrain.MOD_ID + "-" + config.npcName,
-                    Instructions.getLlmSystemPrompt(config.npcName, config.llmCharacter), baseConfig.llmTimeout)
+                    defaultPrompt, baseConfig.llmTimeout, baseConfig.isVerbose)
                 val (controller, history) = initBase(llmClient, npcEntity, config.npcName, contextProvider)
+                initResourceProvider(llmClient, config.npcName, npcEntity.server)
                 val functionManager = OllamaFunctionManager(
                     resourcesProvider!!,
                     controller,
@@ -140,10 +142,24 @@ object NPCFactory {
 
                 NPC(npcEntity, llmClient, history, eventHandler, controller, contextProvider, modeController, config)
             }
-            LLMType.OPENAI -> {
-                val llmClient = OpenAiClient(config.openaiApiKey, baseConfig.llmTimeout)
+//            LLMType.OPENAI -> {
+//                val llmClient = OpenAiClient(config.openaiApiKey, baseConfig.llmTimeout)
+//                val (controller, history) = initBase(llmClient, npcEntity, config.npcName, contextProvider)
+//                val functionManager = OpenAiFunctionManager(
+//                    resourcesProvider!!,
+//                    controller,
+//                    contextProvider,
+//                    llmClient
+//                )
+//                val eventHandler = NPCEventHandler(llmClient, history, functionManager, contextProvider, controller)
+//                val modeController = initModeController(npcEntity, controller, contextProvider)
+//
+//                NPC(npcEntity, llmClient, history, eventHandler, controller, contextProvider, modeController, config)
+//            }
+            LLMType.PLAYER2 -> {
+                val llmClient = Player2APIClient()
                 val (controller, history) = initBase(llmClient, npcEntity, config.npcName, contextProvider)
-                val functionManager = OpenAiFunctionManager(
+                val functionManager = Player2FunctionManager(
                     resourcesProvider!!,
                     controller,
                     contextProvider,
@@ -164,7 +180,6 @@ object NPCFactory {
         npcName: String,
         contextProvider: ContextProvider
     ): Pair<NPCController, ConversationHistory> {
-        initResourceProvider(llmClient, npcName, npcEntity.server)
         val automatone = BaritoneAPI.getProvider().getBaritone(npcEntity)
         val controller = NPCController(npcEntity, automatone, contextProvider)
         val history = ConversationHistory(resourcesProvider!!, npcName)

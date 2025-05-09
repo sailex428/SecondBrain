@@ -38,12 +38,8 @@ class NPCEventHandler<T>(
 
             val response = llmClient.callFunctions(formattedPrompt, relevantFunctions)
 
-            if (llmClient is OllamaClient) {
-                controller.addGoal("chat") { controller.chat(response.finalResponse) }
-                history.add(response.finalResponse + " - " + response.toolCalls)
-            } else {
-                history.add(response.toolCalls)
-            }
+            controller.addGoal("chat") { controller.chat(response.finalResponse) }
+            history.add(response.finalResponse + " - " + response.toolCalls)
         }, executorService)
             .exceptionally {
                 LogUtil.debugInChat("No actions called by AI")
