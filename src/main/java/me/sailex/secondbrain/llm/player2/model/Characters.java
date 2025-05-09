@@ -1,4 +1,4 @@
-package me.sailex.secondbrain.player2.model;
+package me.sailex.secondbrain.llm.player2.model;
 
 import java.util.List;
 

@@ -1,4 +1,4 @@
-package me.sailex.secondbrain.llm;
+package me.sailex.secondbrain.llm.ollama;
 
 import io.github.ollama4j.OllamaAPI;
 import io.github.ollama4j.models.chat.*;
@@ -16,6 +16,7 @@ import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 import lombok.Setter;
+import me.sailex.secondbrain.llm.ALLMClient;
 import me.sailex.secondbrain.model.function_calling.FunctionResponse;
 import me.sailex.secondbrain.util.LogUtil;
 import org.apache.commons.lang3.StringUtils;
@@ -31,12 +32,18 @@ public class OllamaClient extends ALLMClient<Tools.ToolSpecification> {
 	private final ExecutorService service;
 	private final String model;
 
-	public OllamaClient(String url, String customModelName, String defaultPrompt, int timeout) {
+	public OllamaClient(
+		String url,
+		String customModelName,
+		String defaultPrompt,
+		int timeout,
+		boolean verbose
+	) {
 		this.ollamaAPI = new OllamaAPI(url);
 		this.model = customModelName;
 		checkServiceIsReachable(url);
 		this.service = Executors.newFixedThreadPool(3);
-		ollamaAPI.setVerbose(false);
+		ollamaAPI.setVerbose(verbose);
 		ollamaAPI.setMaxChatToolCallRetries(4);
 		ollamaAPI.setRequestTimeoutSeconds(timeout);
 		initModels(defaultPrompt);
@@ -115,7 +122,7 @@ public class OllamaClient extends ALLMClient<Tools.ToolSpecification> {
 	 * @return  FunctionResponse - the formatted results of the function calls.
 	 */
 	@Override
-	public FunctionResponse callFunctions(String prompt, List<Tools.ToolSpecification> functions) {
+	public FunctionResponse callFunctions(String prompt, List<Tools.ToolSpecification> functions) throws LLMServiceException {
 		try {
 			ollamaAPI.registerTools(functions);
 			OllamaChatRequest toolRequest = OllamaChatRequestBuilder.getInstance(model)
@@ -127,8 +134,7 @@ public class OllamaClient extends ALLMClient<Tools.ToolSpecification> {
 			return new FunctionResponse(finalResponse, formatToolCalls(response.getChatHistory()));
 		} catch (Exception e) {
 			Thread.currentThread().interrupt();
-			LogUtil.error("LLM has not called any functions for prompt: " + prompt, e);
-			return new FunctionResponse("No actions called by LLM.", "");
+			throw new LLMServiceException("Could not call functions for prompt: " + prompt, e);
 		}
 	}
 
@@ -180,9 +186,5 @@ public class OllamaClient extends ALLMClient<Tools.ToolSpecification> {
             LogUtil.error("Could not delete model: " + e.getMessage());
         }
 		this.service.shutdown();
-	}
-
-	public void setVerbose(boolean verbose) {
-		this.ollamaAPI.setVerbose(verbose);
 	}
 }

@@ -4,7 +4,7 @@ import me.sailex.secondbrain.common.NPCController
 import me.sailex.secondbrain.context.ContextProvider
 import me.sailex.secondbrain.history.ConversationHistory
 import me.sailex.secondbrain.llm.FunctionCallable
-import me.sailex.secondbrain.llm.OllamaClient
+import me.sailex.secondbrain.llm.ollama.OllamaClient
 import me.sailex.secondbrain.llm.function_calling.FunctionManager
 import me.sailex.secondbrain.util.LogUtil
 import me.sailex.secondbrain.util.PromptFormatter
@@ -46,6 +46,7 @@ class NPCEventHandler<T>(
             }
         }, executorService)
             .exceptionally {
+                LogUtil.debugInChat("No actions called by AI")
                 LogUtil.error("Unexpected error occurred handling event", it)
                 null
             }

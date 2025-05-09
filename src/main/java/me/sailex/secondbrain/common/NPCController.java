@@ -6,8 +6,8 @@ import baritone.api.pathing.goals.GoalBlock;
 import baritone.api.pathing.goals.GoalRunAway;
 
 import me.sailex.secondbrain.context.ContextProvider;
-import me.sailex.secondbrain.llm.function_calling.OllamaFunctionManager;
-import me.sailex.secondbrain.llm.function_calling.OpenAiFunctionManager;
+import me.sailex.secondbrain.llm.ollama.function_calling.OllamaFunctionManager;
+import me.sailex.secondbrain.llm.openai.function_calling.OpenAiFunctionManager;
 import me.sailex.secondbrain.mode.ModeController;
 import me.sailex.secondbrain.model.Goal;
 import me.sailex.secondbrain.model.context.BlockData;
@@ -218,12 +218,6 @@ public class NPCController implements Tickable {
 		Identifier identifier = Identifier.of(itemName);
 
 		RecipeEntry<?> recipe = npcEntity.getServer().getRecipeManager().get(identifier).orElse(null);
-//		ClientPlayerInteractionManager interactionManager = client.interactionManager;
-//		if (recipe != null && interactionManager != null) {
-//			interactionManager.clickRecipe(npc.currentScreenHandler.syncId, recipe, false);
-//		} else {
-//			LOGGER.warn("Could not find recipe with id: {}", recipeId);
-//		}
 	}
 
 	public void jump() {
