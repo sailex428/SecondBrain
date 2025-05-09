@@ -8,7 +8,6 @@ plugins {
     kotlin("jvm") version "2.1.0"
     id("maven-publish")
     id("me.modmuss50.mod-publish-plugin") version "0.8.1"
-    id("com.diffplug.spotless") version "7.0.0.BETA4"
 }
 
 version = rootProject.extra["mod.version"] as String
@@ -16,7 +15,7 @@ val modVersion = version as String
 val mcVersion = property("mc.version").toString()
 val fabricLoaderVersion = property("deps.fabric_loader").toString()
 val stage = rootProject.extra["deps.stage"].toString()
-val jarName = ("secondbrain-$mcVersion-v$version-$stage").toString()
+val jarName = ("secondbrain-$mcVersion-v$version-$stage")
 val automatone = rootProject.extra["deps.automatone"].toString()
 val owoLib = properties["owo_version"].toString()
 val fabricLangKotlin = properties["fabric_lang_kotlin"].toString()
@@ -127,24 +126,6 @@ tasks.processResources {
             "owoLib" to owoLib,
             "fabricLangKotlin" to fabricLangKotlin,
         )
-    }
-}
-
-spotless {
-    java {
-        target("**/*.java")
-        targetExclude("**/build/**")
-        palantirJavaFormat()
-        indentWithTabs()
-        removeUnusedImports()
-        trimTrailingWhitespace()
-        endWithNewline()
-    }
-    kotlin {
-        target("**/*.kt")
-        targetExclude("**/build/**/*.kt")
-        endWithNewline()
-        trimTrailingWhitespace()
     }
 }
 
