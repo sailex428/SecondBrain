@@ -5,9 +5,10 @@ import me.sailex.secondbrain.model.NPC
 import net.fabricmc.fabric.api.event.player.AttackEntityCallback
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.util.ActionResult
+import java.util.UUID
 
 class CombatEventListener(
-    npcs: Map<String, NPC>
+    npcs: Map<UUID, NPC>
 ) : AEventListener(npcs) {
 
     override fun register() {
