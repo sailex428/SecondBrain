@@ -77,10 +77,10 @@ public class ConfigProvider {
         }
     }
 
-    public void deleteNpcConfig(String name) {
+    public void deleteNpcConfig(UUID uuid) {
         List<NPCConfig> configsToRemove = new ArrayList<>();
         npcConfigs.forEach(config -> {
-            if (config.getNpcName().equals(name)) {
+            if (config.getUuid().equals(uuid)) {
                 configsToRemove.add(config);
             }
         });
@@ -100,7 +100,13 @@ public class ConfigProvider {
         });
     }
 
-    public Optional<NPCConfig> getNpcConfig(String npcName) {
+    public Optional<NPCConfig> getNpcConfig(UUID uuid) {
+        return npcConfigs.stream()
+                .filter(config -> config.getUuid().equals(uuid))
+                .findFirst();
+    }
+
+    public Optional<NPCConfig> getNpcConfigByName(String npcName) {
         return npcConfigs.stream()
                 .filter(config -> config.getNpcName().equals(npcName))
                 .findFirst();

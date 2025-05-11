@@ -24,6 +24,6 @@ public abstract class EntityPlayerMPFakeMixin extends ServerPlayerEntity {
 
     @Inject(method = "onDeath", at = @At("TAIL"))
     private void onDeath(DamageSource damageSource, CallbackInfo ci) {
-        NPCFactory.INSTANCE.removeNpc(this.getName().getString(), this.getServer().getPlayerManager());
+        NPCFactory.INSTANCE.removeNpc(this.uuid, this.getServer().getPlayerManager());
     }
 }

@@ -6,9 +6,12 @@ import io.wispforest.endec.impl.StructEndecBuilder;
 import me.sailex.secondbrain.constant.Instructions;
 import me.sailex.secondbrain.llm.LLMType;
 
+import java.util.UUID;
+
 public class NPCConfig implements Configurable {
 
 	private String npcName = "Steve";
+	private UUID uuid = UUID.randomUUID();
 	private boolean isActive = true;
 	private String llmCharacter = Instructions.DEFAULT_CHARACTER_TRAITS;
 	private LLMType llmType = LLMType.OLLAMA;
@@ -23,6 +26,7 @@ public class NPCConfig implements Configurable {
 
 	public NPCConfig(
 		String npcName,
+		String uuid,
 		boolean isActive,
 		String llmCharacter,
 		LLMType llmType,
@@ -30,6 +34,7 @@ public class NPCConfig implements Configurable {
 		String openaiApiKey
 	) {
 		this.npcName = npcName;
+		this.uuid = UUID.fromString(uuid);
 		this.isActive = isActive;
 		this.llmCharacter = llmCharacter;
 		this.llmType = llmType;
@@ -43,6 +48,11 @@ public class NPCConfig implements Configurable {
 
 		public Builder(String npcName) {
 			this.npcConfig = new NPCConfig(npcName);
+		}
+
+		public Builder uuid(UUID uuid) {
+			npcConfig.setUuid(uuid);
+			return this;
 		}
 
 		public Builder llmDefaultPrompt(String llmDefaultPrompt) {
@@ -123,6 +133,14 @@ public class NPCConfig implements Configurable {
 		this.npcName = npcName;
 	}
 
+	public UUID getUuid() {
+		return uuid;
+	}
+
+	public void setUuid(UUID uuid) {
+		this.uuid = uuid;
+	}
+
 	@Override
 	public String getConfigName() {
 		return npcName.toLowerCase();
@@ -130,6 +148,7 @@ public class NPCConfig implements Configurable {
 
 	public static final StructEndec<NPCConfig> ENDEC = StructEndecBuilder.of(
 			Endec.STRING.fieldOf("npcName", NPCConfig::getNpcName),
+			Endec.STRING.fieldOf("uuid", config -> config.getUuid().toString()),
 			Endec.BOOLEAN.fieldOf("isActive", NPCConfig::isActive),
 			Endec.STRING.fieldOf("llmDefaultPrompt", NPCConfig::getLlmCharacter),
 			Endec.forEnum(LLMType.class).fieldOf("llmType", NPCConfig::getLlmType),
@@ -141,6 +160,7 @@ public class NPCConfig implements Configurable {
 	@Override
 	public String toString() {
 		return "NPCConfig{npcName=" + npcName +
+				",uuid=" + uuid +
 				",isActive=" + isActive +
 				",llmType=" + llmType +
 				",ollamaUrl=" + ollamaUrl +

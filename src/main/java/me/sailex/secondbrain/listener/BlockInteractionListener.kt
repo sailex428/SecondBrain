@@ -4,13 +4,14 @@ import me.sailex.secondbrain.model.NPC
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents
 import net.fabricmc.fabric.api.event.player.UseBlockCallback
 import net.minecraft.util.ActionResult
+import java.util.UUID
 
 /**
  * @deprecated Will be removed, cause this layer doesnt handle the llm anymore
  * Listens to block interactions of this npc
  */
 class BlockInteractionListener(
-    npcs: Map<String, NPC>
+    npcs: Map<UUID, NPC>
 ) : AEventListener(npcs) {
     override fun register() {
         PlayerBlockBreakEvents.AFTER.register { _, player, pos, state, _ ->
