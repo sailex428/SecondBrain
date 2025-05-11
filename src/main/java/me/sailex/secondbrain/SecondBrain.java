@@ -1,8 +1,10 @@
 package me.sailex.secondbrain;
 
+import me.sailex.secondbrain.auth.PlayerAuthorizer;
 import me.sailex.secondbrain.commands.CommandManager;
 import me.sailex.secondbrain.common.NPCFactory;
 import lombok.Getter;
+import me.sailex.secondbrain.common.Player2NpcSynchronizer;
 import me.sailex.secondbrain.config.ConfigProvider;
 import me.sailex.secondbrain.database.SqliteClient;
 import me.sailex.secondbrain.database.repositories.RepositoryFactory;
@@ -33,16 +35,23 @@ public class SecondBrain implements ModInitializer {
 		NPCFactory npcFactory = NPCFactory.INSTANCE;
 		npcFactory.initialize(configProvider, repositoryFactory);
 
-		NetworkHandler networkManager = new NetworkHandler(configProvider, npcFactory);
+		PlayerAuthorizer authorizer = new PlayerAuthorizer();
+
+		NetworkHandler networkManager = new NetworkHandler(configProvider, npcFactory, authorizer);
 		networkManager.registerPacketReceiver();
 
-		EventListenerRegisterer eventListenerRegisterer = new EventListenerRegisterer(npcFactory.getNameToNpc());
+		EventListenerRegisterer eventListenerRegisterer = new EventListenerRegisterer(npcFactory.getUuidToNpc());
 		eventListenerRegisterer.register();
 
-		CommandManager commandManager = new CommandManager(npcFactory, configProvider, networkManager);
-		commandManager.registerAll();
+		ServerLifecycleEvents.SERVER_STARTED.register(server -> {
+			LogUtil.initialize(server, configProvider.getBaseConfig().isVerbose());
 
-		ServerLifecycleEvents.SERVER_STARTED.register(LogUtil::initialize);
+			Player2NpcSynchronizer synchronizer = new Player2NpcSynchronizer(npcFactory, server);
+			synchronizer.syncCharacters();
+
+			CommandManager commandManager = new CommandManager(npcFactory, configProvider, networkManager, synchronizer);
+			commandManager.registerAll();
+		});
 		ServerLifecycleEvents.SERVER_STOPPING.register(server -> onStop(npcFactory, configProvider, sqlite, server));
 	}
 

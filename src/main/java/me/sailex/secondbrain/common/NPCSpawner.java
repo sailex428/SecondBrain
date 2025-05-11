@@ -1,49 +1,90 @@
 package me.sailex.secondbrain.common;
 
 import carpet.patches.EntityPlayerMPFake;
-import me.sailex.secondbrain.exception.NPCCreationException;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
+import carpet.patches.FakeClientConnection;
+import com.mojang.authlib.GameProfile;
+import me.sailex.secondbrain.mixin.EntityAccessor;
+import me.sailex.secondbrain.mixin.PlayerEntityAccessor;
+import net.minecraft.block.entity.SkullBlockEntity;
+import net.minecraft.entity.attribute.EntityAttributes;
+import net.minecraft.network.NetworkSide;
+import net.minecraft.network.packet.c2s.common.SyncedClientOptions;
+import net.minecraft.network.packet.s2c.play.EntityPositionS2CPacket;
+import net.minecraft.network.packet.s2c.play.EntitySetHeadYawS2CPacket;
 import net.minecraft.registry.RegistryKey;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerManager;
+import net.minecraft.server.network.ConnectedClientData;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.UserCache;
+import net.minecraft.util.Uuids;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.GameMode;
 import net.minecraft.world.World;
 
+import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 
 public class NPCSpawner {
 
     private NPCSpawner() {}
 
-    public static void spawn(String name, ServerPlayerEntity player, boolean useSpawnPos) {
-        World world = player.getWorld();
-        RegistryKey<World> dimensionKey = world.getRegistryKey();
+    public static void spawn(String name, MinecraftServer server, BlockPos spawnPos, CountDownLatch latch) {
+        double yaw = 0;
+        double pitch = 0;
 
-        Vec3d spawnPos = useSpawnPos ? world.getSpawnPos().toCenterPos() : player.getPos();
+        ServerWorld worldIn = server.getOverworld();
+        RegistryKey<World> dimensionKey = worldIn.getRegistryKey();
 
-        boolean isSuccessful = EntityPlayerMPFake.createFake(name, player.getServer(),
-                spawnPos, player.getYaw(), player.getPitch(),
-                dimensionKey, GameMode.SURVIVAL, false);
-        if (!isSuccessful) {
-            throw new NPCCreationException("Player profile doesn't exist!");
+        UserCache.setUseRemote(false);
+        GameProfile gameprofile;
+        try {
+            gameprofile = server.getUserCache().findByName(name).orElse(null);
+        } finally {
+            UserCache.setUseRemote(server.isDedicated() && server.isOnlineMode());
         }
+        if (gameprofile == null) {
+            gameprofile = new GameProfile(Uuids.getOfflinePlayerUuid(name), name);
+        }
+        GameProfile finalGP = gameprofile;
+        fetchGameProfile(gameprofile.getName()).thenAcceptAsync(p -> {
+            GameProfile current = finalGP;
+            if (p.isPresent()) {
+                current = p.get();
+            }
+            EntityPlayerMPFake instance = EntityPlayerMPFake.respawnFake(server, worldIn, current, SyncedClientOptions.createDefault());
+            BlockPos finalSpawnPos = spawnPos != null ? spawnPos : instance.getWorldSpawnPos(worldIn,
+                    worldIn.getSpawnPos());
+            instance.fixStartingPosition = () -> instance.refreshPositionAndAngles(finalSpawnPos.getX(), finalSpawnPos.getY(), finalSpawnPos.getZ(), (float) yaw, (float) pitch);
+            server.getPlayerManager().onPlayerConnect(new FakeClientConnection(NetworkSide.SERVERBOUND), instance, new ConnectedClientData(current, 0, instance.getClientOptions(), false));
+            instance.teleport(worldIn, finalSpawnPos.getX(), finalSpawnPos.getY(), finalSpawnPos.getZ(), (float) yaw,
+                    (float) pitch);
+            instance.setHealth(20.0F);
+            ((EntityAccessor) instance).unsetRemoved();
+            instance.getAttributeInstance(EntityAttributes.GENERIC_STEP_HEIGHT).setBaseValue(0.6F);
+            instance.interactionManager.changeGameMode(GameMode.SURVIVAL);
+            server.getPlayerManager().sendToDimension(new EntitySetHeadYawS2CPacket(instance,
+                    (byte) (instance.headYaw * 256 / 360)), dimensionKey);
+            server.getPlayerManager().sendToDimension(new EntityPositionS2CPacket(instance), dimensionKey);
+
+            instance.getDataTracker().set(PlayerEntityAccessor.getPlayerModelParts(), (byte) 0x7f);
+            instance.getAbilities().flying = false;
+            latch.countDown();
+        }, server);
     }
 
-    public static void remove(String name, PlayerManager playerManager) {
-        ServerPlayerEntity player = playerManager.getPlayer(name);
+    private static CompletableFuture<Optional<GameProfile>> fetchGameProfile(final String name) {
+        return SkullBlockEntity.fetchProfileByName(name);
+    }
+
+    public static void remove(UUID uuid, PlayerManager playerManager) {
+        ServerPlayerEntity player = playerManager.getPlayer(uuid);
         if (player != null) {
             playerManager.remove(player);
         }
-    }
-
-    public static void checkPlayerAvailable(String npcName, CountDownLatch latch) {
-        ServerEntityEvents.ENTITY_LOAD.register((entity, world) -> {
-            if (entity instanceof ServerPlayerEntity
-                    && entity.getName().getString().equals(npcName)) {
-                latch.countDown();
-            }
-        });
     }
 
 }
