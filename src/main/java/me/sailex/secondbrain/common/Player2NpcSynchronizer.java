@@ -50,7 +50,7 @@ public class Player2NpcSynchronizer {
                     .toList();
 
             for (UUID uuid : currentNpcUuids) {
-                npcFactory.removeNpc(uuid, server.getPlayerManager());
+                npcFactory.deleteNpc(uuid, server.getPlayerManager());
             }
 
             for (Map.Entry<UUID, Characters.Character> entry : uuidToChar.entrySet()) {
