@@ -57,6 +57,7 @@ public class Player2NpcSynchronizer {
                 NPCConfig config = NPCConfig.builder(entry.getValue().short_name())
                         .llmDefaultPrompt(entry.getValue().description())
                         .llmType(LLMType.PLAYER2)
+                        .voiceId(entry.getValue().voice_ids())
                         .build();
                 npcFactory.createNpc(config, server, spawnPos);
             }

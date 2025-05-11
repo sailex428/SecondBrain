@@ -148,7 +148,8 @@ object NPCFactory {
                     contextProvider,
                     llmClient
                 )
-                val eventHandler = NPCEventHandler(llmClient, history, functionManager, contextProvider, controller)
+                val eventHandler = NPCEventHandler(llmClient, history, functionManager,
+                    contextProvider, controller, config)
                 val modeController = initModeController(npcEntity, controller, contextProvider)
 
                 NPC(npcEntity, llmClient, history, eventHandler, controller, contextProvider, modeController, config)
@@ -168,7 +169,7 @@ object NPCFactory {
 //                NPC(npcEntity, llmClient, history, eventHandler, controller, contextProvider, modeController, config)
 //            }
             LLMType.PLAYER2 -> {
-                val llmClient = Player2APIClient()
+                val llmClient = Player2APIClient(config.voiceIds)
 
                 val (controller, history) = initBase(npcEntity, config.npcName, contextProvider)
 
@@ -179,7 +180,8 @@ object NPCFactory {
                     llmClient
                 )
 
-                val eventHandler = NPCEventHandler(llmClient, history, functionManager, contextProvider, controller)
+                val eventHandler = NPCEventHandler(llmClient, history, functionManager,
+                    contextProvider, controller, config)
                 val modeController = initModeController(npcEntity, controller, contextProvider)
 
                 NPC(npcEntity, llmClient, history, eventHandler, controller, contextProvider, modeController, config)

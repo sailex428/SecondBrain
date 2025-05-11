@@ -17,7 +17,8 @@ class EventListenerRegisterer(
 //            BlockInteractionListener(npcs),
             EntityLoadListener(npcs),
             ChatMessageListener(npcs),
-            CombatEventListener(npcs)
+            CombatEventListener(npcs),
+            STTListener(npcs)
         ).forEach { listener -> listener.register() }
     }
 }

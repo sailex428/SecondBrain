@@ -21,6 +21,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -35,8 +36,14 @@ public class Player2APIClient extends ALLMClient<FunctionDef> {
     private final Gson gson;
     private final HttpClient client;
     private final FunctionExecutor functionExecutor;
+    private final List<String> voiceIds;
 
     public Player2APIClient() {
+        this(new ArrayList<>());
+    }
+
+    public Player2APIClient(List<String> voiceIds) {
+        this.voiceIds = voiceIds;
         this.gson = new Gson();
         this.client = HttpClient.newHttpClient();
         this.functionExecutor = new FunctionExecutor();
@@ -129,7 +136,7 @@ public class Player2APIClient extends ALLMClient<FunctionDef> {
     /**
      * Initiates a text-to-speech process for the provided message using the specified voice IDs.
      */
-    public String startTextToSpeech(String message, List<String> voiceIds) throws LLMServiceException {
+    public String startTextToSpeech(String message) throws LLMServiceException {
         try {
             String url = API_ENDPOINT.TTS_START.getUrl();
             TTSSpeakRequest speakRequest = new TTSSpeakRequest(message, voiceIds);
