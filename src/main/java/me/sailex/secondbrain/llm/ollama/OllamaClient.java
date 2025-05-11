@@ -31,6 +31,7 @@ public class OllamaClient extends ALLMClient<Tools.ToolSpecification> {
 	private OllamaAPI ollamaAPI;
 	private final ExecutorService service;
 	private final String model;
+	private final String url;
 
 	public OllamaClient(
 		String url,
@@ -39,9 +40,10 @@ public class OllamaClient extends ALLMClient<Tools.ToolSpecification> {
 		int timeout,
 		boolean verbose
 	) {
+		this.url = url;
 		this.ollamaAPI = new OllamaAPI(url);
 		this.model = customModelName;
-		checkServiceIsReachable(url);
+		checkServiceIsReachable();
 		this.service = Executors.newFixedThreadPool(3);
 		ollamaAPI.setVerbose(verbose);
 		ollamaAPI.setMaxChatToolCallRetries(4);
@@ -102,7 +104,7 @@ public class OllamaClient extends ALLMClient<Tools.ToolSpecification> {
 	 * @throws LLMServiceException if server is not reachable
 	 */
 	@Override
-	public void checkServiceIsReachable(String url) {
+	public void checkServiceIsReachable() {
 		try {
 			boolean isOllamaServerReachable = ollamaAPI.ping();
 			if (!isOllamaServerReachable) {

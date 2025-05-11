@@ -28,8 +28,10 @@ import java.util.List;
  */
 public class Player2APIClient extends ALLMClient<FunctionDef> {
 
+    public static final int HEALTH_CHECK_INTERVAL_TICKS = 1200;
     private static final String BASE_URL = "http://127.0.0.1:4315";
     private static final int MAX_CHAT_TOOL_CALL_RETRIES = 4;
+
     private final Gson gson;
     private final HttpClient client;
     private final FunctionExecutor functionExecutor;
@@ -138,6 +140,10 @@ public class Player2APIClient extends ALLMClient<FunctionDef> {
         }
     }
 
+    public void startSpeechToText() {
+        startSpeechToText(30);
+    }
+
     /**
      * Initiates a speech-to-text process with the specified timeout.
      */
@@ -180,9 +186,9 @@ public class Player2APIClient extends ALLMClient<FunctionDef> {
     }
 
     @Override
-    public void checkServiceIsReachable(String url) throws LLMServiceException {
+    public void checkServiceIsReachable() throws LLMServiceException {
         try {
-            InetAddress inetAddress = InetAddress.getByName(url);
+            InetAddress inetAddress = InetAddress.getByName(BASE_URL);
             if (!inetAddress.isReachable(3000)) {
                 throw new LLMServiceException("Player2 API is not reachable");
             }
