@@ -14,7 +14,7 @@ public abstract class ALLMClient<T> implements FunctionCallable<T> {
 	}
 
 	@Override
-	public void checkServiceIsReachable(String url) {
+	public void checkServiceIsReachable() {
 		// To be implemented by the child classes
 	}
 
