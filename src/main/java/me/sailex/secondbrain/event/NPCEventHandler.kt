@@ -1,11 +1,12 @@
 package me.sailex.secondbrain.event
 
 import me.sailex.secondbrain.common.NPCController
+import me.sailex.secondbrain.config.NPCConfig
 import me.sailex.secondbrain.context.ContextProvider
 import me.sailex.secondbrain.history.ConversationHistory
 import me.sailex.secondbrain.llm.FunctionCallable
-import me.sailex.secondbrain.llm.ollama.OllamaClient
 import me.sailex.secondbrain.llm.function_calling.FunctionManager
+import me.sailex.secondbrain.llm.player2.Player2APIClient
 import me.sailex.secondbrain.util.LogUtil
 import me.sailex.secondbrain.util.PromptFormatter
 import java.util.concurrent.CompletableFuture
@@ -17,7 +18,8 @@ class NPCEventHandler<T>(
     private val history: ConversationHistory,
     private val functionManager: FunctionManager<T>,
     private val contextProvider: ContextProvider,
-    private val controller: NPCController
+    private val controller: NPCController,
+    private val config: NPCConfig
 ): EventHandler {
     private val executorService: ExecutorService = Executors.newSingleThreadExecutor()
 
@@ -38,11 +40,15 @@ class NPCEventHandler<T>(
 
             val response = llmClient.callFunctions(formattedPrompt, relevantFunctions)
 
-            controller.addGoal("chat") { controller.chat(response.finalResponse) }
-            history.add(response.finalResponse + " - " + response.toolCalls)
+            if (llmClient is Player2APIClient && config.isTTS) {
+                llmClient.startTextToSpeech(response.finalResponse)
+            } else {
+                controller.addGoal("chat") { controller.chat(response.finalResponse) }
+                history.add(response.finalResponse + " - " + response.toolCalls)
+            }
         }, executorService)
             .exceptionally {
-                LogUtil.debugInChat("No actions called by AI")
+                LogUtil.debugInChat("No actions called by LLM for '" + config.npcName + "'")
                 LogUtil.error("Unexpected error occurred handling event", it)
                 null
             }

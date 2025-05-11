@@ -1,5 +1,6 @@
 package me.sailex.secondbrain.client;
 
+import me.sailex.secondbrain.client.keybind.STTKeybind;
 import me.sailex.secondbrain.client.networking.ClientNetworkManager;
 import net.fabricmc.api.ClientModInitializer;
 
@@ -9,5 +10,8 @@ public class SecondBrainClient implements ClientModInitializer {
     public void onInitializeClient() {
         ClientNetworkManager networkManager = new ClientNetworkManager();
         networkManager.registerPacketReceiver();
+
+        STTKeybind keybind = new STTKeybind(networkManager);
+        keybind.register();
     }
 }

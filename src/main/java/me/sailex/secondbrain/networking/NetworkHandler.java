@@ -1,7 +1,8 @@
 package me.sailex.secondbrain.networking;
 
 import io.wispforest.owo.network.OwoNetChannel;
-import io.wispforest.owo.network.ServerAccess;
+import me.sailex.secondbrain.auth.PlayerAuthorizer;
+import me.sailex.secondbrain.callback.STTCallback;
 import me.sailex.secondbrain.common.NPCFactory;
 import me.sailex.secondbrain.config.BaseConfig;
 import me.sailex.secondbrain.config.ConfigProvider;
@@ -11,6 +12,8 @@ import me.sailex.secondbrain.util.LogUtil;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.util.Identifier;
+
+import java.util.UUID;
 
 import static me.sailex.secondbrain.SecondBrain.MOD_ID;
 
@@ -23,10 +26,12 @@ public class NetworkHandler {
     public static final OwoNetChannel CHANNEL = OwoNetChannel.create(CONFIG_CHANNEL_ID);
     private final ConfigProvider configProvider;
     private final NPCFactory npcFactory;
+    private final PlayerAuthorizer authorizer;
 
-    public NetworkHandler(ConfigProvider configProvider, NPCFactory npcFactory) {
+    public NetworkHandler(ConfigProvider configProvider, NPCFactory npcFactory, PlayerAuthorizer authorizer) {
         this.configProvider = configProvider;
         this.npcFactory = npcFactory;
+        this.authorizer = authorizer;
     }
 
     /**
@@ -39,6 +44,7 @@ public class NetworkHandler {
         registerUpdateNpcConfig();
         registerAddNpc();
         registerDeleteNpc();
+        registerStartStopSTT();
 
         CHANNEL.registerClientboundDeferred(ConfigPacket.class);
     }
@@ -54,8 +60,8 @@ public class NetworkHandler {
     }
 
     private void registerUpdateBaseConfig() {
-        CHANNEL.registerServerbound(UpdateBaseConfigPacket.class, (configPacket, clientAccess) -> {
-            if (isPlayerAuthorized(clientAccess)) {
+        CHANNEL.registerServerbound(UpdateBaseConfigPacket.class, (configPacket, serverAccess) -> {
+            if (authorizer.isAuthorized(serverAccess)) {
                 configProvider.setBaseConfig(configPacket.baseConfig());
                 LogUtil.info("Updated base config to: " + configPacket);
             }
@@ -63,8 +69,8 @@ public class NetworkHandler {
     }
 
     private void registerUpdateNpcConfig() {
-        CHANNEL.registerServerbound(UpdateNpcConfigPacket.class, (configPacket, clientAccess) -> {
-            if (isPlayerAuthorized(clientAccess)) {
+        CHANNEL.registerServerbound(UpdateNpcConfigPacket.class, (configPacket, serverAccess) -> {
+            if (authorizer.isAuthorized(serverAccess)) {
                 configProvider.updateNpcConfig(configPacket.npcConfig());
                 LogUtil.info("Updated npc config to: " + configPacket);
             }
@@ -72,24 +78,33 @@ public class NetworkHandler {
     }
 
     private void registerAddNpc() {
-        CHANNEL.registerServerbound(CreateNpcPacket.class, (createNpcPacket, clientAccess) -> {
-            if (isPlayerAuthorized(clientAccess)) {
-                npcFactory.createNpc(createNpcPacket.npcConfig(), clientAccess.player());
+        CHANNEL.registerServerbound(CreateNpcPacket.class, (createNpcPacket, serverAccess) -> {
+            if (authorizer.isAuthorized(serverAccess)) {
+                npcFactory.createNpc(createNpcPacket.npcConfig(), serverAccess.runtime(),
+                        serverAccess.player().getBlockPos());
             }
         });
     }
 
     private void registerDeleteNpc() {
-        CHANNEL.registerServerbound(DeleteNpcPacket.class, (configPacket, clientAccess) -> {
-            if (isPlayerAuthorized(clientAccess)) {
-                PlayerManager playerManager = clientAccess.player().getServer().getPlayerManager();
-                String npcName = configPacket.npcName();
+        CHANNEL.registerServerbound(DeleteNpcPacket.class, (configPacket, serverAccess) -> {
+            if (authorizer.isAuthorized(serverAccess)) {
+                PlayerManager playerManager = serverAccess.player().getServer().getPlayerManager();
+                UUID uuid = UUID.fromString(configPacket.uuid());
 
                 if (configPacket.isDelete()) {
-                    npcFactory.deleteNpc(npcName, playerManager);
+                    npcFactory.deleteNpc(uuid, playerManager);
                 } else {
-                    npcFactory.removeNpc(npcName, playerManager);
+                    npcFactory.removeNpc(uuid, playerManager);
                 }
+            }
+        });
+    }
+
+    private void registerStartStopSTT() {
+        CHANNEL.registerServerbound(STTPacket.class, (sttPacket, serverAccess) -> {
+            if (authorizer.isAuthorized(serverAccess) && authorizer.isLocalConnection(serverAccess)) {
+                STTCallback.EVENT.invoker().onSTTAction(sttPacket.type());
             }
         });
     }
@@ -103,10 +118,7 @@ public class NetworkHandler {
             builder.register(DeleteNpcPacket.ENDEC, DeleteNpcPacket.class);
             builder.register(UpdateNpcConfigPacket.ENDEC, UpdateNpcConfigPacket.class);
             builder.register(UpdateBaseConfigPacket.ENDEC, UpdateBaseConfigPacket.class);
+            builder.register(STTPacket.ENDEC, STTPacket.class);
         });
-    }
-
-    private boolean isPlayerAuthorized(ServerAccess clientAccess) {
-        return clientAccess.player().isCreativeLevelTwoOp();
     }
 }

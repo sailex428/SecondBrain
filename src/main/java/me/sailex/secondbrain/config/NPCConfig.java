@@ -6,6 +6,8 @@ import io.wispforest.endec.impl.StructEndecBuilder;
 import me.sailex.secondbrain.constant.Instructions;
 import me.sailex.secondbrain.llm.LLMType;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public class NPCConfig implements Configurable {
@@ -16,7 +18,10 @@ public class NPCConfig implements Configurable {
 	private String llmCharacter = Instructions.DEFAULT_CHARACTER_TRAITS;
 	private LLMType llmType = LLMType.OLLAMA;
 	private String ollamaUrl = "http://localhost:11434";
-	private String openaiApiKey = "API_KEY";
+	private String openaiApiKey = "<empty>"; //currently not needed
+	private final List<String> voiceIds = new ArrayList<>();
+
+	private boolean isTTS = false;
 
 	public NPCConfig() {}
 
@@ -31,7 +36,8 @@ public class NPCConfig implements Configurable {
 		String llmCharacter,
 		LLMType llmType,
 		String ollamaUrl,
-		String openaiApiKey
+		String openaiApiKey,
+		boolean isTTS
 	) {
 		this.npcName = npcName;
 		this.uuid = UUID.fromString(uuid);
@@ -40,6 +46,7 @@ public class NPCConfig implements Configurable {
 		this.llmType = llmType;
 		this.ollamaUrl = ollamaUrl;
 		this.openaiApiKey = openaiApiKey;
+		this.isTTS = isTTS;
 	}
 
 	public static class Builder {
@@ -65,13 +72,8 @@ public class NPCConfig implements Configurable {
 			return this;
 		}
 
-		public Builder ollamaUrl(String ollamaUrl) {
-			npcConfig.setOllamaUrl(ollamaUrl);
-			return this;
-		}
-
-		public Builder openaiApiKey(String openaiApiKey) {
-			npcConfig.setOpenaiApiKey(openaiApiKey);
+		public Builder voiceId(List<String> voiceIds) {
+			npcConfig.voiceIds.addAll(voiceIds);
 			return this;
 		}
 
@@ -141,6 +143,18 @@ public class NPCConfig implements Configurable {
 		this.uuid = uuid;
 	}
 
+	public List<String> getVoiceIds() {
+		return voiceIds;
+	}
+
+	public boolean isTTS() {
+		return isTTS;
+	}
+
+	public void setTTS(boolean TTS) {
+		isTTS = TTS;
+	}
+
 	@Override
 	public String getConfigName() {
 		return npcName.toLowerCase();
@@ -154,6 +168,7 @@ public class NPCConfig implements Configurable {
 			Endec.forEnum(LLMType.class).fieldOf("llmType", NPCConfig::getLlmType),
 			Endec.STRING.fieldOf("ollamaUrl", NPCConfig::getOllamaUrl),
 			Endec.STRING.fieldOf("openaiApiKey", NPCConfig::getOpenaiApiKey),
+			Endec.BOOLEAN.fieldOf("isTTS", NPCConfig::isTTS),
 			NPCConfig::new
 	);
 
@@ -165,7 +180,8 @@ public class NPCConfig implements Configurable {
 				",llmType=" + llmType +
 				",ollamaUrl=" + ollamaUrl +
 				",openaiApiKey=***" +
-				",llmCharacter=" + llmCharacter + "}";
+				",llmCharacter=" + llmCharacter +
+				",voiceId=" + voiceIds + "}";
 	}
 
 	//name for fields for npc config screen
@@ -175,4 +191,5 @@ public class NPCConfig implements Configurable {
 	public static final String LLM_TYPE = "Type of the LLM";
 	public static final String OLLAMA_URL = "Ollama URL";
 	public static final String OPENAI_API_KEY = "OpenAI API Key";
+	public static final String IS_TTS = "TTS";
 }
