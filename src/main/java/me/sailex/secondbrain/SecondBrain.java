@@ -4,6 +4,7 @@ import me.sailex.secondbrain.auth.PlayerAuthorizer;
 import me.sailex.secondbrain.commands.CommandManager;
 import me.sailex.secondbrain.common.NPCFactory;
 import lombok.Getter;
+import me.sailex.secondbrain.common.Player2HealthChecker;
 import me.sailex.secondbrain.common.Player2NpcSynchronizer;
 import me.sailex.secondbrain.config.ConfigProvider;
 import me.sailex.secondbrain.database.SqliteClient;
@@ -43,6 +44,9 @@ public class SecondBrain implements ModInitializer {
 		EventListenerRegisterer eventListenerRegisterer = new EventListenerRegisterer(npcFactory.getUuidToNpc());
 		eventListenerRegisterer.register();
 
+		Player2HealthChecker healthChecker = new Player2HealthChecker();
+		healthChecker.runSchedule();
+
 		ServerLifecycleEvents.SERVER_STARTED.register(server -> {
 			LogUtil.initialize(server, configProvider.getBaseConfig().isVerbose());
 
@@ -52,14 +56,22 @@ public class SecondBrain implements ModInitializer {
 			CommandManager commandManager = new CommandManager(npcFactory, configProvider, networkManager, synchronizer);
 			commandManager.registerAll();
 		});
-		ServerLifecycleEvents.SERVER_STOPPING.register(server -> onStop(npcFactory, configProvider, sqlite, server));
+		ServerLifecycleEvents.SERVER_STOPPING.register(server ->
+				onStop(npcFactory, configProvider, sqlite, healthChecker, server));
 	}
 
-	private void onStop(NPCFactory npcFactory, ConfigProvider configProvider, SqliteClient sqlite, MinecraftServer server) {
+	private void onStop(
+		NPCFactory npcFactory,
+		ConfigProvider configProvider,
+		SqliteClient sqlite,
+		Player2HealthChecker healthChecker,
+		MinecraftServer server
+	) {
 		ResourcesProvider resourcesProvider = npcFactory.getResourcesProvider();
 		if (resourcesProvider != null) resourcesProvider.saveResources();
 		npcFactory.shutdownNpcs(server);
 		configProvider.saveAll();
 		sqlite.closeConnection();
+		healthChecker.shutdown();
 	}
 }
