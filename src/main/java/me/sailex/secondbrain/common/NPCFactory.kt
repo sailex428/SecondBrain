@@ -62,7 +62,6 @@ object NPCFactory {
                 matchingConfig.get().isActive = true
             }
             uuidToNpc[config.uuid] = npc
-            handleInitMessage(npc.eventHandler)
 
             LogUtil.infoInChat(("Added NPC with name: ${config.npcName}"))
         }, executorService).exceptionally {
@@ -101,10 +100,9 @@ object NPCFactory {
             npcToRemove.npcController.cancelActions()
             npcToRemove.contextProvider.chunkManager.stopService()
             uuidToNpc.remove(uuid)
-            configProvider.getNpcConfig(uuid).ifPresent {
-                it.isActive = false
-                LogUtil.infoInChat("Removed NPC with name ${it.npcName}")
-            }
+            val config = configProvider.getNpcConfig(uuid).get()
+            config.isActive = false
+            LogUtil.infoInChat("Removed NPC with name ${config.npcName}")
         }
     }
 
@@ -151,6 +149,7 @@ object NPCFactory {
                 val eventHandler = NPCEventHandler(llmClient, history, functionManager,
                     contextProvider, controller, config)
                 val modeController = initModeController(npcEntity, controller, contextProvider)
+                handleInitMessage(eventHandler,Instructions.OLLAMA_INIT_PROMPT)
 
                 NPC(npcEntity, llmClient, history, eventHandler, controller, contextProvider, modeController, config)
             }
@@ -183,6 +182,7 @@ object NPCFactory {
                 val eventHandler = NPCEventHandler(llmClient, history, functionManager,
                     contextProvider, controller, config)
                 val modeController = initModeController(npcEntity, controller, contextProvider)
+                handleInitMessage(eventHandler,Instructions.PLAYER2_INIT_PROMPT.format(config.llmCharacter))
 
                 NPC(npcEntity, llmClient, history, eventHandler, controller, contextProvider, modeController, config)
             }
@@ -223,8 +223,8 @@ object NPCFactory {
         return modeController
     }
 
-    private fun handleInitMessage(eventHandler: EventHandler) {
-        eventHandler.onEvent(Instructions.INIT_PROMPT)
+    private fun handleInitMessage(eventHandler: EventHandler, initPrompt: String) {
+        eventHandler.onEvent(initPrompt)
     }
 
     fun checkNpcName(npcName: String) {

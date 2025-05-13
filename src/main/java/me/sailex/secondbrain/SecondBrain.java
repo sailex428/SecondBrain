@@ -4,7 +4,6 @@ import me.sailex.secondbrain.auth.PlayerAuthorizer;
 import me.sailex.secondbrain.commands.CommandManager;
 import me.sailex.secondbrain.common.NPCFactory;
 import lombok.Getter;
-import me.sailex.secondbrain.common.Player2HealthChecker;
 import me.sailex.secondbrain.common.Player2NpcSynchronizer;
 import me.sailex.secondbrain.config.ConfigProvider;
 import me.sailex.secondbrain.database.SqliteClient;
@@ -44,34 +43,33 @@ public class SecondBrain implements ModInitializer {
 		EventListenerRegisterer eventListenerRegisterer = new EventListenerRegisterer(npcFactory.getUuidToNpc());
 		eventListenerRegisterer.register();
 
-		Player2HealthChecker healthChecker = new Player2HealthChecker();
-		healthChecker.runSchedule();
+		Player2NpcSynchronizer synchronizer = new Player2NpcSynchronizer(npcFactory);
+
+		CommandManager commandManager = new CommandManager(npcFactory, configProvider, networkManager, synchronizer);
+		commandManager.registerAll();
 
 		ServerLifecycleEvents.SERVER_STARTED.register(server -> {
 			LogUtil.initialize(server, configProvider.getBaseConfig().isVerbose());
 
-			Player2NpcSynchronizer synchronizer = new Player2NpcSynchronizer(npcFactory, server);
+			synchronizer.setServer(server);
 			synchronizer.syncCharacters();
-
-			CommandManager commandManager = new CommandManager(npcFactory, configProvider, networkManager, synchronizer);
-			commandManager.registerAll();
 		});
 		ServerLifecycleEvents.SERVER_STOPPING.register(server ->
-				onStop(npcFactory, configProvider, sqlite, healthChecker, server));
+				onStop(npcFactory, configProvider, sqlite, synchronizer, server));
 	}
 
 	private void onStop(
 		NPCFactory npcFactory,
 		ConfigProvider configProvider,
 		SqliteClient sqlite,
-		Player2HealthChecker healthChecker,
+		Player2NpcSynchronizer synchronizer,
 		MinecraftServer server
 	) {
 		ResourcesProvider resourcesProvider = npcFactory.getResourcesProvider();
 		if (resourcesProvider != null) resourcesProvider.saveResources();
+		synchronizer.shutdown();
 		npcFactory.shutdownNpcs(server);
 		configProvider.saveAll();
 		sqlite.closeConnection();
-		healthChecker.shutdown();
 	}
 }
