@@ -24,12 +24,13 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
+import static me.sailex.secondbrain.SecondBrain.MOD_ID;
+
 /**
  * This class acts as a client for interacting with the Player2 API.
  */
 public class Player2APIClient extends ALLMClient<FunctionDef> {
 
-    public static final int HEALTH_CHECK_INTERVAL_TICKS = 1200;
     private static final String BASE_URL = "http://127.0.0.1:4315";
     private static final int MAX_CHAT_TOOL_CALL_RETRIES = 4;
 
@@ -186,7 +187,7 @@ public class Player2APIClient extends ALLMClient<FunctionDef> {
     public HealthResponse getHealthStatus() throws LLMServiceException {
         try {
             String url = API_ENDPOINT.HEALTH.getUrl();
-            return sendGetRequest(url, HealthResponse.class);
+            return sendGetRequest(url, HealthResponse.class, "player2-game-key", MOD_ID);
         } catch(Exception e) {
             throw new LLMServiceException("Failed to send health check", e);
         }
@@ -219,10 +220,11 @@ public class Player2APIClient extends ALLMClient<FunctionDef> {
         return sendRequest(request, responseType);
     }
 
-    private <T> T sendGetRequest(String url, Class<T> responseType) throws IOException {
+    private <T> T sendGetRequest(String url, Class<T> responseType, String... headers) throws IOException {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(BASE_URL + url))
                 .GET()
+                .headers(headers)
                 .build();
         return sendRequest(request, responseType);
     }
