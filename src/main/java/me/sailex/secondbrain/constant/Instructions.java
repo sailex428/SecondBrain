@@ -8,7 +8,11 @@ public class Instructions {
 	private Instructions() {}
 
 	//first prompt auto send to llm after npc creation
-	public static final String INIT_PROMPT = "Start with self instruction and just move around and explore the world.";
+	public static final String OLLAMA_INIT_PROMPT = "Start with self instruction and just move around and explore the world.";
+
+	public static final String PLAYER2_INIT_PROMPT = """
+			Player 2 init prompt here should be the description the user typed in: %s
+			""";
 
 	private static final String LLM_SYSTEM_PROMPT = """
 		You are %s, an NPC in Minecraft with the following characteristics:
