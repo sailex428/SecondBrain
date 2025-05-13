@@ -75,13 +75,13 @@ public class SecondBrainScreen extends BaseUIModelScreen<FlowLayout> {
     }
 
     private void addTypeSpecificLabelTexture(FlowLayout npcLabelContainer, NPCConfig config) {
-        Identifier texture;
+        String iconPath;
         switch (config.getLlmType()) {
-            case OLLAMA -> texture = Identifier.of(MOD_ID, "ollama-icon.png");
-            case PLAYER2 -> texture = Identifier.of(MOD_ID, "player2-icon.png");
-            default -> texture = Identifier.of(MOD_ID, "icon.png");
+            case OLLAMA -> iconPath = "ollama-icon.png";
+            case PLAYER2 -> iconPath = "player2-icon.png";
+            default -> iconPath = "icon.png";
         }
-        npcLabelContainer.child(Components.texture(texture, 25, 25, 25, 25));
+        npcLabelContainer.child(Components.texture(Identifier.of(MOD_ID, iconPath), 25, 25, 25, 25));
     }
 
     private void addNpcSpawnButton(FlowLayout npcButtonContainer, NPCConfig config) {
