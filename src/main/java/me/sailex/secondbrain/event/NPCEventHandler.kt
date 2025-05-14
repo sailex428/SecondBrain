@@ -38,7 +38,7 @@ class NPCEventHandler<T>(
             val context = contextProvider.buildContext()
             val formattedPrompt = PromptFormatter.format(prompt, context)
 
-            val response = llmClient.callFunctions(formattedPrompt, relevantFunctions)
+            val response = llmClient.callFunctions(formattedPrompt, relevantFunctions, history)
 
             if (llmClient is Player2APIClient && config.isTTS) {
                 llmClient.startTextToSpeech(response.finalResponse)

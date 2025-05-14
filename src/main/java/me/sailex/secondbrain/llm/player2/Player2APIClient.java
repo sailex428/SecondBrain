@@ -74,14 +74,20 @@ public class Player2APIClient extends ALLMClient<FunctionDef> {
      * @return             the formatted results of the function calls.
      */
     @Override
-    public FunctionResponse callFunctions(String prompt, List<FunctionDef> functions) throws LLMServiceException {
+    public FunctionResponse callFunctions(
+        String prompt,
+        List<FunctionDef> functions,
+        ConversationHistory conversationHistory
+    ) throws LLMServiceException {
         try {
             functionExecutor.enrollFunctions(functions);
             StringBuilder calledFunctions = new StringBuilder();
 
             ChatRequest chatRequest = ChatRequest.builder()
                     .tools(functions)
-                    .message(List.of(ChatMessage.UserMessage.of(prompt)))
+                    .message(List.of(
+                            ChatMessage.UserMessage.of(conversationHistory.getFormattedHistory()),
+                            ChatMessage.UserMessage.of(prompt)))
                     .build();
             ChatMessage.ResponseMessage result = sendPostRequest(
                     API_ENDPOINT.CHAT_COMPLETION.getUrl(),
