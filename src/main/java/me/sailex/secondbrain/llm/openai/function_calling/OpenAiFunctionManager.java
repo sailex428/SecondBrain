@@ -75,7 +75,7 @@ public class OpenAiFunctionManager extends AFunctionManager<FunctionDef> {
                 .collect(Collectors.toList());
     }
 
-    protected static class Chat implements Functional {
+    public static class Chat implements Functional {
 
         @JsonPropertyDescription(Property.Description.MESSAGE)
         @JsonProperty(required = true)
@@ -88,7 +88,7 @@ public class OpenAiFunctionManager extends AFunctionManager<FunctionDef> {
         }
     }
 
-    protected static class MoveToCoordinates implements Functional {
+    public static class MoveToCoordinates implements Functional {
 
         @JsonProperty(required = true)
         private int x;
@@ -104,7 +104,7 @@ public class OpenAiFunctionManager extends AFunctionManager<FunctionDef> {
         }
     }
 
-    protected static class MoveToEntity implements Functional {
+    public static class MoveToEntity implements Functional {
 
         @JsonPropertyDescription(Property.Description.ENTITY_NAME)
         @JsonProperty(required = true)
@@ -121,7 +121,7 @@ public class OpenAiFunctionManager extends AFunctionManager<FunctionDef> {
         }
     }
 
-    protected static class MoveAway implements Functional {
+    public static class MoveAway implements Functional {
         @Override
         public Object execute() {
             controller.addGoal(Function.Name.MOVE_AWAY, controller::moveAway);
@@ -129,7 +129,7 @@ public class OpenAiFunctionManager extends AFunctionManager<FunctionDef> {
         }
     }
 
-    protected static class MineBlock implements Functional {
+    public static class MineBlock implements Functional {
 
         @JsonPropertyDescription(Property.Description.BLOCK_TYPE)
         @JsonProperty(required = true)
@@ -146,7 +146,7 @@ public class OpenAiFunctionManager extends AFunctionManager<FunctionDef> {
         }
     }
 
-    protected static class DropItem implements Functional {
+    public static class DropItem implements Functional {
 
         @JsonPropertyDescription(Property.Description.ITEM_NAME)
         @JsonProperty(required = true)
@@ -163,7 +163,7 @@ public class OpenAiFunctionManager extends AFunctionManager<FunctionDef> {
         }
     }
 
-    protected static class AttackEntity implements Functional {
+    public static class AttackEntity implements Functional {
 
         @JsonPropertyDescription(Property.Description.ENTITY_NAME)
         @JsonProperty(required = true)
@@ -180,7 +180,7 @@ public class OpenAiFunctionManager extends AFunctionManager<FunctionDef> {
         }
     }
 
-    protected static class Stop implements Functional {
+    public static class Stop implements Functional {
         @Override
         public Object execute() {
             controller.addGoal(Function.Name.STOP, controller::cancelActions, true);
@@ -188,21 +188,21 @@ public class OpenAiFunctionManager extends AFunctionManager<FunctionDef> {
         }
     }
 
-    protected static class GetEntities implements Functional {
+    public static class GetEntities implements Functional {
         @Override
         public Object execute() {
             return PromptFormatter.formatEntities(contextProvider.getCachedContext().nearbyEntities(), 15);
         }
     }
 
-    protected static class GetBlocks implements Functional {
+    public static class GetBlocks implements Functional {
         @Override
         public Object execute() {
             return PromptFormatter.formatBlocks(contextProvider.getCachedContext().nearbyBlocks(), 15);
         }
     }
 
-    protected static class GetRecipes implements Functional {
+    public static class GetRecipes implements Functional {
 
         @JsonPropertyDescription(Property.Description.ITEM_NAME)
         @JsonProperty(required = true)
@@ -214,7 +214,7 @@ public class OpenAiFunctionManager extends AFunctionManager<FunctionDef> {
         }
     }
 
-    protected static class GetConversations implements Functional {
+    public static class GetConversations implements Functional {
 
         @JsonPropertyDescription(Property.Description.TOPIC)
         @JsonProperty(required = true)

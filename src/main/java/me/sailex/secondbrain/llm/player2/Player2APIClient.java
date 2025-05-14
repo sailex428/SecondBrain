@@ -9,13 +9,13 @@ import io.github.sashirestela.openai.domain.chat.Chat;
 import io.github.sashirestela.openai.domain.chat.ChatMessage;
 import lombok.Getter;
 import me.sailex.secondbrain.exception.LLMServiceException;
+import me.sailex.secondbrain.history.ConversationHistory;
 import me.sailex.secondbrain.llm.ALLMClient;
 import me.sailex.secondbrain.llm.player2.model.*;
 import me.sailex.secondbrain.model.function_calling.FunctionResponse;
 import me.sailex.secondbrain.util.LogUtil;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -57,7 +57,8 @@ public class Player2APIClient extends ALLMClient<FunctionDef> {
         TTS_START("/v1/tts/speak"),
         STT_START("/v1/stt/start"),
         STT_STOP("/v1/stt/stop"),
-        HEALTH("/v1/health");
+        HEALTH("/v1/health"),
+        PING("/docs");
 
         private final String url;
 
@@ -202,12 +203,14 @@ public class Player2APIClient extends ALLMClient<FunctionDef> {
     @Override
     public void checkServiceIsReachable() throws LLMServiceException {
         try {
-            InetAddress inetAddress = InetAddress.getByName(BASE_URL);
-            if (!inetAddress.isReachable(3000)) {
-                throw new LLMServiceException("Player2 API is not reachable");
-            }
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(BASE_URL + API_ENDPOINT.PING.getUrl()))
+                    .method("HEAD", HttpRequest.BodyPublishers.noBody())
+                    .timeout(java.time.Duration.ofSeconds(3))
+                    .build();
+            sendRequest(request, String.class);
         } catch (Exception e) {
-            throw new LLMServiceException("Failed to check Player2 API is reachable", e);
+            throw new LLMServiceException("Player2 API is not reachable", e);
         }
     }
 
