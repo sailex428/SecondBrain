@@ -63,7 +63,7 @@ public class NPCSpawner {
             instance.teleport(worldIn, finalSpawnPos.getX(), finalSpawnPos.getY(), finalSpawnPos.getZ(), (float) yaw,
                     (float) pitch);
             instance.setHealth(20.0F);
-            ((EntityAccessor) instance).unsetRemoved();
+            //((EntityAccessor) instance).unsetRemoved();
             instance.getAttributeInstance(EntityAttributes.GENERIC_STEP_HEIGHT).setBaseValue(0.6F);
             instance.interactionManager.changeGameMode(GameMode.SURVIVAL);
             server.getPlayerManager().sendToDimension(new EntitySetHeadYawS2CPacket(instance,

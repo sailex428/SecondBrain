@@ -64,7 +64,6 @@ public class Player2NpcSynchronizer {
                         .build();
                 npcFactory.createNpc(config, server, spawnPos);
             }
-
         } catch (LLMServiceException e) {
             LogUtil.errorInChat(e.getMessage());
             LogUtil.error(e);

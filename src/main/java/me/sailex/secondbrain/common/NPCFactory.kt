@@ -173,7 +173,7 @@ object NPCFactory {
                 val (controller, history) = initBase(npcEntity, config.npcName, contextProvider)
 
                 val functionManager = Player2FunctionManager(
-                    resourcesProvider!!,
+                    resourcesProvider,
                     controller,
                     contextProvider,
                     llmClient
@@ -197,7 +197,7 @@ object NPCFactory {
     ): Pair<NPCController, ConversationHistory> {
         val automatone = BaritoneAPI.getProvider().getBaritone(npcEntity)
         val controller = NPCController(npcEntity, automatone, contextProvider)
-        val history = ConversationHistory(resourcesProvider!!, npcName)
+        val history = ConversationHistory(resourcesProvider, npcName)
         return Pair(controller, history)
     }
 
