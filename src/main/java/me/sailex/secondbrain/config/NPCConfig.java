@@ -191,5 +191,5 @@ public class NPCConfig implements Configurable {
 	public static final String LLM_TYPE = "Type of the LLM";
 	public static final String OLLAMA_URL = "Ollama URL";
 	public static final String OPENAI_API_KEY = "OpenAI API Key";
-	public static final String IS_TTS = "TTS";
+	public static final String IS_TTS = "Text to Speech";
 }
