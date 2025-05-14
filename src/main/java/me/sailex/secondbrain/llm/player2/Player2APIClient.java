@@ -230,12 +230,13 @@ public class Player2APIClient extends ALLMClient<FunctionDef> {
     }
 
     private <T> T sendGetRequest(String url, Class<T> responseType, String... headers) throws IOException {
-        HttpRequest request = HttpRequest.newBuilder()
+        HttpRequest.Builder builder = HttpRequest.newBuilder()
                 .uri(URI.create(BASE_URL + url))
-                .GET()
-                .headers(headers)
-                .build();
-        return sendRequest(request, responseType);
+                .GET();
+        if (headers.length > 0) {
+            builder.headers(headers);
+        }
+        return sendRequest(builder.build(), responseType);
     }
 
     private <T> T sendRequest(HttpRequest request, Class<T> responseType) throws IOException {
