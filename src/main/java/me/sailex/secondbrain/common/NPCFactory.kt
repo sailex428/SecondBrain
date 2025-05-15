@@ -228,7 +228,7 @@ object NPCFactory {
     }
 
     fun checkNpcName(npcName: String) {
-        if (configProvider.getNpcConfigByName(npcName).isPresent) {
+        if (uuidToNpc.values.any { it.entity.name.string == npcName }) {
             throw NPCCreationException("A NPC with the name '$npcName' already exists.")
         }
     }
