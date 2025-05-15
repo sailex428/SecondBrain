@@ -1,6 +1,6 @@
 package me.sailex.secondbrain.llm.player2.model;
 
-import io.github.sashirestela.openai.common.function.FunctionDef;
+import io.github.sashirestela.openai.common.tool.Tool;
 import io.github.sashirestela.openai.domain.chat.ChatMessage;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,10 +13,10 @@ import java.util.List;
 @Getter
 public class ChatRequest {
 
-    private final List<ChatMessage> message;
-    private final List<FunctionDef> tools;
+    private final List<ChatMessage> messages;
+    private final List<Tool> tools;
 
     public void addMessage(ChatMessage message) {
-        this.message.add(message);
+        this.messages.add(message);
     }
 }
