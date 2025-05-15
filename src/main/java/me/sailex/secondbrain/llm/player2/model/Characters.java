@@ -7,10 +7,11 @@ public record Characters(List<Character> characters) {
             String id,
             String name,
             String short_name,
+            String greeting,
             String description,
             List<String> voice_ids,
             Meta meta
     ) {
-        public record Meta(String skin_url) {}
+        public record Meta(String skin_url, String type) {}
     }
 }

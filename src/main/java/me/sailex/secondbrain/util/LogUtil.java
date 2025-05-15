@@ -68,7 +68,7 @@ public class LogUtil {
 	}
 
 	public static void error(Throwable e) {
-		LOGGER.error(e);
+		LOGGER.error(e.getMessage(), e);
 	}
 
 	private static void log(MutableText formattedMessage) {
