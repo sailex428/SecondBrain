@@ -93,7 +93,7 @@ object NPCFactory {
     fun removeNpc(uuid: UUID, playerManager: PlayerManager) {
         val npcToRemove = uuidToNpc[uuid]
         if (npcToRemove != null) {
-            NPCSpawner.remove(uuid, playerManager)
+            NPCSpawner.remove(npcToRemove.entity.uuid, playerManager)
             stopLlmClient(npcToRemove.llmClient)
             npcToRemove.eventHandler.stopService()
             npcToRemove.modeController.setAllIsOn(false)
