@@ -87,7 +87,7 @@ public class SecondBrainScreen extends BaseUIModelScreen<FlowLayout> {
     private void addNpcSpawnButton(FlowLayout npcButtonContainer, NPCConfig config) {
         npcButtonContainer.child(Components.button(isActiveText(config), button -> {
             if (config.isActive()) {
-                networkManager.sendPacket(new DeleteNpcPacket(config.getNpcName(), false));
+                networkManager.sendPacket(new DeleteNpcPacket(config.getUuid().toString(), false));
             } else {
                 networkManager.sendPacket(new CreateNpcPacket(config));
             }
@@ -105,7 +105,7 @@ public class SecondBrainScreen extends BaseUIModelScreen<FlowLayout> {
 
     private void addNpcDeleteButton(FlowLayout npcButtonContainer, NPCConfig config) {
         npcButtonContainer.child(Components.button(Text.of("Delete"), button -> {
-            networkManager.sendPacket(new DeleteNpcPacket(config.getNpcName(), true));
+            networkManager.sendPacket(new DeleteNpcPacket(config.getUuid().toString(), true));
             close();
         }));
     }
