@@ -49,7 +49,7 @@ class NPCEventHandler<T>(
         }, executorService)
             .exceptionally {
                 LogUtil.debugInChat("No actions called by LLM for '" + config.npcName + "'")
-                LogUtil.error("Unexpected error occurred handling event", it)
+                LogUtil.error("Unexpected error occurred handling event", it.cause)
                 null
             }
     }

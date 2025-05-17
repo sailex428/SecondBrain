@@ -1,12 +1,14 @@
 package me.sailex.secondbrain.llm.player2.function_calling;
 
 import io.github.sashirestela.openai.common.function.FunctionDef;
+import io.github.sashirestela.openai.common.function.Functional;
 import me.sailex.secondbrain.common.NPCController;
 import me.sailex.secondbrain.context.ContextProvider;
 import me.sailex.secondbrain.database.resources.ResourcesProvider;
 import me.sailex.secondbrain.llm.LLMClient;
 import me.sailex.secondbrain.llm.function_calling.constant.Function;
 import me.sailex.secondbrain.llm.openai.function_calling.OpenAiFunctionManager;
+import me.sailex.secondbrain.llm.player2.converter.Player2SchemaConverter;
 
 import java.util.List;
 
@@ -35,11 +37,22 @@ public class Player2FunctionManager extends OpenAiFunctionManager {
                 defineFunction(Function.Name.ATTACK_ENTITY, Function.Description.ATTACK_ENTITY, AttackEntity.class),
                 defineFunction(Function.Name.GET_ENTITIES, Function.Description.GET_ENTITIES, GetEntities.class),
                 defineFunction(Function.Name.GET_BLOCKS, Function.Description.GET_BLOCKS, GetBlocks.class),
+                //embedding needed for these functions
                 //defineFunction(Function.Name.GET_RECIPES, Function.Description.GET_RECIPES, GetRecipes.class),
                 //defineFunction(Function.Name.GET_CONVERSATIONS, Function.Description.GET_CONVERSATIONS, GetConversations.class),
-                //embedding needed for these functions
                 defineFunction(Function.Name.STOP, Function.Description.STOP, Stop.class)
         );
+    }
+
+    @Override
+    public <T extends Functional> FunctionDef defineFunction(String name, String description, Class<T> clazz) {
+        return FunctionDef.builder()
+                .name(name)
+                .description(description)
+                .functionalClass(clazz)
+                .schemaConverter(new Player2SchemaConverter())
+                .strict(true)
+                .build();
     }
 
     @Override

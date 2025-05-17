@@ -168,7 +168,7 @@ object NPCFactory {
 //                NPC(npcEntity, llmClient, history, eventHandler, controller, contextProvider, modeController, config)
 //            }
             LLMType.PLAYER2 -> {
-                val llmClient = Player2APIClient(config.voiceIds)
+                val llmClient = Player2APIClient(config.voiceIds, config.npcName)
 
                 val (controller, history) = initBase(npcEntity, config.npcName, contextProvider)
 

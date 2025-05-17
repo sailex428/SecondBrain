@@ -1,12 +1,14 @@
 package me.sailex.secondbrain.llm.player2;
 
-import com.google.gson.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.github.sashirestela.openai.common.function.FunctionCall;
 import io.github.sashirestela.openai.common.function.FunctionDef;
 import io.github.sashirestela.openai.common.function.FunctionExecutor;
 import io.github.sashirestela.openai.common.tool.ToolCall;
 import io.github.sashirestela.openai.domain.chat.Chat;
 import io.github.sashirestela.openai.domain.chat.ChatMessage;
+import io.github.sashirestela.openai.domain.chat.ChatRequest;
 import lombok.Getter;
 import me.sailex.secondbrain.exception.LLMServiceException;
 import me.sailex.secondbrain.history.ConversationHistory;
@@ -32,20 +34,22 @@ import static me.sailex.secondbrain.SecondBrain.MOD_ID;
 public class Player2APIClient extends ALLMClient<FunctionDef> {
 
     private static final String BASE_URL = "http://127.0.0.1:4315";
-    private static final int MAX_CHAT_TOOL_CALL_RETRIES = 4;
+    private static final int MAX_TOOL_CALL_RETRIES = 4;
 
-    private final Gson gson;
+    private final List<String> voiceIds;
+    private final String npcName; //only for debugging
+    private final ObjectMapper mapper;
     private final HttpClient client;
     private final FunctionExecutor functionExecutor;
-    private final List<String> voiceIds;
 
     public Player2APIClient() {
-        this(new ArrayList<>());
+        this(new ArrayList<>(), "Init");
     }
 
-    public Player2APIClient(List<String> voiceIds) {
+    public Player2APIClient(List<String> voiceIds, String npcName) {
         this.voiceIds = voiceIds;
-        this.gson = new Gson();
+        this.npcName = npcName;
+        this.mapper = new ObjectMapper();
         this.client = HttpClient.newHttpClient();
         this.functionExecutor = new FunctionExecutor();
     }
@@ -83,12 +87,13 @@ public class Player2APIClient extends ALLMClient<FunctionDef> {
         try {
             functionExecutor.enrollFunctions(functions);
             StringBuilder calledFunctions = new StringBuilder();
+            List<ChatMessage> messages = new ArrayList<>();
+            messages.add(ChatMessage.UserMessage.of(conversationHistory.getFormattedHistory()));
+            messages.add(ChatMessage.UserMessage.of(prompt));
 
             ChatRequest chatRequest = ChatRequest.builder()
-                    .tools(functions)
-                    .message(List.of(
-                            ChatMessage.UserMessage.of(conversationHistory.getFormattedHistory()),
-                            ChatMessage.UserMessage.of(prompt)))
+                    .tools(functionExecutor.getToolFunctions())
+                    .messages(messages)
                     .build();
             ChatMessage.ResponseMessage result = sendPostRequest(
                     API_ENDPOINT.CHAT_COMPLETION.getUrl(),
@@ -98,9 +103,9 @@ public class Player2APIClient extends ALLMClient<FunctionDef> {
 
             List<ToolCall> toolCalls = result.getToolCalls();
 
-            for (int toolCallTries = 0; toolCalls != null && !toolCalls.isEmpty() && toolCallTries < MAX_CHAT_TOOL_CALL_RETRIES; ++toolCallTries) {
+            for (int toolCallTries = 0; toolCalls != null && !toolCalls.isEmpty() && toolCallTries < MAX_TOOL_CALL_RETRIES; ++toolCallTries) {
                 for (ToolCall toolCall : toolCalls) {
-                    executeFunction(toolCall, chatRequest, calledFunctions);
+                    executeFunction(toolCall, messages, calledFunctions);
 
                     result = sendPostRequest(
                             API_ENDPOINT.CHAT_COMPLETION.getUrl(),
@@ -116,7 +121,7 @@ public class Player2APIClient extends ALLMClient<FunctionDef> {
         }
     }
 
-    private void executeFunction(ToolCall toolCall, ChatRequest chatRequest, StringBuilder calledFunctions) throws LLMServiceException {
+    private void executeFunction(ToolCall toolCall, List<ChatMessage> messages, StringBuilder calledFunctions) throws LLMServiceException {
         FunctionCall function = toolCall.getFunction();
         String functionName = function.getName();
         String arguments = function.getArguments();
@@ -127,7 +132,7 @@ public class Player2APIClient extends ALLMClient<FunctionDef> {
         calledFunctions.append(toolResult).append("; ");
         LogUtil.info(toolResult);
 
-        chatRequest.addMessage(ChatMessage.UserMessage.of("[TOOL_RESULTS]" + toolResult + "[/TOOL_RESULTS]"));
+        messages.add(ChatMessage.UserMessage.of("[TOOL_RESULTS]" + toolResult + "[/TOOL_RESULTS]"));
     }
 
     /**
@@ -166,10 +171,10 @@ public class Player2APIClient extends ALLMClient<FunctionDef> {
         try {
             String url = API_ENDPOINT.STT_START.getUrl();
 
-            JsonObject sttStartRequestBody = new JsonObject();
-            sttStartRequestBody.addProperty("timeout", timeout);
+            ObjectNode sttStartRequestBody = mapper.createObjectNode();
+            sttStartRequestBody.put("timeout", timeout);
 
-            sendPostRequest(url, sttStartRequestBody, JsonObject.class);
+            sendPostRequest(url, sttStartRequestBody, ObjectNode.class);
         } catch (Exception e) {
             throw new LLMServiceException("Failed to start retrieving text from speech input", e);
         }
@@ -181,7 +186,7 @@ public class Player2APIClient extends ALLMClient<FunctionDef> {
     public String stopSpeechToText() throws LLMServiceException {
         try {
             String url = API_ENDPOINT.STT_START.getUrl();
-            STTResponse speechToTextResponse = sendPostRequest(url, new JsonObject(), STTResponse.class);
+            STTResponse speechToTextResponse = sendPostRequest(url, mapper.createObjectNode(), STTResponse.class);
             return speechToTextResponse.text();
         } catch (Exception e) {
             throw new LLMServiceException("Failed to retrieve text from speech input", e);
@@ -205,10 +210,10 @@ public class Player2APIClient extends ALLMClient<FunctionDef> {
         try {
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(BASE_URL + API_ENDPOINT.PING.getUrl()))
-                    .method("HEAD", HttpRequest.BodyPublishers.noBody())
+                    .HEAD()
                     .timeout(java.time.Duration.ofSeconds(3))
                     .build();
-            sendRequest(request, String.class);
+            sendRequest(request);
         } catch (Exception e) {
             throw new LLMServiceException("Player2 API is not reachable", e);
         }
@@ -220,7 +225,7 @@ public class Player2APIClient extends ALLMClient<FunctionDef> {
     }
 
     private <T> T sendPostRequest(String url, Object requestBody, Class<T> responseType) throws IOException {
-        String requestJson = gson.toJson(requestBody);
+        String requestJson = mapper.writeValueAsString(requestBody);
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(BASE_URL + url))
                 .header("Content-Type", "application/json")
@@ -241,13 +246,29 @@ public class Player2APIClient extends ALLMClient<FunctionDef> {
 
     private <T> T sendRequest(HttpRequest request, Class<T> responseType) throws IOException {
         try {
+            LogUtil.info(npcName + " - " + request.method() + " - " + request.uri() + ": " + request.bodyPublisher().toString());
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            int status = response.statusCode();
+
+            if (status != 200) {
+                throw new IOException(status + " - " + response.uri() + ": " + response.body());
+            }
+            LogUtil.info(npcName + " - " + response.statusCode() + " - " + response.uri() + ": " + response.body());
+            return mapper.readValue(response.body(), responseType);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IOException(e);
+        }
+    }
+
+    private void sendRequest(HttpRequest request) throws IOException {
+        try {
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
             int status = response.statusCode();
 
             if (status != 200) {
                 throw new IOException(status + " - " + response.uri() + " responseBody: " + response.body());
             }
-            return gson.fromJson(response.body(), responseType);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new IOException(e);

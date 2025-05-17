@@ -90,10 +90,13 @@ public class OpenAiFunctionManager extends AFunctionManager<FunctionDef> {
 
     public static class MoveToCoordinates implements Functional {
 
+        @JsonPropertyDescription(Property.Description.X_COORDINATE)
         @JsonProperty(required = true)
         private int x;
+        @JsonPropertyDescription(Property.Description.Y_COORDINATE)
         @JsonProperty(required = true)
         private int y;
+        @JsonPropertyDescription(Property.Description.Z_COORDINATE)
         @JsonProperty(required = true)
         private int z;
 
