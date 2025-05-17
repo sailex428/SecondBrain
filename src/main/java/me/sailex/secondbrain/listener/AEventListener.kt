@@ -11,7 +11,7 @@ abstract class AEventListener(
     abstract override fun register()
 
     protected fun getMatchingNpc(player: PlayerEntity): NPC? {
-        return npcs[player.uuid]
+        return npcs.values.firstOrNull { it.entity.uuid == player.uuid }
     }
 
 }

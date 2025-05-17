@@ -11,7 +11,7 @@ class ChatMessageListener(
     override fun register() {
         ServerMessageEvents.CHAT_MESSAGE.register { message, sender, _ ->
             npcs.forEach { npcEntry ->
-                if (npcEntry.key == sender.uuid) {
+                if (npcEntry.value.entity.uuid == sender.uuid) {
                     return@forEach
                 }
                 val chatMessage =

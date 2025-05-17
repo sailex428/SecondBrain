@@ -45,6 +45,7 @@ object NPCFactory {
         this.repositoryFactory = repositoryFactory
     }
 
+    //config uuid to npc (not the uuid of the entity)
     val uuidToNpc = ConcurrentHashMap<UUID, NPC>()
     var resourcesProvider: ResourcesProvider? = null
         private set
