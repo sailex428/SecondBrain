@@ -1,4 +1,4 @@
-package me.sailex.secondbrain.client.gui;
+package me.sailex.secondbrain.client.gui.screen;
 
 import io.wispforest.owo.ui.base.BaseUIModelScreen;
 import io.wispforest.owo.ui.component.ButtonComponent;
@@ -81,7 +81,8 @@ public class SecondBrainScreen extends BaseUIModelScreen<FlowLayout> {
             case PLAYER2 -> iconPath = "player2-icon.png";
             default -> iconPath = "icon.png";
         }
-        npcLabelContainer.child(Components.texture(Identifier.of(MOD_ID, iconPath), 8, 8, 8, 8));
+        npcLabelContainer.child(Components.texture(Identifier.of(MOD_ID, iconPath), 0, 0,
+                55, 55, 55, 55).sizing(Sizing.fixed(8), Sizing.fixed(8)));
     }
 
     private void addNpcSpawnButton(FlowLayout npcButtonContainer, NPCConfig config) {

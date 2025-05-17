@@ -1,4 +1,4 @@
-package me.sailex.secondbrain.client.gui;
+package me.sailex.secondbrain.client.gui.screen;
 
 import io.wispforest.owo.ui.component.CheckboxComponent;
 import io.wispforest.owo.ui.component.DiscreteSliderComponent;

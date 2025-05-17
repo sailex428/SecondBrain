@@ -1,4 +1,4 @@
-package me.sailex.secondbrain.client.gui;
+package me.sailex.secondbrain.client.gui.screen;
 
 import io.wispforest.owo.ui.component.*;
 import io.wispforest.owo.ui.container.FlowLayout;
