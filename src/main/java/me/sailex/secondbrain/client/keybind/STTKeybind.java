@@ -1,6 +1,7 @@
 package me.sailex.secondbrain.client.keybind;
 
 import lombok.Getter;
+import me.sailex.secondbrain.client.gui.hud.STTHudElement;
 import me.sailex.secondbrain.client.networking.ClientNetworkManager;
 import me.sailex.secondbrain.model.stt.STTType;
 import me.sailex.secondbrain.networking.packet.STTPacket;
@@ -14,11 +15,13 @@ import org.lwjgl.glfw.GLFW;
 public class STTKeybind {
 
     private final ClientNetworkManager networkManager;
+    private final STTHudElement sttHudElement;
     private KeyBinding keyBinding;
     private boolean pressedLastTick = false;
 
-    public STTKeybind(ClientNetworkManager networkManager) {
+    public STTKeybind(ClientNetworkManager networkManager, STTHudElement sttHudElement) {
         this.networkManager = networkManager;
+        this.sttHudElement = sttHudElement;
     }
 
     public void register() {
@@ -32,8 +35,10 @@ public class STTKeybind {
             boolean isCurrentlyPressed = keyBinding.isPressed();
             if (isCurrentlyPressed && !pressedLastTick) {
                 networkManager.sendPacket(new STTPacket(STTType.START));
+                sttHudElement.setActive(true);
             } else if (!isCurrentlyPressed && pressedLastTick) {
                 networkManager.sendPacket(new STTPacket(STTType.STOP));
+                sttHudElement.setActive(false);
             }
             pressedLastTick = isCurrentlyPressed;
         });

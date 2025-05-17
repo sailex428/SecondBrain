@@ -1,3 +1,4 @@
 {
-  "keybinding.tts": "TextToSpeech start/stop"
+  "keybinding.tts": "TextToSpeech start/stop",
+  "hud.element.stt": "is listening..."
 }
