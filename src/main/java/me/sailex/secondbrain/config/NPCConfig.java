@@ -16,9 +16,9 @@ public class NPCConfig implements Configurable {
 	private String llmCharacter = Instructions.DEFAULT_CHARACTER_TRAITS;
 	private LLMType llmType = LLMType.OLLAMA;
 	private String ollamaUrl = "http://localhost:11434";
-	private String openaiApiKey = "<empty>"; //currently not needed
-	private String voiceId;
-	private String skinUrl;
+	private String openaiApiKey = "not set"; //currently not needed
+	private String voiceId = "not set";
+	private String skinUrl = "not set";
 
 	private boolean isTTS = false;
 
