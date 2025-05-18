@@ -44,12 +44,12 @@ class NPCEventHandler<T>(
                 llmClient.startTextToSpeech(response.finalResponse)
             } else {
                 controller.addGoal("chat") { controller.chat(response.finalResponse) }
-                history.add(response.finalResponse + " - " + response.toolCalls)
             }
+            history.add(response.finalResponse + " - " + response.toolCalls)
         }, executorService)
             .exceptionally {
-                LogUtil.debugInChat("No actions called by LLM for '" + config.npcName + "'")
-                LogUtil.error("Unexpected error occurred handling event", it.cause)
+                LogUtil.errorInChat("'" + config.npcName + "' didn’t understand what to do. The AI response may have failed.")
+                LogUtil.error("Error occurred handling event", it.cause)
                 null
             }
     }

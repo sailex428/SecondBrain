@@ -66,9 +66,8 @@ object NPCFactory {
 
             LogUtil.infoInChat(("Added NPC with name: ${config.npcName}"))
         }, executorService).exceptionally {
-            val errorMsg = "Failed to create NPC"
-            LogUtil.errorInChat(errorMsg)
-            LogUtil.error(errorMsg, it)
+            LogUtil.errorInChat(it.message)
+            LogUtil.error( it)
             null
         }
     }
@@ -80,10 +79,7 @@ object NPCFactory {
         val latch = CountDownLatch(1)
         NPCSpawner.spawn(name, server, spawnPos, latch)
         //player spawning runs async so we need to wait here until its avail
-        val npcWasCreated = latch.await(5, TimeUnit.SECONDS)
-        if (!npcWasCreated) {
-            throw NPCCreationException("NPCEntity with name $name could not be spawned within 5 seconds.")
-        }
+        latch.await(3, TimeUnit.SECONDS)
         val npcEntity = server.playerManager?.getPlayer(name)
         if (npcEntity == null) {
             throw NPCCreationException("NPCEntity with name $name could not be spawned.")

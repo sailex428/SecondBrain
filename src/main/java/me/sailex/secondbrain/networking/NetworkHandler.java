@@ -105,6 +105,7 @@ public class NetworkHandler {
         CHANNEL.registerServerbound(STTPacket.class, (sttPacket, serverAccess) -> {
             if (authorizer.isAuthorized(serverAccess) && authorizer.isLocalConnection(serverAccess)) {
                 STTCallback.EVENT.invoker().onSTTAction(sttPacket.type());
+                LogUtil.info("STT action: " + sttPacket);
             }
         });
     }

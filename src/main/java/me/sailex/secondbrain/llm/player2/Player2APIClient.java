@@ -1,6 +1,7 @@
 package me.sailex.secondbrain.llm.player2;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.github.sashirestela.openai.common.function.FunctionCall;
 import io.github.sashirestela.openai.common.function.FunctionDef;
@@ -24,6 +25,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static me.sailex.secondbrain.SecondBrain.MOD_ID;
@@ -43,13 +45,13 @@ public class Player2APIClient extends ALLMClient<FunctionDef> {
     private final FunctionExecutor functionExecutor;
 
     public Player2APIClient() {
-        this(new ArrayList<>(), "Init");
+        this(new ArrayList<>(), "default");
     }
 
     public Player2APIClient(List<String> voiceIds, String npcName) {
         this.voiceIds = voiceIds;
         this.npcName = npcName;
-        this.mapper = new ObjectMapper();
+        this.mapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
         this.client = HttpClient.newHttpClient();
         this.functionExecutor = new FunctionExecutor();
     }
@@ -131,7 +133,7 @@ public class Player2APIClient extends ALLMClient<FunctionDef> {
         calledFunctions.append(toolResult).append("; ");
         LogUtil.info(toolResult);
 
-        messages.add(ChatMessage.UserMessage.of("[TOOL_RESULTS]" + toolResult + "[/TOOL_RESULTS]"));
+        messages.add(ChatMessage.ToolMessage.of("[TOOL_RESULTS]" + toolResult + "[/TOOL_RESULTS]", functionName));
     }
 
     /**
@@ -233,6 +235,7 @@ public class Player2APIClient extends ALLMClient<FunctionDef> {
                 .header("Content-Type", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString(requestJson, StandardCharsets.UTF_8))
                 .build();
+        LogUtil.info(npcName + " - " + request.method() + " - " + request.uri() + ": " + requestJson);
         return sendRequest(request, responseType);
     }
 
@@ -243,19 +246,20 @@ public class Player2APIClient extends ALLMClient<FunctionDef> {
         if (headers.length > 0) {
             builder.headers(headers);
         }
-        return sendRequest(builder.build(), responseType);
+        HttpRequest request = builder.build();
+        LogUtil.info(npcName + " - " + request.method() + " - " + request.uri() + " headers: " + Arrays.toString(headers));
+        return sendRequest(request, responseType);
     }
 
     private <T> T sendRequest(HttpRequest request, Class<T> responseType) throws IOException {
         try {
-            LogUtil.info(npcName + " - " + request.method() + " - " + request.uri() + ": " + request.bodyPublisher().toString());
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
             int status = response.statusCode();
 
             if (status != 200) {
                 throw new IOException(status + " - " + response.uri() + ": " + response.body());
             }
-            LogUtil.info(npcName + " - " + response.statusCode() + " - " + response.uri() + ": " + response.body());
+            LogUtil.info(npcName + " - " + response.statusCode() + " - " + response.uri() + ": " + mapper.writeValueAsString(response.body()));
             return mapper.readValue(response.body(), responseType);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();

@@ -1,5 +1,6 @@
 package me.sailex.secondbrain.util;
 
+import me.sailex.secondbrain.config.ConfigProvider;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Style;
@@ -11,11 +12,11 @@ import org.apache.logging.log4j.Logger;
 public class LogUtil {
 
 	private static MinecraftServer server;
-	private static boolean verbose = false;
+	private static ConfigProvider configProvider;
 
-	public static void initialize(MinecraftServer server, boolean verbose) {
+	public static void initialize(MinecraftServer server, ConfigProvider configProvider) {
 		LogUtil.server = server;
-		LogUtil.verbose = verbose;
+		LogUtil.configProvider = configProvider;
 	}
 
 	private LogUtil() {}
@@ -44,7 +45,7 @@ public class LogUtil {
 	}
 
 	public static void debugInChat(String message) {
-		if (verbose) log(formatDebug(message));
+		log(formatDebug(message));
 	}
 
 	public static void infoInChat(String message) {
@@ -56,7 +57,7 @@ public class LogUtil {
 	}
 
 	public static void info(String message) {
-		if (verbose) LOGGER.info(formatInfo(message).getString());
+		if (configProvider.getBaseConfig().isVerbose()) LOGGER.info(formatInfo(message).getString());
 	}
 
 	public static void error(String message) {

@@ -13,6 +13,7 @@ import me.sailex.secondbrain.listener.EventListenerRegisterer;
 import me.sailex.secondbrain.networking.NetworkHandler;
 import me.sailex.secondbrain.util.LogUtil;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.minecraft.server.MinecraftServer;
 
@@ -23,6 +24,7 @@ import net.minecraft.server.MinecraftServer;
 public class SecondBrain implements ModInitializer {
 
 	public static final String MOD_ID = "secondbrain";
+	private boolean isFirstPlayerJoins = true;
 
 	@Override
 	public void onInitialize() {
@@ -48,11 +50,14 @@ public class SecondBrain implements ModInitializer {
 		CommandManager commandManager = new CommandManager(npcFactory, configProvider, networkManager, synchronizer);
 		commandManager.registerAll();
 
-		ServerLifecycleEvents.SERVER_STARTED.register(server -> {
-			LogUtil.initialize(server, configProvider.getBaseConfig().isVerbose());
+		ServerLifecycleEvents.SERVER_STARTED.register(server -> LogUtil.initialize(server, configProvider));
 
-			synchronizer.setServer(server);
-			synchronizer.syncCharacters();
+		ServerEntityEvents.ENTITY_LOAD.register((entity, world) -> {
+			if (entity.isPlayer() && isFirstPlayerJoins) {
+				synchronizer.setServer(world.getServer());
+				synchronizer.syncCharacters();
+				isFirstPlayerJoins = false;
+			}
 		});
 		ServerLifecycleEvents.SERVER_STOPPING.register(server ->
 				onStop(npcFactory, configProvider, sqlite, synchronizer, server));

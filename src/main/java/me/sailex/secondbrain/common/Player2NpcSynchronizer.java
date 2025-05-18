@@ -79,11 +79,15 @@ public class Player2NpcSynchronizer {
      */
     private void scheduleHeartBeats() {
         executor.scheduleAtFixedRate(() -> {
-            List<UUID> uuids = getNpcUuidsPlayer2();
-            if (uuids.isEmpty()) {
-                return;
+            try {
+                List<UUID> uuids = getNpcUuidsPlayer2();
+                if (uuids.isEmpty()) {
+                    return;
+                }
+                this.player2APIClient.getHealthStatus();
+            } catch (LLMServiceException e) {
+                LogUtil.error(e);
             }
-            this.player2APIClient.getHealthStatus();
         }, 0,1, TimeUnit.MINUTES);
     }
 
