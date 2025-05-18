@@ -10,6 +10,10 @@ import net.minecraft.util.Identifier;
 
 import static me.sailex.secondbrain.SecondBrain.MOD_ID;
 
+/**
+ * Represents a HUD element that gets shown when speech-to-text gets started.
+ * {@link me.sailex.secondbrain.client.keybind.STTKeybind}
+ */
 public class STTHudElement implements HudRenderCallback {
 
     private final MinecraftClient client = MinecraftClient.getInstance();

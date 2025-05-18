@@ -204,6 +204,9 @@ public class Player2APIClient extends ALLMClient<FunctionDef> {
         }
     }
 
+    /**
+     * Checks if service is reachable by pinging the {@link API_ENDPOINT#PING } endpoint.
+     */
     @Override
     public void checkServiceIsReachable() throws LLMServiceException {
         try {
