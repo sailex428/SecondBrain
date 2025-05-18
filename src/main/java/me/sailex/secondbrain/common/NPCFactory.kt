@@ -77,7 +77,7 @@ object NPCFactory {
         checkNpcName(name)
 
         val latch = CountDownLatch(1)
-        NPCSpawner.spawn(name, server, spawnPos, latch)
+        NPCSpawner.spawn(config, server, spawnPos, latch)
         //player spawning runs async so we need to wait here until its avail
         latch.await(3, TimeUnit.SECONDS)
         val npcEntity = server.playerManager?.getPlayer(name)
@@ -165,7 +165,7 @@ object NPCFactory {
 //                NPC(npcEntity, llmClient, history, eventHandler, controller, contextProvider, modeController, config)
 //            }
             LLMType.PLAYER2 -> {
-                val llmClient = Player2APIClient(config.voiceIds, config.npcName)
+                val llmClient = Player2APIClient(config.voiceId, config.npcName)
 
                 val (controller, history) = initBase(npcEntity, config.npcName, contextProvider)
 

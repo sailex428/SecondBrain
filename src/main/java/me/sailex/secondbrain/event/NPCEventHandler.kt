@@ -48,7 +48,7 @@ class NPCEventHandler<T>(
             history.add(response.finalResponse + " - " + response.toolCalls)
         }, executorService)
             .exceptionally {
-                LogUtil.errorInChat("'" + config.npcName + "' didn’t understand what to do. The AI response may have failed.")
+                LogUtil.debugInChat("'" + config.npcName + "' didn’t understand what to do. The AI response may have failed.")
                 LogUtil.error("Error occurred handling event", it.cause)
                 null
             }

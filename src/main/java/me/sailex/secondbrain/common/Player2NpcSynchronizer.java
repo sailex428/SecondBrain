@@ -57,10 +57,12 @@ public class Player2NpcSynchronizer {
             }
 
             for (Map.Entry<UUID, Characters.Character> entry : uuidToChar.entrySet()) {
-                NPCConfig config = NPCConfig.builder(entry.getValue().short_name())
-                        .llmDefaultPrompt(entry.getValue().description())
+                Characters.Character character = entry.getValue();
+                NPCConfig config = NPCConfig.builder(character.short_name())
+                        .llmDefaultPrompt(character.description())
                         .llmType(LLMType.PLAYER2)
-                        .voiceId(entry.getValue().voice_ids())
+                        .voiceId(character.voice_ids().getFirst())
+                        .skinUrl(character.meta().skin_url())
                         .build();
                 npcFactory.createNpc(config, server, spawnPos);
             }

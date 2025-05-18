@@ -38,18 +38,18 @@ public class Player2APIClient extends ALLMClient<FunctionDef> {
     private static final String BASE_URL = "http://127.0.0.1:4315";
     private static final int MAX_TOOL_CALL_RETRIES = 4;
 
-    private final List<String> voiceIds;
+    private final String voiceId;
     private final String npcName; //only for debugging
     private final ObjectMapper mapper;
     private final HttpClient client;
     private final FunctionExecutor functionExecutor;
 
     public Player2APIClient() {
-        this(new ArrayList<>(), "default");
+        this(null, "default");
     }
 
-    public Player2APIClient(List<String> voiceIds, String npcName) {
-        this.voiceIds = voiceIds;
+    public Player2APIClient(String voiceId, String npcName) {
+        this.voiceId = voiceId;
         this.npcName = npcName;
         this.mapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
         this.client = HttpClient.newHttpClient();
@@ -153,7 +153,7 @@ public class Player2APIClient extends ALLMClient<FunctionDef> {
     public String startTextToSpeech(String message) throws LLMServiceException {
         try {
             String url = API_ENDPOINT.TTS_START.getUrl();
-            TTSSpeakRequest speakRequest = new TTSSpeakRequest(message, voiceIds);
+            TTSSpeakRequest speakRequest = new TTSSpeakRequest(message, List.of(voiceId));
             TTSSpeakResponse speakResponse = sendPostRequest(url, speakRequest, TTSSpeakResponse.class);
             return speakResponse.data();
         } catch (Exception e) {

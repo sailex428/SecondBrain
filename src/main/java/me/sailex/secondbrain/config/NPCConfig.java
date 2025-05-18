@@ -6,8 +6,6 @@ import io.wispforest.endec.impl.StructEndecBuilder;
 import me.sailex.secondbrain.constant.Instructions;
 import me.sailex.secondbrain.llm.LLMType;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 public class NPCConfig implements Configurable {
@@ -19,7 +17,8 @@ public class NPCConfig implements Configurable {
 	private LLMType llmType = LLMType.OLLAMA;
 	private String ollamaUrl = "http://localhost:11434";
 	private String openaiApiKey = "<empty>"; //currently not needed
-	private final List<String> voiceIds = new ArrayList<>();
+	private String voiceId;
+	private String skinUrl;
 
 	private boolean isTTS = false;
 
@@ -37,7 +36,9 @@ public class NPCConfig implements Configurable {
 		LLMType llmType,
 		String ollamaUrl,
 		String openaiApiKey,
-		boolean isTTS
+		boolean isTTS,
+		String voiceId,
+		String skinUrl
 	) {
 		this.npcName = npcName;
 		this.uuid = UUID.fromString(uuid);
@@ -47,6 +48,8 @@ public class NPCConfig implements Configurable {
 		this.ollamaUrl = ollamaUrl;
 		this.openaiApiKey = openaiApiKey;
 		this.isTTS = isTTS;
+		this.voiceId = voiceId;
+		this.skinUrl = skinUrl;
 	}
 
 	public static class Builder {
@@ -72,8 +75,13 @@ public class NPCConfig implements Configurable {
 			return this;
 		}
 
-		public Builder voiceId(List<String> voiceIds) {
-			npcConfig.voiceIds.addAll(voiceIds);
+		public Builder voiceId(String voiceId) {
+			npcConfig.setVoiceId(voiceId);
+			return this;
+		}
+
+		public Builder skinUrl(String skinUrl) {
+			npcConfig.setSkinUrl(skinUrl);
 			return this;
 		}
 
@@ -143,8 +151,12 @@ public class NPCConfig implements Configurable {
 		this.uuid = uuid;
 	}
 
-	public List<String> getVoiceIds() {
-		return voiceIds;
+	public String getVoiceId() {
+		return voiceId;
+	}
+
+	public void setVoiceId(String voiceId) {
+		this.voiceId = voiceId;
 	}
 
 	public boolean isTTS() {
@@ -153,6 +165,14 @@ public class NPCConfig implements Configurable {
 
 	public void setTTS(boolean TTS) {
 		isTTS = TTS;
+	}
+
+	public String getSkinUrl() {
+		return skinUrl;
+	}
+
+	public void setSkinUrl(String skinUrl) {
+		this.skinUrl = skinUrl;
 	}
 
 	@Override
@@ -169,6 +189,8 @@ public class NPCConfig implements Configurable {
 			Endec.STRING.fieldOf("ollamaUrl", NPCConfig::getOllamaUrl),
 			Endec.STRING.fieldOf("openaiApiKey", NPCConfig::getOpenaiApiKey),
 			Endec.BOOLEAN.fieldOf("isTTS", NPCConfig::isTTS),
+			Endec.STRING.fieldOf("voiceId", NPCConfig::getVoiceId),
+			Endec.STRING.fieldOf("skinUrl", NPCConfig::getSkinUrl),
 			NPCConfig::new
 	);
 
@@ -181,7 +203,7 @@ public class NPCConfig implements Configurable {
 				",ollamaUrl=" + ollamaUrl +
 				",openaiApiKey=***" +
 				",llmCharacter=" + llmCharacter +
-				",voiceId=" + voiceIds + "}";
+				",voiceId=" + voiceId + "}";
 	}
 
 	//name for fields for npc config screen
