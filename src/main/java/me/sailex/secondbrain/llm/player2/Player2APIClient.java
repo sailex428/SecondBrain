@@ -91,27 +91,14 @@ public class Player2APIClient extends ALLMClient<FunctionDef> {
             messages.add(ChatMessage.UserMessage.of(conversationHistory.getFormattedHistory()));
             messages.add(ChatMessage.UserMessage.of(prompt));
 
-            ChatRequest chatRequest = ChatRequest.builder()
-                    .tools(functionExecutor.getToolFunctions())
-                    .messages(messages)
-                    .build();
-            ChatMessage.ResponseMessage result = sendPostRequest(
-                    API_ENDPOINT.CHAT_COMPLETION.getUrl(),
-                    chatRequest,
-                    Chat.class
-            ).firstMessage();
-
+            ChatMessage.ResponseMessage result = sendChatRequest(messages);
             List<ToolCall> toolCalls = result.getToolCalls();
 
             for (int toolCallTries = 0; toolCalls != null && !toolCalls.isEmpty() && toolCallTries < MAX_TOOL_CALL_RETRIES; ++toolCallTries) {
                 for (ToolCall toolCall : toolCalls) {
                     executeFunction(toolCall, messages, calledFunctions);
 
-                    result = sendPostRequest(
-                            API_ENDPOINT.CHAT_COMPLETION.getUrl(),
-                            chatRequest,
-                            Chat.class
-                    ).firstMessage();
+                    result = sendChatRequest(messages);
                     toolCalls = result.getToolCalls();
                 }
             }
@@ -119,6 +106,18 @@ public class Player2APIClient extends ALLMClient<FunctionDef> {
         } catch (Exception e) {
             throw new LLMServiceException("Could not call functions for prompt: " + prompt, e);
         }
+    }
+
+    private ChatMessage.ResponseMessage sendChatRequest(List<ChatMessage> messages) throws IOException {
+        ChatRequest chatRequest = ChatRequest.builder()
+                .tools(functionExecutor.getToolFunctions())
+                .messages(messages)
+                .build();
+        return sendPostRequest(
+                API_ENDPOINT.CHAT_COMPLETION.getUrl(),
+                chatRequest,
+                Chat.class
+        ).firstMessage();
     }
 
     private void executeFunction(ToolCall toolCall, List<ChatMessage> messages, StringBuilder calledFunctions) throws LLMServiceException {
