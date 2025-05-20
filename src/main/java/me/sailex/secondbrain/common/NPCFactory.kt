@@ -8,7 +8,6 @@ import me.sailex.secondbrain.constant.Instructions
 import me.sailex.secondbrain.context.ContextProvider
 import me.sailex.secondbrain.database.repositories.RepositoryFactory
 import me.sailex.secondbrain.database.resources.ResourcesProvider
-import me.sailex.secondbrain.event.EventHandler
 import me.sailex.secondbrain.event.NPCEventHandler
 import me.sailex.secondbrain.exception.NPCCreationException
 import me.sailex.secondbrain.history.ConversationHistory
@@ -18,6 +17,7 @@ import me.sailex.secondbrain.llm.ollama.OllamaClient
 import me.sailex.secondbrain.llm.ollama.function_calling.OllamaFunctionManager
 import me.sailex.secondbrain.llm.player2.Player2APIClient
 import me.sailex.secondbrain.llm.player2.function_calling.Player2FunctionManager
+import me.sailex.secondbrain.llm.roles.ChatRole
 import me.sailex.secondbrain.mode.ModeController
 import me.sailex.secondbrain.mode.ModeInitializer
 import me.sailex.secondbrain.model.NPC
@@ -146,7 +146,7 @@ object NPCFactory {
                 val eventHandler = NPCEventHandler(llmClient, history, functionManager,
                     contextProvider, controller, config)
                 val modeController = initModeController(npcEntity, controller, contextProvider)
-                handleInitMessage(eventHandler,Instructions.OLLAMA_INIT_PROMPT)
+                eventHandler.onEvent(Instructions.INIT_PROMPT)
 
                 NPC(npcEntity, llmClient, history, eventHandler, controller, contextProvider, modeController, config)
             }
@@ -179,7 +179,12 @@ object NPCFactory {
                 val eventHandler = NPCEventHandler(llmClient, history, functionManager,
                     contextProvider, controller, config)
                 val modeController = initModeController(npcEntity, controller, contextProvider)
-                handleInitMessage(eventHandler,Instructions.PLAYER2_INIT_PROMPT.format(config.llmCharacter))
+
+                history.add(Instructions.INIT_PROMPT)
+                eventHandler.onEvent(
+                    ChatRole.SYSTEM,
+                    Instructions.PLAYER2_INIT_PROMPT.format(config.llmCharacter),
+                    false)
 
                 NPC(npcEntity, llmClient, history, eventHandler, controller, contextProvider, modeController, config)
             }
@@ -218,10 +223,6 @@ object NPCFactory {
         val modeController = ModeController(controller, modes)
         modeController.registerTickListener()
         return modeController
-    }
-
-    private fun handleInitMessage(eventHandler: EventHandler, initPrompt: String) {
-        eventHandler.onEvent(initPrompt)
     }
 
     fun checkNpcName(npcName: String) {

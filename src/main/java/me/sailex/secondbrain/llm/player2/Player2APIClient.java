@@ -9,11 +9,12 @@ import io.github.sashirestela.openai.common.function.FunctionExecutor;
 import io.github.sashirestela.openai.common.tool.ToolCall;
 import io.github.sashirestela.openai.domain.chat.Chat;
 import io.github.sashirestela.openai.domain.chat.ChatMessage;
-import io.github.sashirestela.openai.domain.chat.ChatRequest;
 import lombok.Getter;
 import me.sailex.secondbrain.exception.LLMServiceException;
 import me.sailex.secondbrain.history.ConversationHistory;
 import me.sailex.secondbrain.llm.ALLMClient;
+import me.sailex.secondbrain.llm.roles.BasicRole;
+import me.sailex.secondbrain.llm.roles.ChatRole;
 import me.sailex.secondbrain.llm.player2.model.*;
 import me.sailex.secondbrain.model.function_calling.FunctionResponse;
 import me.sailex.secondbrain.util.LogUtil;
@@ -26,6 +27,7 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static me.sailex.secondbrain.SecondBrain.MOD_ID;
@@ -76,12 +78,13 @@ public class Player2APIClient extends ALLMClient<FunctionDef> {
     /**
      * Executes functions that the LLM called based on the prompt and registered functions.
      *
-     * @param 	prompt 	   the user prompt
+     * @param 	prompt 	   the user/system prompt
      * @param 	functions  functions that the llm is allowed to call
      * @return             the formatted results of the function calls.
      */
     @Override
     public FunctionResponse callFunctions(
+        BasicRole role,
         String prompt,
         List<FunctionDef> functions,
         ConversationHistory conversationHistory
@@ -89,18 +92,21 @@ public class Player2APIClient extends ALLMClient<FunctionDef> {
         try {
             functionExecutor.enrollFunctions(functions);
             StringBuilder calledFunctions = new StringBuilder();
-            List<ChatMessage> messages = new ArrayList<>();
-            messages.add(ChatMessage.UserMessage.of(conversationHistory.getFormattedHistory()));
-            messages.add(ChatMessage.UserMessage.of(prompt));
+            Player2ChatRequest request = Player2ChatRequest.builder()
+                    .tools(functionExecutor.getToolFunctions())
+                    .messages(new ArrayList<>(List.of(
+                            Player2ChatMessage.of((ChatRole) role, prompt),
+                            Player2ChatMessage.of(ChatRole.USER, conversationHistory.getFormattedHistory()))))
+                    .build();
 
-            ChatMessage.ResponseMessage result = sendChatRequest(messages);
+            ChatMessage.ResponseMessage result = sendChatRequest(request);
             List<ToolCall> toolCalls = result.getToolCalls();
 
             for (int toolCallTries = 0; toolCalls != null && !toolCalls.isEmpty() && toolCallTries < MAX_TOOL_CALL_RETRIES; ++toolCallTries) {
                 for (ToolCall toolCall : toolCalls) {
-                    executeFunction(toolCall, messages, calledFunctions);
+                    executeFunction(toolCall, request, calledFunctions);
 
-                    result = sendChatRequest(messages);
+                    result = sendChatRequest(request);
                     toolCalls = result.getToolCalls();
                 }
             }
@@ -110,19 +116,15 @@ public class Player2APIClient extends ALLMClient<FunctionDef> {
         }
     }
 
-    private ChatMessage.ResponseMessage sendChatRequest(List<ChatMessage> messages) throws IOException {
-        ChatRequest chatRequest = ChatRequest.builder()
-                .tools(functionExecutor.getToolFunctions())
-                .messages(messages)
-                .build();
+    private ChatMessage.ResponseMessage sendChatRequest(Player2ChatRequest request) throws IOException {
         return sendPostRequest(
                 API_ENDPOINT.CHAT_COMPLETION.getUrl(),
-                chatRequest,
+                request,
                 Chat.class
         ).firstMessage();
     }
 
-    private void executeFunction(ToolCall toolCall, List<ChatMessage> messages, StringBuilder calledFunctions) throws LLMServiceException {
+    private void executeFunction(ToolCall toolCall, Player2ChatRequest request, StringBuilder calledFunctions) throws LLMServiceException {
         FunctionCall function = toolCall.getFunction();
         String functionName = function.getName();
         String arguments = function.getArguments();
@@ -133,7 +135,7 @@ public class Player2APIClient extends ALLMClient<FunctionDef> {
         calledFunctions.append(toolResult).append("; ");
         LogUtil.info(toolResult);
 
-        messages.add(ChatMessage.ToolMessage.of("[TOOL_RESULTS]" + toolResult + "[/TOOL_RESULTS]", functionName));
+        request.addMessage(Player2ChatMessage.of(ChatRole.DEVELOPER, "[TOOL_RESULTS]" + toolResult + "[/TOOL_RESULTS]"));
     }
 
     /**
@@ -228,7 +230,7 @@ public class Player2APIClient extends ALLMClient<FunctionDef> {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    private <T> T sendPostRequest(String url, Object requestBody, Class<T> responseType) throws IOException {
+    private <T> T   sendPostRequest(String url, Object requestBody, Class<T> responseType) throws IOException {
         String requestJson = mapper.writeValueAsString(requestBody);
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(BASE_URL + url))

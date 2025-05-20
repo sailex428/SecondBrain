@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 import lombok.Setter;
 import me.sailex.secondbrain.history.ConversationHistory;
 import me.sailex.secondbrain.llm.ALLMClient;
+import me.sailex.secondbrain.llm.roles.BasicRole;
 import me.sailex.secondbrain.model.function_calling.FunctionResponse;
 import me.sailex.secondbrain.util.LogUtil;
 import org.apache.commons.lang3.StringUtils;
@@ -126,6 +127,7 @@ public class OllamaClient extends ALLMClient<Tools.ToolSpecification> {
 	 */
 	@Override
 	public FunctionResponse callFunctions(
+		BasicRole role,
 		String prompt,
 		List<Tools.ToolSpecification> functions,
 		ConversationHistory conversationHistory
@@ -134,7 +136,7 @@ public class OllamaClient extends ALLMClient<Tools.ToolSpecification> {
 			ollamaAPI.registerTools(functions);
 			OllamaChatRequest toolRequest = OllamaChatRequestBuilder.getInstance(model)
 				.withMessage(OllamaChatMessageRole.USER, conversationHistory.getFormattedHistory())
-				.withMessage(OllamaChatMessageRole.USER, prompt)
+				.withMessage(OllamaChatMessageRole.getRole(role.getRoleName()), prompt)
 				.build();
 			OllamaChatResult response = ollamaAPI.chat(toolRequest);
 

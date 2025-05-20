@@ -59,6 +59,7 @@ public class Player2NpcSynchronizer {
             for (Map.Entry<UUID, Characters.Character> entry : uuidToChar.entrySet()) {
                 Characters.Character character = entry.getValue();
                 NPCConfig config = NPCConfig.builder(character.short_name())
+                        .uuid(entry.getKey())
                         .llmDefaultPrompt(character.description())
                         .llmType(LLMType.PLAYER2)
                         .voiceId(character.voice_ids().getFirst())

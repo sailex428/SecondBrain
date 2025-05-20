@@ -7,6 +7,7 @@ import me.sailex.secondbrain.history.ConversationHistory
 import me.sailex.secondbrain.llm.FunctionCallable
 import me.sailex.secondbrain.llm.function_calling.FunctionManager
 import me.sailex.secondbrain.llm.player2.Player2APIClient
+import me.sailex.secondbrain.llm.roles.ChatRole
 import me.sailex.secondbrain.util.LogUtil
 import me.sailex.secondbrain.util.PromptFormatter
 import java.util.concurrent.CompletableFuture
@@ -29,16 +30,17 @@ class NPCEventHandler<T>(
      *
      * @param prompt prompt of a user or system e.g. chatmessage of a player
      */
-    override fun onEvent(prompt: String) {
+    override fun onEvent(role: ChatRole, prompt: String, formatPrompt: Boolean) {
         CompletableFuture.runAsync({
             LogUtil.info("onEvent: $prompt")
-            history.add(prompt)
 
+            var formattedPrompt = prompt
+            if (formatPrompt) {
+                history.add(prompt)
+                formattedPrompt = PromptFormatter.format(prompt, contextProvider.buildContext())
+            }
             val relevantFunctions = functionManager.getRelevantFunctions(prompt)
-            val context = contextProvider.buildContext()
-            val formattedPrompt = PromptFormatter.format(prompt, context)
-
-            val response = llmClient.callFunctions(formattedPrompt, relevantFunctions, history)
+            val response = llmClient.callFunctions(role, formattedPrompt, relevantFunctions, history)
 
             if (llmClient is Player2APIClient && config.isTTS) {
                 llmClient.startTextToSpeech(response.finalResponse)
@@ -52,6 +54,10 @@ class NPCEventHandler<T>(
                 LogUtil.error("Error occurred handling event", it.cause)
                 null
             }
+    }
+
+    override fun onEvent(prompt: String) {
+        this.onEvent(ChatRole.USER, prompt, true)
     }
 
     override fun stopService() {
