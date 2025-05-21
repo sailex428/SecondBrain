@@ -32,7 +32,8 @@ public class NPCSpawner {
 
     /**
      * Spawns a fake NPC player entity in the server world.
-     * Fetches skin of the provided player name and uses it on the NPC.
+     * Uses uuid and npcName from the config to create gameprofile.
+     * Fetches skin of the provided player name from mojang api and uses it on the NPC.
      */
     public static void spawn(
         NPCConfig config,
