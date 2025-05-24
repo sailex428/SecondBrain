@@ -167,7 +167,7 @@ public class Player2APIClient extends ALLMClient<FunctionDef> {
     /**
      * Initiates a speech-to-text process with the specified timeout.
      */
-    public void startSpeechToText(int timeout) {
+    public void startSpeechToText(double timeout) {
         try {
             String url = API_ENDPOINT.STT_START.getUrl();
 
@@ -185,7 +185,7 @@ public class Player2APIClient extends ALLMClient<FunctionDef> {
      */
     public String stopSpeechToText() throws LLMServiceException {
         try {
-            String url = API_ENDPOINT.STT_START.getUrl();
+            String url = API_ENDPOINT.STT_STOP.getUrl();
             STTResponse speechToTextResponse = sendPostRequest(url, mapper.createObjectNode(), STTResponse.class);
             return speechToTextResponse.text();
         } catch (Exception e) {
