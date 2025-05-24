@@ -12,6 +12,7 @@ import io.wispforest.owo.ui.core.Surface;
 import me.sailex.secondbrain.client.networking.ClientNetworkManager;
 import me.sailex.secondbrain.config.BaseConfig;
 import me.sailex.secondbrain.config.NPCConfig;
+import me.sailex.secondbrain.llm.LLMType;
 import me.sailex.secondbrain.networking.packet.CreateNpcPacket;
 import me.sailex.secondbrain.networking.packet.DeleteNpcPacket;
 import net.minecraft.text.Text;
@@ -98,7 +99,7 @@ public class SecondBrainScreen extends BaseUIModelScreen<FlowLayout> {
     }
 
     private void addNpcEditButton(FlowLayout npcButtonContainer, NPCConfig config) {
-        if (!config.isActive()) {
+        if (!config.isActive() || config.getLlmType() == LLMType.PLAYER2) {
             npcButtonContainer.child(Components.button(Text.of("Edit"), button ->
                     client.setScreen(new NPCConfigScreen(networkManager, config, true))
             ));
