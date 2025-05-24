@@ -23,6 +23,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -44,14 +45,16 @@ public class Player2APIClient extends ALLMClient<FunctionDef> {
     private final FunctionExecutor functionExecutor;
 
     public Player2APIClient() {
-        this(null, "default");
+        this(null, "default", 10);
     }
 
-    public Player2APIClient(String voiceId, String npcName) {
+    public Player2APIClient(String voiceId, String npcName, int timeout) {
         this.voiceId = voiceId;
         this.npcName = npcName;
         this.mapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
-        this.client = HttpClient.newHttpClient();
+        this.client = HttpClient.newBuilder()
+                .connectTimeout(Duration.ofSeconds(timeout))
+                .build();
         this.functionExecutor = new FunctionExecutor();
     }
 
@@ -254,22 +257,12 @@ public class Player2APIClient extends ALLMClient<FunctionDef> {
     }
 
     private <T> T sendRequest(HttpRequest request, Class<T> responseType) throws IOException {
-        try {
-            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-            int status = response.statusCode();
-
-            if (status != 200) {
-                throw new IOException(status + " - " + response.uri() + ": " + response.body());
-            }
-            LogUtil.info(npcName + " - " + response.statusCode() + " - " + response.uri() + ": " + mapper.writeValueAsString(response.body()));
-            return mapper.readValue(response.body(), responseType);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new IOException(e);
-        }
+        HttpResponse<String> response = sendRequest(request);
+        LogUtil.info(npcName + " - " + response.statusCode() + " - " + response.uri() + ": " + mapper.writeValueAsString(response.body()));
+        return mapper.readValue(response.body(), responseType);
     }
 
-    private void sendRequest(HttpRequest request) throws IOException {
+    private HttpResponse<String> sendRequest(HttpRequest request) throws IOException {
         try {
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
             int status = response.statusCode();
@@ -277,6 +270,7 @@ public class Player2APIClient extends ALLMClient<FunctionDef> {
             if (status != 200) {
                 throw new IOException(status + " - " + response.uri() + " responseBody: " + response.body());
             }
+            return response;
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new IOException(e);
