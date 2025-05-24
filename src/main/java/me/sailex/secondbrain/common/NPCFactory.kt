@@ -47,7 +47,6 @@ object NPCFactory {
         this.executorService = Executors.newSingleThreadExecutor()
     }
 
-    //config uuid to npc (not the uuid of the entity)
     val uuidToNpc = ConcurrentHashMap<UUID, NPC>()
     var resourcesProvider: ResourcesProvider? = null
         private set
@@ -57,13 +56,14 @@ object NPCFactory {
             checkLimit()
             val npcEntity = spawnNpc(config, server, spawnPos)
             val npc = createNpcInstance(npcEntity, config)
+            config.uuid = npcEntity.uuid
             val matchingConfig = configProvider.getNpcConfig(config.uuid)
             if (matchingConfig.isEmpty) {
                 configProvider.addNpcConfig(config)
             } else {
                 matchingConfig.get().isActive = true
             }
-            uuidToNpc[config.uuid] = npc
+            uuidToNpc[npcEntity.uuid] = npc
 
             LogUtil.infoInChat(("Added NPC with name: ${config.npcName}"))
         }, executorService).exceptionally {

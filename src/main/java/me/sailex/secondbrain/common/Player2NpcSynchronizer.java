@@ -1,6 +1,7 @@
 package me.sailex.secondbrain.common;
 
 import lombok.Setter;
+import me.sailex.secondbrain.config.ConfigProvider;
 import me.sailex.secondbrain.config.NPCConfig;
 import me.sailex.secondbrain.exception.LLMServiceException;
 import me.sailex.secondbrain.llm.LLMType;
@@ -21,13 +22,15 @@ public class Player2NpcSynchronizer {
     private static final int MAX_NPC_COUNT = 8;
 
     private final NPCFactory npcFactory;
+    private final ConfigProvider configProvider;
     private final Player2APIClient player2APIClient;
     private ScheduledExecutorService executor;
     @Setter
     private MinecraftServer server;
 
-    public Player2NpcSynchronizer(NPCFactory npcFactory) {
+    public Player2NpcSynchronizer(NPCFactory npcFactory, ConfigProvider configProvider) {
         this.npcFactory = npcFactory;
+        this.configProvider = configProvider;
         this.player2APIClient = new Player2APIClient();
     }
 
@@ -45,6 +48,7 @@ public class Player2NpcSynchronizer {
      */
     public void syncCharacters(BlockPos spawnPos) {
         try {
+            LogUtil.infoInChat("test");
             player2APIClient.checkServiceIsReachable();
             List<Characters.Character> characters = player2APIClient.getSelectedCharacters().characters();
             if (characters.size() > MAX_NPC_COUNT) {
@@ -58,6 +62,9 @@ public class Player2NpcSynchronizer {
             for (UUID uuid : currentNpcUuids) {
                 npcFactory.deleteNpc(uuid, server.getPlayerManager());
             }
+            LogUtil.infoInChat("deletedCurrentNpcs");
+            removeNpcConfigs();
+            LogUtil.infoInChat("deletedConfigs");
 
             for (Map.Entry<UUID, Characters.Character> entry : uuidToChar.entrySet()) {
                 Characters.Character character = entry.getValue();
@@ -68,9 +75,10 @@ public class Player2NpcSynchronizer {
                         .voiceId(character.voice_ids().getFirst())
                         .skinUrl(character.meta().skin_url())
                         .build();
+                LogUtil.infoInChat("create");
                 npcFactory.createNpc(config, server, spawnPos);
             }
-        } catch (LLMServiceException e) {
+        } catch (Exception e) {
             LogUtil.errorInChat(e.getMessage());
             LogUtil.error(e);
         }
@@ -110,6 +118,10 @@ public class Player2NpcSynchronizer {
                 .filter(e -> e.getValue().getConfig().getLlmType() == LLMType.PLAYER2)
                 .map(Map.Entry::getKey)
                 .toList();
+    }
+
+    private void removeNpcConfigs() {
+        configProvider.getNpcConfigs().removeIf(config -> config != null && config.getLlmType() == LLMType.PLAYER2);
     }
 
 }

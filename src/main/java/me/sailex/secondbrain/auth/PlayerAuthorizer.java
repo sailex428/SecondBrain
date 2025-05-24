@@ -11,7 +11,7 @@ public class PlayerAuthorizer {
      * @return true if the player is authorized, otherwise false
      */
     public boolean isAuthorized(ServerAccess serverAccess) {
-        return serverAccess.player().isCreativeLevelTwoOp();
+        return serverAccess.player().hasPermissionLevel(2);
     }
 
     public boolean isLocalConnection(ServerAccess serverAccess) {

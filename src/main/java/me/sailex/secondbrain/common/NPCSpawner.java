@@ -45,7 +45,7 @@ public class NPCSpawner {
 
         fetchGameProfile(config.getNpcName()).thenAcceptAsync(p -> {
             GameProfile current = gameProfile;
-            if (p.isPresent()) {
+            if (p.isPresent() && p.get().getName().equals(config.getNpcName())) {
                 current = p.get();
             }
             spawnEntity(server, current, spawnPos, latch);

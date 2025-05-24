@@ -44,7 +44,7 @@ public class SecondBrain implements ModInitializer {
 		EventListenerRegisterer eventListenerRegisterer = new EventListenerRegisterer(npcFactory.getUuidToNpc());
 		eventListenerRegisterer.register();
 
-		Player2NpcSynchronizer synchronizer = new Player2NpcSynchronizer(npcFactory);
+		Player2NpcSynchronizer synchronizer = new Player2NpcSynchronizer(npcFactory, configProvider);
 
 		CommandManager commandManager = new CommandManager(npcFactory, configProvider, networkManager, synchronizer);
 		commandManager.registerAll();
