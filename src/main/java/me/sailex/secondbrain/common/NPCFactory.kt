@@ -180,7 +180,7 @@ object NPCFactory {
                     contextProvider, controller, config)
                 val modeController = initModeController(npcEntity, controller, contextProvider)
 
-                history.add(Instructions.INIT_PROMPT)
+                history.add(ChatRole.USER, Instructions.INIT_PROMPT)
                 eventHandler.onEvent(
                     ChatRole.SYSTEM,
                     Instructions.PLAYER2_INIT_PROMPT.format(config.llmCharacter),

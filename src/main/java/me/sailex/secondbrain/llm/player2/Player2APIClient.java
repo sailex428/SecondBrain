@@ -6,13 +6,11 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.github.sashirestela.openai.common.function.FunctionCall;
 import io.github.sashirestela.openai.common.function.FunctionDef;
 import io.github.sashirestela.openai.common.function.FunctionExecutor;
-import io.github.sashirestela.openai.common.tool.ToolCall;
-import io.github.sashirestela.openai.domain.chat.Chat;
-import io.github.sashirestela.openai.domain.chat.ChatMessage;
 import lombok.Getter;
 import me.sailex.secondbrain.exception.LLMServiceException;
 import me.sailex.secondbrain.history.ConversationHistory;
 import me.sailex.secondbrain.llm.ALLMClient;
+import me.sailex.secondbrain.llm.function_calling.model.ChatMessage;
 import me.sailex.secondbrain.llm.roles.BasicRole;
 import me.sailex.secondbrain.llm.roles.ChatRole;
 import me.sailex.secondbrain.llm.player2.model.*;
@@ -27,7 +25,6 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import static me.sailex.secondbrain.SecondBrain.MOD_ID;
@@ -92,31 +89,31 @@ public class Player2APIClient extends ALLMClient<FunctionDef> {
         try {
             functionExecutor.enrollFunctions(functions);
             StringBuilder calledFunctions = new StringBuilder();
-            Player2ChatRequest request = Player2ChatRequest.builder()
+            ChatRequest request = ChatRequest.builder()
                     .tools(functionExecutor.getToolFunctions())
-                    .messages(new ArrayList<>(List.of(
-                            Player2ChatMessage.of((ChatRole) role, prompt),
-                            Player2ChatMessage.of(ChatRole.USER, conversationHistory.getFormattedHistory()))))
+                    .messages(new ArrayList<>(List.of(ChatMessage.of((ChatRole) role, prompt))))
                     .build();
+            request.getMessages().addAll(conversationHistory.getConversations());
 
-            ChatMessage.ResponseMessage result = sendChatRequest(request);
-            List<ToolCall> toolCalls = result.getToolCalls();
+            ResponseMessage result = sendChatRequest(request);
+            List<ToolCall> toolCalls = result.tool_calls();
 
             for (int toolCallTries = 0; toolCalls != null && !toolCalls.isEmpty() && toolCallTries < MAX_TOOL_CALL_RETRIES; ++toolCallTries) {
                 for (ToolCall toolCall : toolCalls) {
                     executeFunction(toolCall, request, calledFunctions);
 
                     result = sendChatRequest(request);
-                    toolCalls = result.getToolCalls();
+                    toolCalls = result.tool_calls();
                 }
             }
-            return new FunctionResponse(result.getContent(), calledFunctions.toString());
+
+            return new FunctionResponse(result.content(), calledFunctions.toString());
         } catch (Exception e) {
             throw new LLMServiceException("Could not call functions for prompt: " + prompt, e);
         }
     }
 
-    private ChatMessage.ResponseMessage sendChatRequest(Player2ChatRequest request) throws IOException {
+    private ResponseMessage sendChatRequest(ChatRequest request) throws IOException {
         return sendPostRequest(
                 API_ENDPOINT.CHAT_COMPLETION.getUrl(),
                 request,
@@ -124,8 +121,8 @@ public class Player2APIClient extends ALLMClient<FunctionDef> {
         ).firstMessage();
     }
 
-    private void executeFunction(ToolCall toolCall, Player2ChatRequest request, StringBuilder calledFunctions) throws LLMServiceException {
-        FunctionCall function = toolCall.getFunction();
+    private void executeFunction(ToolCall toolCall, ChatRequest request, StringBuilder calledFunctions) throws LLMServiceException {
+        FunctionCall function = toolCall.function();
         String functionName = function.getName();
         String arguments = function.getArguments();
 
@@ -135,7 +132,7 @@ public class Player2APIClient extends ALLMClient<FunctionDef> {
         calledFunctions.append(toolResult).append("; ");
         LogUtil.info(toolResult);
 
-        request.addMessage(Player2ChatMessage.of(ChatRole.DEVELOPER, "[TOOL_RESULTS]" + toolResult + "[/TOOL_RESULTS]"));
+        request.addMessage(ChatMessage.of(ChatRole.DEVELOPER, "[TOOL_RESULTS]" + toolResult + "[/TOOL_RESULTS]"));
     }
 
     /**
@@ -195,7 +192,6 @@ public class Player2APIClient extends ALLMClient<FunctionDef> {
             throw new LLMServiceException("Failed to retrieve text from speech input", e);
         }
     }
-
     /**
      * Sends a heart-beat request to the service.
      */
@@ -230,7 +226,7 @@ public class Player2APIClient extends ALLMClient<FunctionDef> {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    private <T> T   sendPostRequest(String url, Object requestBody, Class<T> responseType) throws IOException {
+    private <T> T sendPostRequest(String url, Object requestBody, Class<T> responseType) throws IOException {
         String requestJson = mapper.writeValueAsString(requestBody);
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(BASE_URL + url))

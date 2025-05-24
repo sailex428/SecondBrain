@@ -51,10 +51,10 @@ class ResourcesProvider(
             .filterIsInstance<Conversation>()
     }
 
-    fun addConversation(npcName: String, timestamp: Timestamp, message: String) {
+    fun addConversation(npcName: String, message: String) {
         this.conversations.add(Conversation(
             npcName, message,
-            timestamp,
+            Timestamp(System.currentTimeMillis()),
             llmClient.generateEmbedding(listOf(message))))
     }
 

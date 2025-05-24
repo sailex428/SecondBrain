@@ -1,22 +1,22 @@
 package me.sailex.secondbrain.llm.player2.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import io.github.sashirestela.openai.common.tool.Tool;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Getter;
+import me.sailex.secondbrain.llm.function_calling.model.ChatMessage;
 
 import java.util.List;
 
 @Builder
 @AllArgsConstructor
-public class Player2ChatRequest {
+@Getter
+public class ChatRequest {
 
-    @JsonProperty("messages")
-    private List<Player2ChatMessage> messages;
-    @JsonProperty("tools")
+    private List<ChatMessage> messages;
     private List<Tool> tools;
 
-    public void addMessage(Player2ChatMessage message) {
+    public void addMessage(ChatMessage message) {
         messages.add(message);
     }
 

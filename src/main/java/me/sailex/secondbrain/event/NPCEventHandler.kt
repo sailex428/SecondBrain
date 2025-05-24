@@ -46,7 +46,8 @@ class NPCEventHandler<T>(
             } else {
                 controller.addGoal("chat") { controller.chat(response.finalResponse) }
             }
-            history.add(prompt, response)
+            history.add(role, prompt)
+            history.add(ChatRole.ASSISTANT, response.finalResponse )
         }, executorService)
             .exceptionally {
                 LogUtil.debugInChat("'" + config.npcName + "' didn’t understand what to do. The AI response may have failed.")

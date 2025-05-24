@@ -122,7 +122,7 @@ public class OllamaClient extends ALLMClient<Tools.ToolSpecification> {
 	 * Executes functions called by the LLM.
 	 *
 	 * @param   prompt    the event prompt
-	 * @param   functions relevant functions that matches to the prompt
+	 * @param   functions relevant functions that match to the prompt
 	 * @return  FunctionResponse - the formatted results of the function calls.
 	 */
 	@Override
@@ -135,9 +135,9 @@ public class OllamaClient extends ALLMClient<Tools.ToolSpecification> {
 		try {
 			ollamaAPI.registerTools(functions);
 			OllamaChatRequest toolRequest = OllamaChatRequestBuilder.getInstance(model)
-				.withMessage(OllamaChatMessageRole.USER, conversationHistory.getFormattedHistory())
 				.withMessage(OllamaChatMessageRole.getRole(role.getRoleName()), prompt)
 				.build();
+			addConversations(toolRequest, conversationHistory);
 			OllamaChatResult response = ollamaAPI.chat(toolRequest);
 
 			String finalResponse = response.getResponseModel().getMessage().getContent();
@@ -146,6 +146,12 @@ public class OllamaClient extends ALLMClient<Tools.ToolSpecification> {
 			Thread.currentThread().interrupt();
 			throw new LLMServiceException("Could not call functions for prompt: " + prompt, e);
 		}
+	}
+
+	private void addConversations(OllamaChatRequest toolRequest, ConversationHistory conversationHistory) {
+		conversationHistory.getConversations().forEach(c ->
+				toolRequest.getMessages().add(new OllamaChatMessage(OllamaChatMessageRole.newCustomRole(c.role().roleName),
+						c.content())));
 	}
 
 	private String formatToolCalls(List<OllamaChatMessage> history) {
