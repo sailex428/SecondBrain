@@ -55,6 +55,7 @@ public class SecondBrainScreen extends BaseUIModelScreen<FlowLayout> {
 
     private void addNpcComponent(FlowLayout panelComponent, NPCConfig config) {
         FlowLayout npcContainer = Containers.verticalFlow(Sizing.fixed(139), Sizing.content());
+        npcContainer.margins(Insets.bottom(1));
         npcContainer.surface(Surface.DARK_PANEL).padding(Insets.of(10));
 
         FlowLayout npcLabelContainer = Containers.horizontalFlow(Sizing.content(), Sizing.content());

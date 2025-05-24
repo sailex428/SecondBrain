@@ -79,7 +79,7 @@ public class BaseConfig implements Configurable {
                 ",verbose=" + verbose +"}";
     }
 
-    public static final String LLM_TIMEOUT_KEY = "LLM Timeout";
+    public static final String LLM_TIMEOUT_KEY = "LLM Service Timeout";
     public static final String CONTEXT_CHUNK_RADIUS_KEY = "Chunk Radius";
     public static final String CONTEXT_VERTICAL_RANGE_KEY = "Vertical Scan Range";
     public static final String CHUNK_EXPIRY_TIME_KEY = "Chunk Expiry Time";

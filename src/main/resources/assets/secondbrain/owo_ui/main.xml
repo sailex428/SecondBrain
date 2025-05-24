@@ -25,10 +25,15 @@
                             </children>
                         </flow-layout>
 
-                        <flow-layout direction="vertical" id="npc">
-                            <children>
-                            </children>
-                        </flow-layout>
+                        <scroll direction="vertical">
+                            <flow-layout direction="vertical" id="npc">
+                                <children>
+                                </children>
+                            </flow-layout>
+                            <sizing>
+                                <vertical method="fill">60</vertical>
+                            </sizing>
+                        </scroll>
 
                         <flow-layout direction="horizontal">
                             <children>
