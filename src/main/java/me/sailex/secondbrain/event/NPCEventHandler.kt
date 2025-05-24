@@ -36,7 +36,6 @@ class NPCEventHandler<T>(
 
             var formattedPrompt = prompt
             if (formatPrompt) {
-                history.add(prompt)
                 formattedPrompt = PromptFormatter.format(prompt, contextProvider.buildContext())
             }
             val relevantFunctions = functionManager.getRelevantFunctions(prompt)
@@ -47,7 +46,7 @@ class NPCEventHandler<T>(
             } else {
                 controller.addGoal("chat") { controller.chat(response.finalResponse) }
             }
-            history.add(response.finalResponse + " - " + response.toolCalls)
+            history.add(prompt, response)
         }, executorService)
             .exceptionally {
                 LogUtil.debugInChat("'" + config.npcName + "' didn’t understand what to do. The AI response may have failed.")
