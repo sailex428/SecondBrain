@@ -35,7 +35,6 @@ public class SecondBrain implements ModInitializer {
 		repositoryFactory.initRepositories();
 
 		NPCFactory npcFactory = NPCFactory.INSTANCE;
-		npcFactory.initialize(configProvider, repositoryFactory);
 
 		PlayerAuthorizer authorizer = new PlayerAuthorizer();
 
@@ -54,6 +53,8 @@ public class SecondBrain implements ModInitializer {
 
 		ServerEntityEvents.ENTITY_LOAD.register((entity, world) -> {
 			if (entity.isPlayer() && isFirstPlayerJoins) {
+				npcFactory.initialize(configProvider, repositoryFactory);
+				synchronizer.initialize();
 				synchronizer.setServer(world.getServer());
 				synchronizer.syncCharacters();
 				isFirstPlayerJoins = false;
@@ -76,5 +77,6 @@ public class SecondBrain implements ModInitializer {
 		npcFactory.shutdownNpcs(server);
 		configProvider.saveAll();
 		sqlite.closeConnection();
+		isFirstPlayerJoins = true;
 	}
 }

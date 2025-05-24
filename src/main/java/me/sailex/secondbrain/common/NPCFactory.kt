@@ -39,17 +39,18 @@ object NPCFactory {
     private const val MAX_NUMBER_OF_NPC = 10
     lateinit var configProvider: ConfigProvider
     private lateinit var repositoryFactory: RepositoryFactory
+    private lateinit var executorService: ExecutorService
 
     fun initialize(configProvider: ConfigProvider, repositoryFactory: RepositoryFactory) {
         this.configProvider = configProvider
         this.repositoryFactory = repositoryFactory
+        this.executorService = Executors.newSingleThreadExecutor()
     }
 
     //config uuid to npc (not the uuid of the entity)
     val uuidToNpc = ConcurrentHashMap<UUID, NPC>()
     var resourcesProvider: ResourcesProvider? = null
         private set
-    val executorService: ExecutorService = Executors.newSingleThreadExecutor()
 
     fun createNpc(config: NPCConfig, server: MinecraftServer, spawnPos: BlockPos?) {
         CompletableFuture.runAsync({

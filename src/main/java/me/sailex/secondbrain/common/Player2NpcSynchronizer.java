@@ -22,13 +22,16 @@ public class Player2NpcSynchronizer {
 
     private final NPCFactory npcFactory;
     private final Player2APIClient player2APIClient;
-    private final ScheduledExecutorService executor;
+    private ScheduledExecutorService executor;
     @Setter
     private MinecraftServer server;
 
     public Player2NpcSynchronizer(NPCFactory npcFactory) {
         this.npcFactory = npcFactory;
         this.player2APIClient = new Player2APIClient();
+    }
+
+    public void initialize() {
         this.executor = Executors.newSingleThreadScheduledExecutor();
         scheduleHeartBeats();
     }
