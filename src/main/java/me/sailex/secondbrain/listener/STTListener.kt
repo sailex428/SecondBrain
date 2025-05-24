@@ -12,24 +12,33 @@ class STTListener(npcs: Map<UUID, NPC>) : AEventListener(npcs) {
 
     override fun register() {
         STTCallback.EVENT.register { type ->
-            npcs.forEach {
-                performSTTAction(type, it.value)
+            val llmClient = npcs.map { it.value.llmClient }.filterIsInstance<Player2APIClient>().firstOrNull()
+            if (llmClient != null) {
+                performSTTAction(type, llmClient)
+            } else {
+                LogUtil.errorInChat("No NPC found that uses Player2.")
             }
         }
     }
 
-    private fun performSTTAction(type: STTType, npc: NPC) {
+    private fun performSTTAction(type: STTType, llmClient: Player2APIClient) {
         try {
-            if (npc.llmClient is Player2APIClient) {
-                if (type == STTType.START) {
-                    npc.llmClient.startSpeechToText()
-                } else if (type == STTType.STOP) {
-                    npc.eventHandler.onEvent(npc.llmClient.stopSpeechToText())
-                }
+            if (type == STTType.START) {
+                llmClient.startSpeechToText()
+            } else if (type == STTType.STOP) {
+                handleEvent(llmClient.stopSpeechToText())
             }
         } catch (e: LLMServiceException) {
-            LogUtil.errorInChat("<" + npc.entity.name.string + ">" + e.message)
+            LogUtil.errorInChat(e.message)
             LogUtil.error(e)
+        }
+    }
+
+    private fun handleEvent(prompt: String) {
+        npcs.forEach {
+            if (it.value.llmClient is Player2APIClient) {
+                it.value.eventHandler.onEvent(prompt)
+            }
         }
     }
 }

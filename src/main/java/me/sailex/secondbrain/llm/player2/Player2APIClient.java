@@ -187,8 +187,12 @@ public class Player2APIClient extends ALLMClient<FunctionDef> {
         try {
             String url = API_ENDPOINT.STT_STOP.getUrl();
             STTResponse speechToTextResponse = sendPostRequest(url, mapper.createObjectNode(), STTResponse.class);
-            return speechToTextResponse.text();
-        } catch (Exception e) {
+            String text = speechToTextResponse.text();
+            if (text.isBlank()) {
+                throw new LLMServiceException("We couldn't understand you. Maybe your microphone is muted.");
+            }
+            return text;
+        } catch (IOException e) {
             throw new LLMServiceException("Failed to retrieve text from speech input", e);
         }
     }
