@@ -48,7 +48,6 @@ public class Player2NpcSynchronizer {
      */
     public void syncCharacters(BlockPos spawnPos) {
         try {
-            LogUtil.infoInChat("test");
             player2APIClient.checkServiceIsReachable();
             List<Characters.Character> characters = player2APIClient.getSelectedCharacters().characters();
             if (characters.size() > MAX_NPC_COUNT) {
@@ -62,9 +61,7 @@ public class Player2NpcSynchronizer {
             for (UUID uuid : currentNpcUuids) {
                 npcFactory.deleteNpc(uuid, server.getPlayerManager());
             }
-            LogUtil.infoInChat("deletedCurrentNpcs");
             removeNpcConfigs();
-            LogUtil.infoInChat("deletedConfigs");
 
             for (Map.Entry<UUID, Characters.Character> entry : uuidToChar.entrySet()) {
                 Characters.Character character = entry.getValue();
@@ -75,7 +72,6 @@ public class Player2NpcSynchronizer {
                         .voiceId(character.voice_ids().getFirst())
                         .skinUrl(character.meta().skin_url())
                         .build();
-                LogUtil.infoInChat("create");
                 npcFactory.createNpc(config, server, spawnPos);
             }
         } catch (Exception e) {
