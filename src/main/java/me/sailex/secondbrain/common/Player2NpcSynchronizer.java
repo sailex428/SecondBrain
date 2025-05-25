@@ -48,7 +48,7 @@ public class Player2NpcSynchronizer {
      */
     public void syncCharacters(BlockPos spawnPos) {
         try {
-            player2APIClient.checkServiceIsReachable();
+            this.player2APIClient.getHealthStatus();
             List<Characters.Character> characters = player2APIClient.getSelectedCharacters().characters();
             if (characters.size() > MAX_NPC_COUNT) {
                 LogUtil.errorInChat("You selected more than " + MAX_NPC_COUNT + " characters in Player2. Limiting to " + MAX_NPC_COUNT);
@@ -96,6 +96,7 @@ public class Player2NpcSynchronizer {
                 }
                 this.player2APIClient.getHealthStatus();
             } catch (LLMServiceException e) {
+                LogUtil.errorInChat(e.getMessage());
                 LogUtil.error(e);
             }
         }, 0,1, TimeUnit.MINUTES);

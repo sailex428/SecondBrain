@@ -16,6 +16,7 @@ import me.sailex.secondbrain.llm.roles.ChatRole;
 import me.sailex.secondbrain.llm.player2.model.*;
 import me.sailex.secondbrain.model.function_calling.FunctionResponse;
 import me.sailex.secondbrain.util.LogUtil;
+import org.apache.http.HttpException;
 
 import java.io.IOException;
 import java.net.URI;
@@ -65,8 +66,7 @@ public class Player2APIClient extends ALLMClient<FunctionDef> {
         TTS_START("/v1/tts/speak"),
         STT_START("/v1/stt/start"),
         STT_STOP("/v1/stt/stop"),
-        HEALTH("/v1/health"),
-        PING("/docs");
+        HEALTH("/v1/health");
 
         private final String url;
 
@@ -116,7 +116,7 @@ public class Player2APIClient extends ALLMClient<FunctionDef> {
         }
     }
 
-    private ResponseMessage sendChatRequest(ChatRequest request) throws IOException {
+    private ResponseMessage sendChatRequest(ChatRequest request) throws IOException, HttpException {
         return sendPostRequest(
                 API_ENDPOINT.CHAT_COMPLETION.getUrl(),
                 request,
@@ -195,7 +195,7 @@ public class Player2APIClient extends ALLMClient<FunctionDef> {
                 throw new LLMServiceException("We couldn't understand you. Maybe your microphone is muted.");
             }
             return text;
-        } catch (IOException e) {
+        } catch (IOException | HttpException e) {
             throw new LLMServiceException("Failed to retrieve text from speech input", e);
         }
     }
@@ -206,26 +206,16 @@ public class Player2APIClient extends ALLMClient<FunctionDef> {
         try {
             String url = API_ENDPOINT.HEALTH.getUrl();
             return sendGetRequest(url, HealthResponse.class, "player2-game-key", MOD_ID);
-        } catch(Exception e) {
+        } catch(HttpException e) {
             throw new LLMServiceException("Failed to send health check", e);
+        } catch (IOException e) {
+            throw new LLMServiceException("Player2 API is not reachable", e);
         }
     }
 
-    /**
-     * Checks if service is reachable by pinging the {@link API_ENDPOINT#PING } endpoint.
-     */
     @Override
     public void checkServiceIsReachable() throws LLMServiceException {
-        try {
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(BASE_URL + API_ENDPOINT.PING.getUrl()))
-                    .HEAD()
-                    .timeout(java.time.Duration.ofSeconds(3))
-                    .build();
-            sendRequest(request);
-        } catch (Exception e) {
-            throw new LLMServiceException("Player2 API is not reachable", e);
-        }
+        throw new UnsupportedOperationException("dont use this. this is checked by getHealthStatus");
     }
 
     @Override
@@ -233,7 +223,7 @@ public class Player2APIClient extends ALLMClient<FunctionDef> {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    private <T> T sendPostRequest(String url, Object requestBody, Class<T> responseType) throws IOException {
+    private <T> T sendPostRequest(String url, Object requestBody, Class<T> responseType) throws IOException, HttpException {
         String requestJson = mapper.writeValueAsString(requestBody);
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(BASE_URL + url))
@@ -244,7 +234,7 @@ public class Player2APIClient extends ALLMClient<FunctionDef> {
         return sendRequest(request, responseType);
     }
 
-    private <T> T sendGetRequest(String url, Class<T> responseType, String... headers) throws IOException {
+    private <T> T sendGetRequest(String url, Class<T> responseType, String... headers) throws IOException, HttpException {
         HttpRequest.Builder builder = HttpRequest.newBuilder()
                 .uri(URI.create(BASE_URL + url))
                 .GET();
@@ -256,19 +246,19 @@ public class Player2APIClient extends ALLMClient<FunctionDef> {
         return sendRequest(request, responseType);
     }
 
-    private <T> T sendRequest(HttpRequest request, Class<T> responseType) throws IOException {
+    private <T> T sendRequest(HttpRequest request, Class<T> responseType) throws IOException, HttpException {
         HttpResponse<String> response = sendRequest(request);
         LogUtil.info(npcName + " - " + response.statusCode() + " - " + response.uri() + ": " + mapper.writeValueAsString(response.body()));
         return mapper.readValue(response.body(), responseType);
     }
 
-    private HttpResponse<String> sendRequest(HttpRequest request) throws IOException {
+    private HttpResponse<String> sendRequest(HttpRequest request) throws IOException, HttpException {
         try {
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
             int status = response.statusCode();
 
             if (status != 200) {
-                throw new IOException(status + " - " + response.uri() + " responseBody: " + response.body());
+                throw new HttpException(status + " - " + response.uri() + " responseBody: " + response.body());
             }
             return response;
         } catch (InterruptedException e) {
