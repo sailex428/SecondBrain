@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 import lombok.Setter;
 import me.sailex.secondbrain.history.ConversationHistory;
 import me.sailex.secondbrain.llm.ALLMClient;
+import me.sailex.secondbrain.llm.function_calling.ChatCallback;
 import me.sailex.secondbrain.llm.roles.BasicRole;
 import me.sailex.secondbrain.model.function_calling.FunctionResponse;
 import me.sailex.secondbrain.util.LogUtil;
@@ -130,7 +131,8 @@ public class OllamaClient extends ALLMClient<Tools.ToolSpecification> {
 		BasicRole role,
 		String prompt,
 		List<Tools.ToolSpecification> functions,
-		ConversationHistory conversationHistory
+		ConversationHistory conversationHistory,
+		ChatCallback chatCallback
 	) throws LLMServiceException {
 		try {
 			ollamaAPI.registerTools(functions);

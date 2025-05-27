@@ -10,6 +10,7 @@ import lombok.Getter;
 import me.sailex.secondbrain.exception.LLMServiceException;
 import me.sailex.secondbrain.history.ConversationHistory;
 import me.sailex.secondbrain.llm.ALLMClient;
+import me.sailex.secondbrain.llm.function_calling.ChatCallback;
 import me.sailex.secondbrain.llm.function_calling.model.ChatMessage;
 import me.sailex.secondbrain.llm.roles.BasicRole;
 import me.sailex.secondbrain.llm.roles.ChatRole;
@@ -87,7 +88,8 @@ public class Player2APIClient extends ALLMClient<FunctionDef> {
         BasicRole role,
         String prompt,
         List<FunctionDef> functions,
-        ConversationHistory conversationHistory
+        ConversationHistory conversationHistory,
+        ChatCallback chatCallback
     ) throws LLMServiceException {
         try {
             functionExecutor.enrollFunctions(functions);
@@ -106,6 +108,7 @@ public class Player2APIClient extends ALLMClient<FunctionDef> {
                     executeFunction(toolCall, request, calledFunctions);
 
                     result = sendChatRequest(request);
+                    chatCallback.chat(result.content());
                     toolCalls = result.tool_calls();
                 }
             }

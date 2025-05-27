@@ -39,13 +39,15 @@ class NPCEventHandler<T>(
                 formattedPrompt = PromptFormatter.format(prompt, contextProvider.buildContext())
             }
             val relevantFunctions = functionManager.getRelevantFunctions(prompt)
-            val response = llmClient.callFunctions(role, formattedPrompt, relevantFunctions, history)
+            val response = llmClient.callFunctions(role, formattedPrompt, relevantFunctions, history) {
+                chat(it)
+            }
 
             if (llmClient is Player2APIClient && config.isTTS) {
                 llmClient.startTextToSpeech(response.finalResponse)
-            } else {
-                controller.addGoal("chat") { controller.chat(response.finalResponse) }
             }
+            chat(response.finalResponse)
+
             history.add(role, prompt)
             history.add(ChatRole.ASSISTANT, response.finalResponse )
         }, executorService)
@@ -58,6 +60,10 @@ class NPCEventHandler<T>(
 
     override fun onEvent(prompt: String) {
         this.onEvent(ChatRole.USER, prompt, true)
+    }
+
+    private fun chat(content: String) {
+        controller.addGoal("chat") { controller.chat(content) }
     }
 
     override fun stopService() {

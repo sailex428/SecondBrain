@@ -2,6 +2,7 @@ package me.sailex.secondbrain.llm;
 
 import me.sailex.secondbrain.exception.LLMServiceException;
 import me.sailex.secondbrain.history.ConversationHistory;
+import me.sailex.secondbrain.llm.function_calling.ChatCallback;
 import me.sailex.secondbrain.llm.roles.BasicRole;
 import me.sailex.secondbrain.model.function_calling.FunctionResponse;
 
@@ -18,7 +19,7 @@ public interface FunctionCallable<T> extends LLMClient {
         BasicRole role,
         String prompt,
         List<T> functions,
-        ConversationHistory history
+        ConversationHistory history,
+        ChatCallback chatCallback
     ) throws LLMServiceException;
-
 }

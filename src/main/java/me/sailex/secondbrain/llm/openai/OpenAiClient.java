@@ -11,6 +11,7 @@ import io.github.sashirestela.openai.domain.embedding.EmbeddingFloat;
 import io.github.sashirestela.openai.domain.embedding.EmbeddingRequest;
 import me.sailex.secondbrain.history.ConversationHistory;
 import me.sailex.secondbrain.llm.ALLMClient;
+import me.sailex.secondbrain.llm.function_calling.ChatCallback;
 import me.sailex.secondbrain.llm.roles.BasicRole;
 import me.sailex.secondbrain.model.function_calling.FunctionResponse;
 import me.sailex.secondbrain.util.LogUtil;
@@ -54,7 +55,8 @@ public class OpenAiClient extends ALLMClient<FunctionDef> {
 		BasicRole role,
 		String prompt,
 		List<FunctionDef> functions,
-		ConversationHistory history
+		ConversationHistory history,
+		ChatCallback chatCallback
 	) {
 		try {
 			StringBuilder calledFunctions = new StringBuilder();
