@@ -71,7 +71,7 @@ public class MCDataUtil {
 	public static List<Entity> getNearbyEntities(ServerPlayerEntity npcEntity) {
 		return npcEntity.getWorld().getOtherEntities(
 				npcEntity,
-				npcEntity.getBoundingBox().expand(30),
+				npcEntity.getBoundingBox().expand(50),
 				entity -> true
 		);
 	}

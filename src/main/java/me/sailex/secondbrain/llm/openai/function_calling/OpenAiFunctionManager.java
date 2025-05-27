@@ -1,4 +1,4 @@
-package me.sailex.secondbrain.llm.function_calling;
+package me.sailex.secondbrain.llm.openai.function_calling;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
@@ -7,6 +7,7 @@ import io.github.sashirestela.openai.common.function.Functional;
 import me.sailex.secondbrain.context.ContextProvider;
 import me.sailex.secondbrain.database.resources.ResourcesProvider;
 import me.sailex.secondbrain.llm.LLMClient;
+import me.sailex.secondbrain.llm.function_calling.AFunctionManager;
 import me.sailex.secondbrain.llm.function_calling.constant.Function;
 import me.sailex.secondbrain.llm.function_calling.constant.Property;
 import me.sailex.secondbrain.common.NPCController;
@@ -74,7 +75,7 @@ public class OpenAiFunctionManager extends AFunctionManager<FunctionDef> {
                 .collect(Collectors.toList());
     }
 
-    private static class Chat implements Functional {
+    public static class Chat implements Functional {
 
         @JsonPropertyDescription(Property.Description.MESSAGE)
         @JsonProperty(required = true)
@@ -87,12 +88,15 @@ public class OpenAiFunctionManager extends AFunctionManager<FunctionDef> {
         }
     }
 
-    private static class MoveToCoordinates implements Functional {
+    public static class MoveToCoordinates implements Functional {
 
+        @JsonPropertyDescription(Property.Description.X_COORDINATE)
         @JsonProperty(required = true)
         private int x;
+        @JsonPropertyDescription(Property.Description.Y_COORDINATE)
         @JsonProperty(required = true)
         private int y;
+        @JsonPropertyDescription(Property.Description.Z_COORDINATE)
         @JsonProperty(required = true)
         private int z;
 
@@ -103,7 +107,7 @@ public class OpenAiFunctionManager extends AFunctionManager<FunctionDef> {
         }
     }
 
-    private static class MoveToEntity implements Functional {
+    public static class MoveToEntity implements Functional {
 
         @JsonPropertyDescription(Property.Description.ENTITY_NAME)
         @JsonProperty(required = true)
@@ -120,7 +124,7 @@ public class OpenAiFunctionManager extends AFunctionManager<FunctionDef> {
         }
     }
 
-    private static class MoveAway implements Functional {
+    public static class MoveAway implements Functional {
         @Override
         public Object execute() {
             controller.addGoal(Function.Name.MOVE_AWAY, controller::moveAway);
@@ -128,7 +132,7 @@ public class OpenAiFunctionManager extends AFunctionManager<FunctionDef> {
         }
     }
 
-    private static class MineBlock implements Functional {
+    public static class MineBlock implements Functional {
 
         @JsonPropertyDescription(Property.Description.BLOCK_TYPE)
         @JsonProperty(required = true)
@@ -145,7 +149,7 @@ public class OpenAiFunctionManager extends AFunctionManager<FunctionDef> {
         }
     }
 
-    private static class DropItem implements Functional {
+    public static class DropItem implements Functional {
 
         @JsonPropertyDescription(Property.Description.ITEM_NAME)
         @JsonProperty(required = true)
@@ -162,7 +166,7 @@ public class OpenAiFunctionManager extends AFunctionManager<FunctionDef> {
         }
     }
 
-    private static class AttackEntity implements Functional {
+    public static class AttackEntity implements Functional {
 
         @JsonPropertyDescription(Property.Description.ENTITY_NAME)
         @JsonProperty(required = true)
@@ -179,7 +183,7 @@ public class OpenAiFunctionManager extends AFunctionManager<FunctionDef> {
         }
     }
 
-    private static class Stop implements Functional {
+    public static class Stop implements Functional {
         @Override
         public Object execute() {
             controller.addGoal(Function.Name.STOP, controller::cancelActions, true);
@@ -187,21 +191,21 @@ public class OpenAiFunctionManager extends AFunctionManager<FunctionDef> {
         }
     }
 
-    private static class GetEntities implements Functional {
+    public static class GetEntities implements Functional {
         @Override
         public Object execute() {
             return PromptFormatter.formatEntities(contextProvider.getCachedContext().nearbyEntities(), 15);
         }
     }
 
-    private static class GetBlocks implements Functional {
+    public static class GetBlocks implements Functional {
         @Override
         public Object execute() {
             return PromptFormatter.formatBlocks(contextProvider.getCachedContext().nearbyBlocks(), 15);
         }
     }
 
-    private static class GetRecipes implements Functional {
+    public static class GetRecipes implements Functional {
 
         @JsonPropertyDescription(Property.Description.ITEM_NAME)
         @JsonProperty(required = true)
@@ -213,7 +217,7 @@ public class OpenAiFunctionManager extends AFunctionManager<FunctionDef> {
         }
     }
 
-    private static class GetConversations implements Functional {
+    public static class GetConversations implements Functional {
 
         @JsonPropertyDescription(Property.Description.TOPIC)
         @JsonProperty(required = true)

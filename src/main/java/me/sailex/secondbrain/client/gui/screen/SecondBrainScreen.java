@@ -1,4 +1,4 @@
-package me.sailex.secondbrain.client.gui;
+package me.sailex.secondbrain.client.gui.screen;
 
 import io.wispforest.owo.ui.base.BaseUIModelScreen;
 import io.wispforest.owo.ui.component.ButtonComponent;
@@ -12,6 +12,7 @@ import io.wispforest.owo.ui.core.Surface;
 import me.sailex.secondbrain.client.networking.ClientNetworkManager;
 import me.sailex.secondbrain.config.BaseConfig;
 import me.sailex.secondbrain.config.NPCConfig;
+import me.sailex.secondbrain.llm.LLMType;
 import me.sailex.secondbrain.networking.packet.CreateNpcPacket;
 import me.sailex.secondbrain.networking.packet.DeleteNpcPacket;
 import net.minecraft.text.Text;
@@ -55,9 +56,14 @@ public class SecondBrainScreen extends BaseUIModelScreen<FlowLayout> {
 
     private void addNpcComponent(FlowLayout panelComponent, NPCConfig config) {
         FlowLayout npcContainer = Containers.verticalFlow(Sizing.fixed(139), Sizing.content());
+        npcContainer.margins(Insets.bottom(1));
         npcContainer.surface(Surface.DARK_PANEL).padding(Insets.of(10));
 
-        npcContainer.child(Components.label(Text.of(config.getNpcName())));
+        FlowLayout npcLabelContainer = Containers.horizontalFlow(Sizing.content(), Sizing.content());
+        npcLabelContainer.gap(2);
+        npcLabelContainer.child(Components.label(Text.of(config.getNpcName())));
+        addTypeSpecificLabelTexture(npcLabelContainer, config);
+        npcContainer.child(npcLabelContainer);
 
         FlowLayout npcButtonContainer = Containers.horizontalFlow(Sizing.content(), Sizing.content());
         npcButtonContainer.gap(2);
@@ -70,10 +76,21 @@ public class SecondBrainScreen extends BaseUIModelScreen<FlowLayout> {
         panelComponent.child(npcContainer);
     }
 
+    private void addTypeSpecificLabelTexture(FlowLayout npcLabelContainer, NPCConfig config) {
+        String iconPath;
+        switch (config.getLlmType()) {
+            case OLLAMA -> iconPath = "ollama-icon.png";
+            case PLAYER2 -> iconPath = "player2-icon.png";
+            default -> iconPath = "icon.png";
+        }
+        npcLabelContainer.child(Components.texture(Identifier.of(MOD_ID, iconPath), 0, 0,
+                55, 55, 55, 55).sizing(Sizing.fixed(8), Sizing.fixed(8)));
+    }
+
     private void addNpcSpawnButton(FlowLayout npcButtonContainer, NPCConfig config) {
         npcButtonContainer.child(Components.button(isActiveText(config), button -> {
             if (config.isActive()) {
-                networkManager.sendPacket(new DeleteNpcPacket(config.getNpcName(), false));
+                networkManager.sendPacket(new DeleteNpcPacket(config.getUuid().toString(), false));
             } else {
                 networkManager.sendPacket(new CreateNpcPacket(config));
             }
@@ -82,7 +99,7 @@ public class SecondBrainScreen extends BaseUIModelScreen<FlowLayout> {
     }
 
     private void addNpcEditButton(FlowLayout npcButtonContainer, NPCConfig config) {
-        if (!config.isActive()) {
+        if (!config.isActive() || config.getLlmType() == LLMType.PLAYER2) {
             npcButtonContainer.child(Components.button(Text.of("Edit"), button ->
                     client.setScreen(new NPCConfigScreen(networkManager, config, true))
             ));
@@ -91,7 +108,7 @@ public class SecondBrainScreen extends BaseUIModelScreen<FlowLayout> {
 
     private void addNpcDeleteButton(FlowLayout npcButtonContainer, NPCConfig config) {
         npcButtonContainer.child(Components.button(Text.of("Delete"), button -> {
-            networkManager.sendPacket(new DeleteNpcPacket(config.getNpcName(), true));
+            networkManager.sendPacket(new DeleteNpcPacket(config.getUuid().toString(), true));
             close();
         }));
     }

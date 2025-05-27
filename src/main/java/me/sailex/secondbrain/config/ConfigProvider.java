@@ -3,6 +3,7 @@ package me.sailex.secondbrain.config;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import lombok.Setter;
+import me.sailex.secondbrain.llm.LLMType;
 import me.sailex.secondbrain.util.LogUtil;
 import net.fabricmc.loader.api.FabricLoader;
 
@@ -24,7 +25,7 @@ public class ConfigProvider {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static final String JSON_EXTENSION = ".json";
 
-    private List<NPCConfig> npcConfigs = new ArrayList<>();
+    private List<NPCConfig> npcConfigs = Collections.synchronizedList(new ArrayList<>());
     private BaseConfig baseConfig = new BaseConfig();
 
     public ConfigProvider() {
@@ -59,7 +60,7 @@ public class ConfigProvider {
         LogUtil.info("Saved all configs");
     }
 
-    private void save(Path dir, Configurable config) {
+    private synchronized void save(Path dir, Configurable config) {
         Path configPath = dir.resolve(config.getConfigName() + JSON_EXTENSION);
         try (Writer writer = Files.newBufferedWriter(configPath)) {
             GSON.toJson(config, writer);
@@ -68,7 +69,7 @@ public class ConfigProvider {
         }
     }
 
-    private void delete(String configName) {
+    private synchronized void delete(String configName) {
         Path configPath = NPC_CONFIG_DIR.resolve(configName + JSON_EXTENSION);
         try {
             Files.deleteIfExists(configPath);
@@ -77,10 +78,10 @@ public class ConfigProvider {
         }
     }
 
-    public void deleteNpcConfig(String name) {
+    public synchronized void deleteNpcConfig(UUID uuid) {
         List<NPCConfig> configsToRemove = new ArrayList<>();
         npcConfigs.forEach(config -> {
-            if (config.getNpcName().equals(name)) {
+            if (config.getUuid().equals(uuid)) {
                 configsToRemove.add(config);
             }
         });
@@ -88,11 +89,15 @@ public class ConfigProvider {
         configsToRemove.forEach(config -> delete(config.getConfigName()));
     }
 
-    public void addNpcConfig(NPCConfig npcConfig) {
+    public synchronized void deleteByType(LLMType llmType) {
+        npcConfigs.removeIf(config -> config != null && config.getLlmType() == llmType);
+    }
+
+    public synchronized void addNpcConfig(NPCConfig npcConfig) {
         npcConfigs.add(npcConfig);
     }
 
-    public void updateNpcConfig(NPCConfig updatedConfig) {
+    public synchronized void updateNpcConfig(NPCConfig updatedConfig) {
         npcConfigs.forEach(config -> {
             if (config.getNpcName().equals(updatedConfig.getNpcName())) {
                 npcConfigs.set(npcConfigs.indexOf(config), updatedConfig);
@@ -100,7 +105,13 @@ public class ConfigProvider {
         });
     }
 
-    public Optional<NPCConfig> getNpcConfig(String npcName) {
+    public Optional<NPCConfig> getNpcConfig(UUID uuid) {
+        return npcConfigs.stream()
+                .filter(config -> config.getUuid().equals(uuid))
+                .findFirst();
+    }
+
+    public Optional<NPCConfig> getNpcConfigByName(String npcName) {
         return npcConfigs.stream()
                 .filter(config -> config.getNpcName().equals(npcName))
                 .findFirst();

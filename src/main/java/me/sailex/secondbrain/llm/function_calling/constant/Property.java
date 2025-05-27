@@ -34,6 +34,9 @@ public class Property {
         public static final String BLOCK_TYPE = "type of block that should be mined";
         public static final String IS_PLAYER = "whether the entity is a player or not";
         public static final String NUMBER_OF_BLOCKS = "number the blocks the npc will mine";
+        public static final String X_COORDINATE = "x coordinate of the location";
+        public static final String Y_COORDINATE = "y coordinate of the location";
+        public static final String Z_COORDINATE = "z coordinate of the location";
     }
 
 }

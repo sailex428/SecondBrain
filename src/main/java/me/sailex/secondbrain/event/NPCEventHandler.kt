@@ -1,11 +1,13 @@
 package me.sailex.secondbrain.event
 
 import me.sailex.secondbrain.common.NPCController
+import me.sailex.secondbrain.config.NPCConfig
 import me.sailex.secondbrain.context.ContextProvider
 import me.sailex.secondbrain.history.ConversationHistory
 import me.sailex.secondbrain.llm.FunctionCallable
-import me.sailex.secondbrain.llm.OllamaClient
 import me.sailex.secondbrain.llm.function_calling.FunctionManager
+import me.sailex.secondbrain.llm.player2.Player2APIClient
+import me.sailex.secondbrain.llm.roles.ChatRole
 import me.sailex.secondbrain.util.LogUtil
 import me.sailex.secondbrain.util.PromptFormatter
 import java.util.concurrent.CompletableFuture
@@ -17,7 +19,8 @@ class NPCEventHandler<T>(
     private val history: ConversationHistory,
     private val functionManager: FunctionManager<T>,
     private val contextProvider: ContextProvider,
-    private val controller: NPCController
+    private val controller: NPCController,
+    private val config: NPCConfig
 ): EventHandler {
     private val executorService: ExecutorService = Executors.newSingleThreadExecutor()
 
@@ -27,28 +30,34 @@ class NPCEventHandler<T>(
      *
      * @param prompt prompt of a user or system e.g. chatmessage of a player
      */
-    override fun onEvent(prompt: String) {
+    override fun onEvent(role: ChatRole, prompt: String, formatPrompt: Boolean) {
         CompletableFuture.runAsync({
             LogUtil.info("onEvent: $prompt")
-            history.add(prompt)
 
-            val relevantFunctions = functionManager.getRelevantFunctions(prompt)
-            val context = contextProvider.buildContext()
-            val formattedPrompt = PromptFormatter.format(prompt, context)
-
-            val response = llmClient.callFunctions(formattedPrompt, relevantFunctions)
-
-            if (llmClient is OllamaClient) {
-                controller.addGoal("chat") { controller.chat(response.finalResponse) }
-                history.add(response.finalResponse + " - " + response.toolCalls)
-            } else {
-                history.add(response.toolCalls)
+            var formattedPrompt = prompt
+            if (formatPrompt) {
+                formattedPrompt = PromptFormatter.format(prompt, contextProvider.buildContext())
             }
+            val relevantFunctions = functionManager.getRelevantFunctions(prompt)
+            val response = llmClient.callFunctions(role, formattedPrompt, relevantFunctions, history)
+
+            if (llmClient is Player2APIClient && config.isTTS) {
+                llmClient.startTextToSpeech(response.finalResponse)
+            } else {
+                controller.addGoal("chat") { controller.chat(response.finalResponse) }
+            }
+            history.add(role, prompt)
+            history.add(ChatRole.ASSISTANT, response.finalResponse )
         }, executorService)
             .exceptionally {
-                LogUtil.error("Unexpected error occurred handling event", it)
+                LogUtil.debugInChat("'" + config.npcName + "' didn’t understand what to do. The AI response may have failed.")
+                LogUtil.error("Error occurred handling event", it.cause)
                 null
             }
+    }
+
+    override fun onEvent(prompt: String) {
+        this.onEvent(ChatRole.USER, prompt, true)
     }
 
     override fun stopService() {

@@ -8,7 +8,8 @@
 
                         <flow-layout direction="horizontal">
                             <children>
-                                <texture texture="secondbrain:icon.png" v="8" u="8" region-width="8" region-height="8" texture-width="8" texture-height="8">
+                                <texture texture="secondbrain:icon.png" v="0" u="0" region-width="8"
+                                         region-height="8" texture-width="8" texture-height="8">
                                     <blend>true</blend>
                                     <margins>
                                         <right>1</right>
@@ -21,11 +22,6 @@
                                         <left>1</left>
                                     </margins>
                                 </label>
-                            </children>
-                        </flow-layout>
-
-                        <flow-layout direction="vertical" id="npc">
-                            <children>
                             </children>
                         </flow-layout>
 
@@ -49,6 +45,16 @@
                                 <panel dark="true"/>
                             </surface>
                         </flow-layout>
+
+                        <scroll direction="vertical">
+                            <flow-layout direction="vertical" id="npc">
+                                <children>
+                                </children>
+                            </flow-layout>
+                            <sizing>
+                                <vertical method="fill">25</vertical>
+                            </sizing>
+                        </scroll>
 
                     </children>
 

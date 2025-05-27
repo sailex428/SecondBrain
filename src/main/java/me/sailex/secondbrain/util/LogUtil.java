@@ -1,5 +1,6 @@
 package me.sailex.secondbrain.util;
 
+import me.sailex.secondbrain.config.ConfigProvider;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Style;
@@ -11,9 +12,11 @@ import org.apache.logging.log4j.Logger;
 public class LogUtil {
 
 	private static MinecraftServer server;
+	private static ConfigProvider configProvider;
 
-	public static void initialize(MinecraftServer server) {
+	public static void initialize(MinecraftServer server, ConfigProvider configProvider) {
 		LogUtil.server = server;
+		LogUtil.configProvider = configProvider;
 	}
 
 	private LogUtil() {}
@@ -33,6 +36,14 @@ public class LogUtil {
 		return Text.literal("").append(PREFIX).append(message).setStyle(Style.EMPTY.withFormatting(Formatting.RED));
 	}
 
+	public static String formatExceptionMessage(String message) {
+		int messageBegin = message.indexOf(": ");
+		if (messageBegin != -1) {
+			return message.substring(messageBegin + 1);
+		}
+		return message;
+	}
+
 	public static void debugInChat(String message) {
 		log(formatDebug(message));
 	}
@@ -42,11 +53,11 @@ public class LogUtil {
 	}
 
 	public static void errorInChat(String message) {
-		log(formatError(message));
+		log(formatError(formatExceptionMessage(message)));
 	}
 
 	public static void info(String message) {
-		LOGGER.info(formatInfo(message).getString());
+		if (configProvider.getBaseConfig().isVerbose()) LOGGER.info(formatInfo(message).getString());
 	}
 
 	public static void error(String message) {
@@ -55,6 +66,10 @@ public class LogUtil {
 
 	public static void error(String message, Throwable e) {
 		LOGGER.error(formatError(message).getString(), e);
+	}
+
+	public static void error(Throwable e) {
+		LOGGER.error(e.getMessage(), e);
 	}
 
 	private static void log(MutableText formattedMessage) {

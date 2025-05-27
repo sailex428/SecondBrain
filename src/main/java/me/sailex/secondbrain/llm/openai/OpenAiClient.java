@@ -1,4 +1,4 @@
-package me.sailex.secondbrain.llm;
+package me.sailex.secondbrain.llm.openai;
 
 import io.github.sashirestela.openai.SimpleOpenAI;
 import io.github.sashirestela.openai.common.function.FunctionCall;
@@ -9,6 +9,9 @@ import io.github.sashirestela.openai.domain.chat.ChatMessage;
 import io.github.sashirestela.openai.domain.chat.ChatRequest;
 import io.github.sashirestela.openai.domain.embedding.EmbeddingFloat;
 import io.github.sashirestela.openai.domain.embedding.EmbeddingRequest;
+import me.sailex.secondbrain.history.ConversationHistory;
+import me.sailex.secondbrain.llm.ALLMClient;
+import me.sailex.secondbrain.llm.roles.BasicRole;
 import me.sailex.secondbrain.model.function_calling.FunctionResponse;
 import me.sailex.secondbrain.util.LogUtil;
 import org.apache.commons.lang3.StringUtils;
@@ -17,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+//currently not used
 public class OpenAiClient extends ALLMClient<FunctionDef> {
 
 	private final SimpleOpenAI openAiService;
@@ -46,7 +50,12 @@ public class OpenAiClient extends ALLMClient<FunctionDef> {
 	 * @return  the formatted results of the function calls.
 	 */
 	@Override
-	public FunctionResponse callFunctions(String prompt, List<FunctionDef> functions) {
+	public FunctionResponse callFunctions(
+		BasicRole role,
+		String prompt,
+		List<FunctionDef> functions,
+		ConversationHistory history
+	) {
 		try {
 			StringBuilder calledFunctions = new StringBuilder();
             ChatMessage.ResponseMessage responseMessage = new ChatMessage.ResponseMessage();

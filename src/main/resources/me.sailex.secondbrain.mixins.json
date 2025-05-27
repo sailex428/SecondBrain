@@ -6,8 +6,10 @@
     "defaultRequire": 1
   },
   "mixins": [
+    "EntityAccessor",
     "EntityPlayerMPFakeMixin",
     "LivingEntityAccessor",
-    "PlayerDamageMixin"
+    "PlayerDamageMixin",
+    "PlayerEntityAccessor"
   ]
 }

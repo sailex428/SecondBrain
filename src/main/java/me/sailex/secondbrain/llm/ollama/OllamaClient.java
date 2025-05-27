@@ -1,4 +1,4 @@
-package me.sailex.secondbrain.llm;
+package me.sailex.secondbrain.llm.ollama;
 
 import io.github.ollama4j.OllamaAPI;
 import io.github.ollama4j.models.chat.*;
@@ -16,6 +16,9 @@ import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 import lombok.Setter;
+import me.sailex.secondbrain.history.ConversationHistory;
+import me.sailex.secondbrain.llm.ALLMClient;
+import me.sailex.secondbrain.llm.roles.BasicRole;
 import me.sailex.secondbrain.model.function_calling.FunctionResponse;
 import me.sailex.secondbrain.util.LogUtil;
 import org.apache.commons.lang3.StringUtils;
@@ -30,13 +33,21 @@ public class OllamaClient extends ALLMClient<Tools.ToolSpecification> {
 	private OllamaAPI ollamaAPI;
 	private final ExecutorService service;
 	private final String model;
+	private final String url;
 
-	public OllamaClient(String url, String customModelName, String defaultPrompt, int timeout) {
+	public OllamaClient(
+		String url,
+		String customModelName,
+		String defaultPrompt,
+		int timeout,
+		boolean verbose
+	) {
+		this.url = url;
 		this.ollamaAPI = new OllamaAPI(url);
 		this.model = customModelName;
-		checkServiceIsReachable(url);
+		checkServiceIsReachable();
 		this.service = Executors.newFixedThreadPool(3);
-		ollamaAPI.setVerbose(false);
+		ollamaAPI.setVerbose(verbose);
 		ollamaAPI.setMaxChatToolCallRetries(4);
 		ollamaAPI.setRequestTimeoutSeconds(timeout);
 		initModels(defaultPrompt);
@@ -95,7 +106,7 @@ public class OllamaClient extends ALLMClient<Tools.ToolSpecification> {
 	 * @throws LLMServiceException if server is not reachable
 	 */
 	@Override
-	public void checkServiceIsReachable(String url) {
+	public void checkServiceIsReachable() {
 		try {
 			boolean isOllamaServerReachable = ollamaAPI.ping();
 			if (!isOllamaServerReachable) {
@@ -111,25 +122,36 @@ public class OllamaClient extends ALLMClient<Tools.ToolSpecification> {
 	 * Executes functions called by the LLM.
 	 *
 	 * @param   prompt    the event prompt
-	 * @param   functions relevant functions that matches to the prompt
+	 * @param   functions relevant functions that match to the prompt
 	 * @return  FunctionResponse - the formatted results of the function calls.
 	 */
 	@Override
-	public FunctionResponse callFunctions(String prompt, List<Tools.ToolSpecification> functions) {
+	public FunctionResponse callFunctions(
+		BasicRole role,
+		String prompt,
+		List<Tools.ToolSpecification> functions,
+		ConversationHistory conversationHistory
+	) throws LLMServiceException {
 		try {
 			ollamaAPI.registerTools(functions);
 			OllamaChatRequest toolRequest = OllamaChatRequestBuilder.getInstance(model)
-				.withMessage(OllamaChatMessageRole.USER, prompt)
+				.withMessage(OllamaChatMessageRole.getRole(role.getRoleName()), prompt)
 				.build();
+			addConversations(toolRequest, conversationHistory);
 			OllamaChatResult response = ollamaAPI.chat(toolRequest);
 
 			String finalResponse = response.getResponseModel().getMessage().getContent();
 			return new FunctionResponse(finalResponse, formatToolCalls(response.getChatHistory()));
 		} catch (Exception e) {
 			Thread.currentThread().interrupt();
-			LogUtil.error("LLM has not called any functions for prompt: " + prompt, e);
-			return new FunctionResponse("No actions called by LLM.", "");
+			throw new LLMServiceException("Could not call functions for prompt: " + prompt, e);
 		}
+	}
+
+	private void addConversations(OllamaChatRequest toolRequest, ConversationHistory conversationHistory) {
+		conversationHistory.getConversations().forEach(c ->
+				toolRequest.getMessages().add(new OllamaChatMessage(OllamaChatMessageRole.newCustomRole(c.role().roleName),
+						c.content())));
 	}
 
 	private String formatToolCalls(List<OllamaChatMessage> history) {
@@ -180,9 +202,5 @@ public class OllamaClient extends ALLMClient<Tools.ToolSpecification> {
             LogUtil.error("Could not delete model: " + e.getMessage());
         }
 		this.service.shutdown();
-	}
-
-	public void setVerbose(boolean verbose) {
-		this.ollamaAPI.setVerbose(verbose);
 	}
 }

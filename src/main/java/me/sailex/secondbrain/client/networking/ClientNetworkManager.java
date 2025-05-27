@@ -1,6 +1,6 @@
 package me.sailex.secondbrain.client.networking;
 
-import me.sailex.secondbrain.client.gui.SecondBrainScreen;
+import me.sailex.secondbrain.client.gui.screen.SecondBrainScreen;
 import me.sailex.secondbrain.networking.NetworkHandler;
 import me.sailex.secondbrain.networking.packet.ConfigPacket;
 import net.minecraft.client.MinecraftClient;

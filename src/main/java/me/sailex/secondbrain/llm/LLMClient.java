@@ -15,7 +15,7 @@ public interface LLMClient {
 	/**
 	 * Check if the service is reachable
 	 */
-	void checkServiceIsReachable(String url);
+	void checkServiceIsReachable();
 
 	/**
 	 * Stops the Executor service

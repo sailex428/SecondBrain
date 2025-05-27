@@ -8,16 +8,16 @@ import me.sailex.secondbrain.constant.Instructions
 import me.sailex.secondbrain.context.ContextProvider
 import me.sailex.secondbrain.database.repositories.RepositoryFactory
 import me.sailex.secondbrain.database.resources.ResourcesProvider
-import me.sailex.secondbrain.event.EventHandler
 import me.sailex.secondbrain.event.NPCEventHandler
 import me.sailex.secondbrain.exception.NPCCreationException
 import me.sailex.secondbrain.history.ConversationHistory
 import me.sailex.secondbrain.llm.LLMClient
 import me.sailex.secondbrain.llm.LLMType
-import me.sailex.secondbrain.llm.OllamaClient
-import me.sailex.secondbrain.llm.OpenAiClient
-import me.sailex.secondbrain.llm.function_calling.OllamaFunctionManager
-import me.sailex.secondbrain.llm.function_calling.OpenAiFunctionManager
+import me.sailex.secondbrain.llm.ollama.OllamaClient
+import me.sailex.secondbrain.llm.ollama.function_calling.OllamaFunctionManager
+import me.sailex.secondbrain.llm.player2.Player2APIClient
+import me.sailex.secondbrain.llm.player2.function_calling.Player2FunctionManager
+import me.sailex.secondbrain.llm.roles.ChatRole
 import me.sailex.secondbrain.mode.ModeController
 import me.sailex.secondbrain.mode.ModeInitializer
 import me.sailex.secondbrain.model.NPC
@@ -25,6 +25,8 @@ import me.sailex.secondbrain.util.LogUtil
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.PlayerManager
 import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.util.math.BlockPos
+import java.util.UUID
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CountDownLatch
@@ -33,70 +35,72 @@ import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 object NPCFactory {
+
+    private const val MAX_NUMBER_OF_NPC = 10
     lateinit var configProvider: ConfigProvider
     private lateinit var repositoryFactory: RepositoryFactory
+    private lateinit var executorService: ExecutorService
 
     fun initialize(configProvider: ConfigProvider, repositoryFactory: RepositoryFactory) {
         this.configProvider = configProvider
         this.repositoryFactory = repositoryFactory
+        this.executorService = Executors.newSingleThreadExecutor()
     }
 
-    val nameToNpc = ConcurrentHashMap<String, NPC>()
+    val uuidToNpc = ConcurrentHashMap<UUID, NPC>()
     var resourcesProvider: ResourcesProvider? = null
         private set
-    val executorService: ExecutorService = Executors.newSingleThreadExecutor()
 
-    fun createNpc(config: NPCConfig, source: ServerPlayerEntity) {
+    fun createNpc(config: NPCConfig, server: MinecraftServer, spawnPos: BlockPos?) {
         CompletableFuture.runAsync({
             checkLimit()
-            var name = config.npcName
-            checkNpcName(name)
-
-            NPCSpawner.spawn(name, source, false)
-            val latch = CountDownLatch(1)
-            NPCSpawner.checkPlayerAvailable(name, latch)
-            //player spawning runs async so we need to wait here until its avail
-            val npcWasCreated = latch.await(3, TimeUnit.SECONDS)
-            if (!npcWasCreated) {
-                throw NPCCreationException("NPCEntity with name $name could not be spawned within 3 seconds. Operation timed out.")
-            }
-            val npcEntity = source.server?.playerManager?.getPlayer(name)
-            if (npcEntity == null) {
-                throw NPCCreationException("NPCEntity with name: $name could not be spawned.")
-            }
-            name = npcEntity.name.string //FIXME: npcSpawner should create npc with same casing as typed in
-
+            val npcEntity = spawnNpc(config, server, spawnPos)
             val npc = createNpcInstance(npcEntity, config)
-            val matchingConfig = configProvider.getNpcConfig(name)
+            config.uuid = npcEntity.uuid
+            val matchingConfig = configProvider.getNpcConfig(config.uuid)
             if (matchingConfig.isEmpty) {
                 configProvider.addNpcConfig(config)
             } else {
                 matchingConfig.get().isActive = true
             }
-            nameToNpc[name] = npc
-            handleInitMessage(npc.eventHandler)
+            uuidToNpc[npcEntity.uuid] = npc
 
             LogUtil.infoInChat(("Added NPC with name: ${config.npcName}"))
         }, executorService).exceptionally {
-            val errorMsg = "Failed to create NPC"
-            LogUtil.errorInChat(errorMsg)
-            LogUtil.error(errorMsg, it)
+            LogUtil.errorInChat(it.message)
+            LogUtil.error(it)
             null
         }
     }
 
-    fun removeNpc(name: String, playerManager: PlayerManager) {
-        val npcToRemove = nameToNpc[name]
+    private fun spawnNpc(config: NPCConfig, server: MinecraftServer, spawnPos: BlockPos?): ServerPlayerEntity {
+        val name = config.npcName
+        checkNpcName(name)
+
+        val latch = CountDownLatch(1)
+        NPCSpawner.spawn(config, server, spawnPos, latch)
+        //player spawning runs async so we need to wait here until its avail
+        latch.await(3, TimeUnit.SECONDS)
+        val npcEntity = server.playerManager?.getPlayer(name)
+        if (npcEntity == null) {
+            throw NPCCreationException("NPCEntity with name $name could not be spawned.")
+        }
+        return npcEntity
+    }
+
+    fun removeNpc(uuid: UUID, playerManager: PlayerManager) {
+        val npcToRemove = uuidToNpc[uuid]
         if (npcToRemove != null) {
-            configProvider.getNpcConfig(name).ifPresent { it.isActive = false }
-            NPCSpawner.remove(name, playerManager)
+            NPCSpawner.remove(npcToRemove.entity.uuid, playerManager)
             stopLlmClient(npcToRemove.llmClient)
             npcToRemove.eventHandler.stopService()
             npcToRemove.modeController.setAllIsOn(false)
             npcToRemove.npcController.cancelActions()
             npcToRemove.contextProvider.chunkManager.stopService()
-            nameToNpc.remove(name)
-            LogUtil.infoInChat("Removed NPC with name: $name")
+            uuidToNpc.remove(uuid)
+            val config = configProvider.getNpcConfig(uuid).get()
+            config.isActive = false
+            LogUtil.infoInChat("Removed NPC with name ${config.npcName}")
         }
     }
 
@@ -107,13 +111,13 @@ object NPCFactory {
         }
     }
 
-    fun deleteNpc(name: String, playerManager: PlayerManager) {
-        removeNpc(name, playerManager)
-        configProvider.deleteNpcConfig(name)
+    fun deleteNpc(uuid: UUID, playerManager: PlayerManager) {
+        removeNpc(uuid, playerManager)
+        configProvider.deleteNpcConfig(uuid)
     }
 
     fun shutdownNpcs(server: MinecraftServer) {
-        nameToNpc.keys.forEach {
+        uuidToNpc.keys.forEach {
             removeNpc(it, server.playerManager)
         }
         resourcesProvider?.llmClient?.stopService()
@@ -126,31 +130,62 @@ object NPCFactory {
 
         return when (config.llmType) {
             LLMType.OLLAMA -> {
+                val defaultPrompt = Instructions.getLlmSystemPrompt(config.npcName, config.llmCharacter)
                 val llmClient = OllamaClient(config.ollamaUrl, SecondBrain.MOD_ID + "-" + config.npcName,
-                    Instructions.getLlmSystemPrompt(config.npcName, config.llmCharacter), baseConfig.llmTimeout)
-                val (controller, history) = initBase(llmClient, npcEntity, config.npcName, contextProvider)
+                    defaultPrompt, baseConfig.llmTimeout, baseConfig.isVerbose)
+
+                val (controller, history) = initBase(npcEntity, config.npcName, contextProvider)
+
+                initResourceProvider(llmClient, config.npcName, npcEntity.server)
+
                 val functionManager = OllamaFunctionManager(
                     resourcesProvider!!,
                     controller,
                     contextProvider,
                     llmClient
                 )
-                val eventHandler = NPCEventHandler(llmClient, history, functionManager, contextProvider, controller)
+                val eventHandler = NPCEventHandler(llmClient, history, functionManager,
+                    contextProvider, controller, config)
                 val modeController = initModeController(npcEntity, controller, contextProvider)
+                eventHandler.onEvent(Instructions.INIT_PROMPT)
 
                 NPC(npcEntity, llmClient, history, eventHandler, controller, contextProvider, modeController, config)
             }
-            LLMType.OPENAI -> {
-                val llmClient = OpenAiClient(config.openaiApiKey, baseConfig.llmTimeout)
-                val (controller, history) = initBase(llmClient, npcEntity, config.npcName, contextProvider)
-                val functionManager = OpenAiFunctionManager(
-                    resourcesProvider!!,
+//            LLMType.OPENAI -> {
+//                val llmClient = OpenAiClient(config.openaiApiKey, baseConfig.llmTimeout)
+//                val (controller, history) = initBase(llmClient, npcEntity, config.npcName, contextProvider)
+//                val functionManager = OpenAiFunctionManager(
+//                    resourcesProvider!!,
+//                    controller,
+//                    contextProvider,
+//                    llmClient
+//                )
+//                val eventHandler = NPCEventHandler(llmClient, history, functionManager, contextProvider, controller)
+//                val modeController = initModeController(npcEntity, controller, contextProvider)
+//
+//                NPC(npcEntity, llmClient, history, eventHandler, controller, contextProvider, modeController, config)
+//            }
+            LLMType.PLAYER2 -> {
+                val llmClient = Player2APIClient(config.voiceId, config.npcName, baseConfig.llmTimeout)
+
+                val (controller, history) = initBase(npcEntity, config.npcName, contextProvider)
+
+                val functionManager = Player2FunctionManager(
+                    resourcesProvider,
                     controller,
                     contextProvider,
                     llmClient
                 )
-                val eventHandler = NPCEventHandler(llmClient, history, functionManager, contextProvider, controller)
+
+                val eventHandler = NPCEventHandler(llmClient, history, functionManager,
+                    contextProvider, controller, config)
                 val modeController = initModeController(npcEntity, controller, contextProvider)
+
+                history.add(ChatRole.USER, Instructions.INIT_PROMPT)
+                eventHandler.onEvent(
+                    ChatRole.SYSTEM,
+                    Instructions.PLAYER2_INIT_PROMPT.format(config.llmCharacter),
+                    false)
 
                 NPC(npcEntity, llmClient, history, eventHandler, controller, contextProvider, modeController, config)
             }
@@ -159,15 +194,13 @@ object NPCFactory {
     }
 
     private fun initBase(
-        llmClient: LLMClient,
         npcEntity: ServerPlayerEntity,
         npcName: String,
         contextProvider: ContextProvider
     ): Pair<NPCController, ConversationHistory> {
-        initResourceProvider(llmClient, npcName, npcEntity.server)
         val automatone = BaritoneAPI.getProvider().getBaritone(npcEntity)
         val controller = NPCController(npcEntity, automatone, contextProvider)
-        val history = ConversationHistory(resourcesProvider!!, npcName)
+        val history = ConversationHistory(resourcesProvider, npcName)
         return Pair(controller, history)
     }
 
@@ -193,19 +226,16 @@ object NPCFactory {
         return modeController
     }
 
-    private fun handleInitMessage(eventHandler: EventHandler) {
-        eventHandler.onEvent(Instructions.INIT_PROMPT)
-    }
-
     fun checkNpcName(npcName: String) {
-        if (nameToNpc.containsKey(npcName)) {
+        if (uuidToNpc.values.any { it.entity.name.string == npcName }) {
             throw NPCCreationException("A NPC with the name '$npcName' already exists.")
         }
     }
 
     fun checkLimit() {
-        if (nameToNpc.size == 3) {
-            throw NPCCreationException("Currently there are no more than 3 parallel running NPCs supported!")
+        if (uuidToNpc.size == MAX_NUMBER_OF_NPC) {
+            throw NPCCreationException("Currently there are no more than" + MAX_NUMBER_OF_NPC +" parallel running " +
+                    "NPCs supported!")
         }
     }
 

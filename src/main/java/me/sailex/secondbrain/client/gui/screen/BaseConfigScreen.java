@@ -1,5 +1,6 @@
-package me.sailex.secondbrain.client.gui;
+package me.sailex.secondbrain.client.gui.screen;
 
+import io.wispforest.owo.ui.component.CheckboxComponent;
 import io.wispforest.owo.ui.component.DiscreteSliderComponent;
 import io.wispforest.owo.ui.component.LabelComponent;
 import io.wispforest.owo.ui.container.FlowLayout;
@@ -50,6 +51,11 @@ public class BaseConfigScreen extends ConfigScreen<BaseConfig> {
                 .setFromDiscreteValue(config.getChunkExpiryTime())
                 .onChanged()
                 .subscribe(value -> config.setChunkExpiryTime((int) Math.round(value)));
+
+        panel.childById(LabelComponent.class, "verbose-label").text(Text.of(BaseConfig.VERBOSE_KEY));
+        panel.childById(CheckboxComponent.class, "verbose")
+                .checked(config.isVerbose())
+                .onChanged(listener -> config.setVerbose(!config.isVerbose()));
 
         onPressSaveButton(panel, button -> {
             networkManager.sendPacket(new UpdateBaseConfigPacket(config));

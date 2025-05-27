@@ -6,14 +6,21 @@ import io.wispforest.endec.impl.StructEndecBuilder;
 import me.sailex.secondbrain.constant.Instructions;
 import me.sailex.secondbrain.llm.LLMType;
 
+import java.util.UUID;
+
 public class NPCConfig implements Configurable {
 
 	private String npcName = "Steve";
+	private UUID uuid = UUID.randomUUID();
 	private boolean isActive = true;
 	private String llmCharacter = Instructions.DEFAULT_CHARACTER_TRAITS;
 	private LLMType llmType = LLMType.OLLAMA;
 	private String ollamaUrl = "http://localhost:11434";
-	private String openaiApiKey = "API_KEY";
+	private String openaiApiKey = "not set"; //currently not needed
+	private String voiceId = "not set";
+	private String skinUrl = "not set";
+
+	private boolean isTTS = false;
 
 	public NPCConfig() {}
 
@@ -23,18 +30,26 @@ public class NPCConfig implements Configurable {
 
 	public NPCConfig(
 		String npcName,
+		String uuid,
 		boolean isActive,
 		String llmCharacter,
 		LLMType llmType,
 		String ollamaUrl,
-		String openaiApiKey
+		String openaiApiKey,
+		boolean isTTS,
+		String voiceId,
+		String skinUrl
 	) {
 		this.npcName = npcName;
+		this.uuid = UUID.fromString(uuid);
 		this.isActive = isActive;
 		this.llmCharacter = llmCharacter;
 		this.llmType = llmType;
 		this.ollamaUrl = ollamaUrl;
 		this.openaiApiKey = openaiApiKey;
+		this.isTTS = isTTS;
+		this.voiceId = voiceId;
+		this.skinUrl = skinUrl;
 	}
 
 	public static class Builder {
@@ -43,6 +58,11 @@ public class NPCConfig implements Configurable {
 
 		public Builder(String npcName) {
 			this.npcConfig = new NPCConfig(npcName);
+		}
+
+		public Builder uuid(UUID uuid) {
+			npcConfig.setUuid(uuid);
+			return this;
 		}
 
 		public Builder llmDefaultPrompt(String llmDefaultPrompt) {
@@ -55,13 +75,13 @@ public class NPCConfig implements Configurable {
 			return this;
 		}
 
-		public Builder ollamaUrl(String ollamaUrl) {
-			npcConfig.setOllamaUrl(ollamaUrl);
+		public Builder voiceId(String voiceId) {
+			npcConfig.setVoiceId(voiceId);
 			return this;
 		}
 
-		public Builder openaiApiKey(String openaiApiKey) {
-			npcConfig.setOpenaiApiKey(openaiApiKey);
+		public Builder skinUrl(String skinUrl) {
+			npcConfig.setSkinUrl(skinUrl);
 			return this;
 		}
 
@@ -123,6 +143,38 @@ public class NPCConfig implements Configurable {
 		this.npcName = npcName;
 	}
 
+	public UUID getUuid() {
+		return uuid;
+	}
+
+	public void setUuid(UUID uuid) {
+		this.uuid = uuid;
+	}
+
+	public String getVoiceId() {
+		return voiceId;
+	}
+
+	public void setVoiceId(String voiceId) {
+		this.voiceId = voiceId;
+	}
+
+	public boolean isTTS() {
+		return isTTS;
+	}
+
+	public void setTTS(boolean TTS) {
+		isTTS = TTS;
+	}
+
+	public String getSkinUrl() {
+		return skinUrl;
+	}
+
+	public void setSkinUrl(String skinUrl) {
+		this.skinUrl = skinUrl;
+	}
+
 	@Override
 	public String getConfigName() {
 		return npcName.toLowerCase();
@@ -130,22 +182,28 @@ public class NPCConfig implements Configurable {
 
 	public static final StructEndec<NPCConfig> ENDEC = StructEndecBuilder.of(
 			Endec.STRING.fieldOf("npcName", NPCConfig::getNpcName),
+			Endec.STRING.fieldOf("uuid", config -> config.getUuid().toString()),
 			Endec.BOOLEAN.fieldOf("isActive", NPCConfig::isActive),
 			Endec.STRING.fieldOf("llmDefaultPrompt", NPCConfig::getLlmCharacter),
 			Endec.forEnum(LLMType.class).fieldOf("llmType", NPCConfig::getLlmType),
 			Endec.STRING.fieldOf("ollamaUrl", NPCConfig::getOllamaUrl),
 			Endec.STRING.fieldOf("openaiApiKey", NPCConfig::getOpenaiApiKey),
+			Endec.BOOLEAN.fieldOf("isTTS", NPCConfig::isTTS),
+			Endec.STRING.fieldOf("voiceId", NPCConfig::getVoiceId),
+			Endec.STRING.fieldOf("skinUrl", NPCConfig::getSkinUrl),
 			NPCConfig::new
 	);
 
 	@Override
 	public String toString() {
 		return "NPCConfig{npcName=" + npcName +
+				",uuid=" + uuid +
 				",isActive=" + isActive +
 				",llmType=" + llmType +
 				",ollamaUrl=" + ollamaUrl +
 				",openaiApiKey=***" +
-				",llmCharacter=" + llmCharacter + "}";
+				",llmCharacter=" + llmCharacter +
+				",voiceId=" + voiceId + "}";
 	}
 
 	//name for fields for npc config screen
@@ -155,4 +213,5 @@ public class NPCConfig implements Configurable {
 	public static final String LLM_TYPE = "Type of the LLM";
 	public static final String OLLAMA_URL = "Ollama URL";
 	public static final String OPENAI_API_KEY = "OpenAI API Key";
+	public static final String IS_TTS = "Text to Speech";
 }

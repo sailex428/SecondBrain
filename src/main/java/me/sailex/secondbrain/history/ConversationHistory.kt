@@ -1,22 +1,26 @@
 package me.sailex.secondbrain.history
 
 import me.sailex.secondbrain.database.resources.ResourcesProvider
-import java.sql.Timestamp
+import me.sailex.secondbrain.llm.function_calling.model.ChatMessage
+import me.sailex.secondbrain.llm.roles.ChatRole
 import java.util.concurrent.LinkedBlockingDeque
 
 class ConversationHistory(
-    private val resourcesProvider: ResourcesProvider,
+    private val resourcesProvider: ResourcesProvider?,
     private val npcName: String
 ) {
-    private val latestConversations = LinkedBlockingDeque<Pair<Timestamp, String>>(4) //timestamp to message
+    private val latestConversations = LinkedBlockingDeque<ChatMessage>(4)
 
-    fun add(message: String) {
-        if (message.isBlank()) return
+    fun add(role: ChatRole, content: String) {
+        if (content.isEmpty()) return
         if (latestConversations.remainingCapacity() == 0) {
-            val oldestConversation = latestConversations.takeLast()
-            resourcesProvider.addConversation(npcName, oldestConversation.first, oldestConversation.second)
+            val oldestConversation = latestConversations.takeFirst()
+            resourcesProvider?.addConversation(npcName, oldestConversation.content())
         }
-        val currentTime = Timestamp(System.currentTimeMillis())
-        latestConversations.add(Pair(currentTime, message))
+        latestConversations.add(ChatMessage.of(role, content))
+    }
+
+    fun getConversations(): List<ChatMessage> {
+        return latestConversations.toList()
     }
 }
