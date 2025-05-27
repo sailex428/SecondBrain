@@ -26,7 +26,7 @@ class STTListener(npcs: Map<UUID, NPC>) : AEventListener(npcs) {
             if (type == STTType.START) {
                 llmClient.startSpeechToText()
             } else if (type == STTType.STOP) {
-                handleEvent(llmClient.stopSpeechToText())
+                callEventForPlayer2Npcs(llmClient.stopSpeechToText())
             }
         } catch (e: LLMServiceException) {
             LogUtil.errorInChat(e.message)
@@ -34,7 +34,7 @@ class STTListener(npcs: Map<UUID, NPC>) : AEventListener(npcs) {
         }
     }
 
-    private fun handleEvent(prompt: String) {
+    private fun callEventForPlayer2Npcs(prompt: String) {
         npcs.forEach {
             if (it.value.llmClient is Player2APIClient) {
                 it.value.eventHandler.onEvent(prompt)

@@ -68,7 +68,7 @@ object NPCFactory {
             LogUtil.infoInChat(("Added NPC with name: ${config.npcName}"))
         }, executorService).exceptionally {
             LogUtil.errorInChat(it.message)
-            LogUtil.error( it)
+            LogUtil.error(it)
             null
         }
     }

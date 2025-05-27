@@ -3,6 +3,7 @@ package me.sailex.secondbrain.config;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import lombok.Setter;
+import me.sailex.secondbrain.llm.LLMType;
 import me.sailex.secondbrain.util.LogUtil;
 import net.fabricmc.loader.api.FabricLoader;
 
@@ -86,6 +87,10 @@ public class ConfigProvider {
         });
         npcConfigs.removeAll(configsToRemove);
         configsToRemove.forEach(config -> delete(config.getConfigName()));
+    }
+
+    public synchronized void deleteByType(LLMType llmType) {
+        npcConfigs.removeIf(config -> config != null && config.getLlmType() == llmType);
     }
 
     public synchronized void addNpcConfig(NPCConfig npcConfig) {

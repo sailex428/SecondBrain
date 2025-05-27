@@ -61,7 +61,7 @@ public class Player2NpcSynchronizer {
             for (UUID uuid : currentNpcUuids) {
                 npcFactory.deleteNpc(uuid, server.getPlayerManager());
             }
-            removeNpcConfigs();
+            configProvider.deleteByType(LLMType.PLAYER2);
 
             for (Map.Entry<UUID, Characters.Character> entry : uuidToChar.entrySet()) {
                 Characters.Character character = entry.getValue();
@@ -115,10 +115,6 @@ public class Player2NpcSynchronizer {
                 .filter(e -> e.getValue().getConfig().getLlmType() == LLMType.PLAYER2)
                 .map(Map.Entry::getKey)
                 .toList();
-    }
-
-    private void removeNpcConfigs() {
-        configProvider.getNpcConfigs().removeIf(config -> config != null && config.getLlmType() == LLMType.PLAYER2);
     }
 
 }
