@@ -94,9 +94,9 @@ public class Player2APIClient extends ALLMClient<FunctionDef> {
             StringBuilder calledFunctions = new StringBuilder();
             ChatRequest request = ChatRequest.builder()
                     .tools(functionExecutor.getToolFunctions())
-                    .messages(new ArrayList<>(List.of(ChatMessage.of((ChatRole) role, prompt))))
+                    .messages(conversationHistory.getConversations())
                     .build();
-            request.getMessages().addAll(conversationHistory.getConversations());
+            request.getMessages().add(ChatMessage.of((ChatRole) role, prompt));
 
             ResponseMessage result = sendChatRequest(request);
             List<ToolCall> toolCalls = result.tool_calls();

@@ -21,6 +21,6 @@ class ConversationHistory(
     }
 
     fun getConversations(): List<ChatMessage> {
-        return latestConversations.toList()
+        return ArrayList(latestConversations)
     }
 }

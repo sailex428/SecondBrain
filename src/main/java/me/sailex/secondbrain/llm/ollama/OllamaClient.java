@@ -10,6 +10,7 @@ import io.github.ollama4j.tools.Tools;
 import io.github.ollama4j.types.OllamaModelType;
 import me.sailex.secondbrain.exception.LLMServiceException;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.*;
@@ -135,9 +136,9 @@ public class OllamaClient extends ALLMClient<Tools.ToolSpecification> {
 		try {
 			ollamaAPI.registerTools(functions);
 			OllamaChatRequest toolRequest = OllamaChatRequestBuilder.getInstance(model)
+				.withMessages(getConversations(conversationHistory))
 				.withMessage(OllamaChatMessageRole.getRole(role.getRoleName()), prompt)
 				.build();
-			addConversations(toolRequest, conversationHistory);
 			OllamaChatResult response = ollamaAPI.chat(toolRequest);
 
 			String finalResponse = response.getResponseModel().getMessage().getContent();
@@ -148,10 +149,10 @@ public class OllamaClient extends ALLMClient<Tools.ToolSpecification> {
 		}
 	}
 
-	private void addConversations(OllamaChatRequest toolRequest, ConversationHistory conversationHistory) {
-		conversationHistory.getConversations().forEach(c ->
-				toolRequest.getMessages().add(new OllamaChatMessage(OllamaChatMessageRole.newCustomRole(c.role().roleName),
-						c.content())));
+	private List<OllamaChatMessage> getConversations(ConversationHistory conversationHistory) {
+		return conversationHistory.getConversations().stream()
+				.map(c -> new OllamaChatMessage(OllamaChatMessageRole.newCustomRole(c.role().roleName), c.content()))
+				.collect(Collectors.toCollection(ArrayList::new));
 	}
 
 	private String formatToolCalls(List<OllamaChatMessage> history) {
