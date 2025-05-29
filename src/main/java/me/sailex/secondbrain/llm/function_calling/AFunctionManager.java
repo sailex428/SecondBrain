@@ -6,6 +6,7 @@ import me.sailex.secondbrain.common.NPCController;
 import me.sailex.secondbrain.llm.LLMClient;
 import me.sailex.secondbrain.model.function_calling.LLMFunction;
 import me.sailex.secondbrain.model.database.Resource;
+import me.sailex.secondbrain.util.ResourceRecommender;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,8 +37,10 @@ public abstract class AFunctionManager<T> implements FunctionManager<T> {
 
     protected abstract List<T> createFunctions();
 
-    protected List<? extends Resource> getRelevantResources(String prompt) {
-        return vectorizedFunctions;
+    protected List<Resource> getRelevantResources(String prompt) {
+        return ResourceRecommender.getRelevantResources(
+                llmClient, prompt, vectorizedFunctions, 6
+        );
     }
 
 }

@@ -12,16 +12,16 @@ import me.sailex.secondbrain.llm.function_calling.AFunctionManager;
 import me.sailex.secondbrain.llm.function_calling.util.ArgumentParser;
 import me.sailex.secondbrain.llm.function_calling.constant.Function;
 import me.sailex.secondbrain.llm.function_calling.constant.Property;
+import me.sailex.secondbrain.model.function_calling.OllamaFunction;
 import me.sailex.secondbrain.util.PromptFormatter;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class OllamaFunctionManager extends AFunctionManager<Tools.ToolSpecification> {
-
-    private List<Tools.ToolSpecification> rawFunctions;
 
     public OllamaFunctionManager(
         ResourcesProvider resourcesProvider,
@@ -106,12 +106,22 @@ public class OllamaFunctionManager extends AFunctionManager<Tools.ToolSpecificat
 
     @Override
     public void vectorizeFunctions(List<Tools.ToolSpecification> rawFunctions) {
-        this.rawFunctions = rawFunctions;
+        rawFunctions.forEach(function -> {
+            OllamaFunction vectorizedFunction = new OllamaFunction(
+                    function.getFunctionName(),
+                    function,
+                    llmClient.generateEmbedding(List.of(function.getFunctionDescription()))
+            );
+            this.vectorizedFunctions.add(vectorizedFunction);
+        });
     }
 
     @Override
     public List<Tools.ToolSpecification> getRelevantFunctions(String prompt) {
-        return rawFunctions;
+        return getRelevantResources(prompt).stream()
+                .map(OllamaFunction.class::cast)
+                .map(OllamaFunction::getFunction)
+                .collect(Collectors.toList());
     }
 
     private static class NPCFunction {
