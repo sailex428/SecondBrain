@@ -30,7 +30,7 @@ public class Property {
         public static final String ITEM_NAME = "item for which a recipe is wanted";
         public static final String TOPIC = "topic for which old conversations should be searched for";
         public static final String DROP_ALL = "whether to drop all items of the type or not";
-        public static final String PLAYER_NAME = "name of a player";
+        public static final String PLAYER_NAME = "name of a player/entity in the right casing";
         public static final String BLOCK_TYPE = "type of block that should be mined";
         public static final String IS_PLAYER = "whether the entity is a player or not";
         public static final String NUMBER_OF_BLOCKS = "number the blocks the npc will mine";

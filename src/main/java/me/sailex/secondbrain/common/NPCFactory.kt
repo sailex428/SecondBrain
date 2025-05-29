@@ -83,7 +83,8 @@ object NPCFactory {
         latch.await(3, TimeUnit.SECONDS)
         val npcEntity = server.playerManager?.getPlayer(name)
         if (npcEntity == null) {
-            throw NPCCreationException("NPCEntity with name $name could not be spawned.")
+            throw NPCCreationException("NPCEntity with name $name could not be spawned. " +
+                    "Player profile could get fetched in time!")
         }
         return npcEntity
     }
@@ -147,7 +148,7 @@ object NPCFactory {
                 val eventHandler = NPCEventHandler(llmClient, history, functionManager,
                     contextProvider, controller, config)
                 val modeController = initModeController(npcEntity, controller, contextProvider)
-                eventHandler.onEvent(Instructions.INIT_PROMPT)
+                eventHandler.onEvent(String.format(Instructions.INIT_PROMPT, config.npcName))
 
                 NPC(npcEntity, llmClient, history, eventHandler, controller, contextProvider, modeController, config)
             }
@@ -181,11 +182,10 @@ object NPCFactory {
                     contextProvider, controller, config)
                 val modeController = initModeController(npcEntity, controller, contextProvider)
 
-                history.add(ChatRole.USER, Instructions.INIT_PROMPT)
+                history.add(ChatRole.USER, String.format(Instructions.INIT_PROMPT, config.npcName))
                 eventHandler.onEvent(
                     ChatRole.SYSTEM,
-                    Instructions.PLAYER2_INIT_PROMPT.format(config.llmCharacter),
-                    false)
+                    Instructions.PLAYER2_INIT_PROMPT.format(config.llmCharacter))
 
                 NPC(npcEntity, llmClient, history, eventHandler, controller, contextProvider, modeController, config)
             }

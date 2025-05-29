@@ -30,24 +30,28 @@ class NPCEventHandler<T>(
      *
      * @param prompt prompt of a user or system e.g. chatmessage of a player
      */
-    override fun onEvent(role: ChatRole, prompt: String, formatPrompt: Boolean) {
+    override fun onEvent(role: ChatRole, prompt: String) {
         CompletableFuture.runAsync({
             LogUtil.info("onEvent: $prompt")
 
             var formattedPrompt = prompt
-            if (formatPrompt) {
-                formattedPrompt = PromptFormatter.format(prompt, contextProvider.buildContext())
+            if (role == ChatRole.USER) {
+                formattedPrompt = PromptFormatter.format(
+                    prompt,
+                    contextProvider.buildContext(),
+                    history.getConversations()
+                )
             }
             val relevantFunctions = functionManager.getRelevantFunctions(prompt)
-            val response = llmClient.callFunctions(role, formattedPrompt, relevantFunctions, history)
+            val response = llmClient.callFunctions(role, formattedPrompt, relevantFunctions)
 
             if (llmClient is Player2APIClient && config.isTTS) {
-                llmClient.startTextToSpeech(response.finalResponse)
+                llmClient.startTextToSpeech(response)
             } else {
-                controller.addGoal("chat") { controller.chat(response.finalResponse) }
+                controller.addGoal("chat") { controller.chat(response) }
             }
             history.add(role, prompt)
-            history.add(ChatRole.ASSISTANT, response.finalResponse )
+            history.add(ChatRole.ASSISTANT, response )
         }, executorService)
             .exceptionally {
                 LogUtil.debugInChat("'" + config.npcName + "' didn’t understand what to do. The AI response may have failed.")
@@ -57,7 +61,7 @@ class NPCEventHandler<T>(
     }
 
     override fun onEvent(prompt: String) {
-        this.onEvent(ChatRole.USER, prompt, true)
+        this.onEvent(ChatRole.USER, prompt)
     }
 
     override fun stopService() {
