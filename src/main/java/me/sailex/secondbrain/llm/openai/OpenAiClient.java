@@ -9,10 +9,9 @@ import io.github.sashirestela.openai.domain.chat.ChatMessage;
 import io.github.sashirestela.openai.domain.chat.ChatRequest;
 import io.github.sashirestela.openai.domain.embedding.EmbeddingFloat;
 import io.github.sashirestela.openai.domain.embedding.EmbeddingRequest;
-import me.sailex.secondbrain.history.ConversationHistory;
+import me.sailex.secondbrain.exception.LLMServiceException;
 import me.sailex.secondbrain.llm.ALLMClient;
 import me.sailex.secondbrain.llm.roles.BasicRole;
-import me.sailex.secondbrain.model.function_calling.FunctionResponse;
 import me.sailex.secondbrain.util.LogUtil;
 import org.apache.commons.lang3.StringUtils;
 
@@ -50,11 +49,10 @@ public class OpenAiClient extends ALLMClient<FunctionDef> {
 	 * @return  the formatted results of the function calls.
 	 */
 	@Override
-	public FunctionResponse callFunctions(
+	public String callFunctions(
 		BasicRole role,
 		String prompt,
-		List<FunctionDef> functions,
-		ConversationHistory history
+		List<FunctionDef> functions
 	) {
 		try {
 			StringBuilder calledFunctions = new StringBuilder();
@@ -87,11 +85,11 @@ public class OpenAiClient extends ALLMClient<FunctionDef> {
 				executeFunctionCalls(toolCall);
 				removeCalledFunctions(functions, toolCall.getFunction().getName());
             }
-			return new FunctionResponse(null, calledFunctions.toString());
+			return null;
         } catch (Exception e) {
 			Thread.currentThread().interrupt();
 			LogUtil.error("LLM has not called any functions for prompt: " + prompt, e);
-			return new FunctionResponse("No actions called by LLM", "");
+			throw new LLMServiceException();
 		}
 	}
 

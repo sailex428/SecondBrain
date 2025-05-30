@@ -8,13 +8,11 @@ import io.github.sashirestela.openai.common.function.FunctionDef;
 import io.github.sashirestela.openai.common.function.FunctionExecutor;
 import lombok.Getter;
 import me.sailex.secondbrain.exception.LLMServiceException;
-import me.sailex.secondbrain.history.ConversationHistory;
 import me.sailex.secondbrain.llm.ALLMClient;
 import me.sailex.secondbrain.llm.function_calling.model.ChatMessage;
 import me.sailex.secondbrain.llm.roles.BasicRole;
 import me.sailex.secondbrain.llm.roles.ChatRole;
 import me.sailex.secondbrain.llm.player2.model.*;
-import me.sailex.secondbrain.model.function_calling.FunctionResponse;
 import me.sailex.secondbrain.util.LogUtil;
 import org.apache.http.HttpException;
 
@@ -83,11 +81,10 @@ public class Player2APIClient extends ALLMClient<FunctionDef> {
      * @return             the formatted results of the function calls.
      */
     @Override
-    public FunctionResponse callFunctions(
+    public String callFunctions(
         BasicRole role,
         String prompt,
-        List<FunctionDef> functions,
-        ConversationHistory conversationHistory
+        List<FunctionDef> functions
     ) throws LLMServiceException {
         try {
             functionExecutor.enrollFunctions(functions);
@@ -96,7 +93,6 @@ public class Player2APIClient extends ALLMClient<FunctionDef> {
                     .tools(functionExecutor.getToolFunctions())
                     .messages(new ArrayList<>(List.of(ChatMessage.of((ChatRole) role, prompt))))
                     .build();
-            request.getMessages().addAll(conversationHistory.getConversations());
 
             ResponseMessage result = sendChatRequest(request);
             List<ToolCall> toolCalls = result.tool_calls();
@@ -110,7 +106,7 @@ public class Player2APIClient extends ALLMClient<FunctionDef> {
                 }
             }
 
-            return new FunctionResponse(result.content(), calledFunctions.toString());
+            return result.content();
         } catch (Exception e) {
             throw new LLMServiceException("Could not call functions for prompt: " + prompt, e);
         }

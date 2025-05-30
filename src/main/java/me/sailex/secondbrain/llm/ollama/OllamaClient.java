@@ -5,7 +5,6 @@ import io.github.ollama4j.models.chat.*;
 import io.github.ollama4j.models.embeddings.OllamaEmbedResponseModel;
 import io.github.ollama4j.models.request.CustomModelRequest;
 import io.github.ollama4j.models.response.Model;
-import io.github.ollama4j.tools.OllamaToolCallsFunction;
 import io.github.ollama4j.tools.Tools;
 import io.github.ollama4j.types.OllamaModelType;
 import me.sailex.secondbrain.exception.LLMServiceException;
@@ -16,12 +15,9 @@ import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 import lombok.Setter;
-import me.sailex.secondbrain.history.ConversationHistory;
 import me.sailex.secondbrain.llm.ALLMClient;
 import me.sailex.secondbrain.llm.roles.BasicRole;
-import me.sailex.secondbrain.model.function_calling.FunctionResponse;
 import me.sailex.secondbrain.util.LogUtil;
-import org.apache.commons.lang3.StringUtils;
 
 public class OllamaClient extends ALLMClient<Tools.ToolSpecification> {
 
@@ -123,56 +119,26 @@ public class OllamaClient extends ALLMClient<Tools.ToolSpecification> {
 	 *
 	 * @param   prompt    the event prompt
 	 * @param   functions relevant functions that match to the prompt
-	 * @return  FunctionResponse - the formatted results of the function calls.
+	 * @return  response - the formatted results of the function calls.
 	 */
 	@Override
-	public FunctionResponse callFunctions(
+	public String callFunctions(
 		BasicRole role,
 		String prompt,
-		List<Tools.ToolSpecification> functions,
-		ConversationHistory conversationHistory
+		List<Tools.ToolSpecification> functions
 	) throws LLMServiceException {
 		try {
 			ollamaAPI.registerTools(functions);
 			OllamaChatRequest toolRequest = OllamaChatRequestBuilder.getInstance(model)
 				.withMessage(OllamaChatMessageRole.getRole(role.getRoleName()), prompt)
 				.build();
-			addConversations(toolRequest, conversationHistory);
 			OllamaChatResult response = ollamaAPI.chat(toolRequest);
 
-			String finalResponse = response.getResponseModel().getMessage().getContent();
-			return new FunctionResponse(finalResponse, formatToolCalls(response.getChatHistory()));
+			return response.getResponseModel().getMessage().getContent();
 		} catch (Exception e) {
 			Thread.currentThread().interrupt();
 			throw new LLMServiceException("Could not call functions for prompt: " + prompt, e);
 		}
-	}
-
-	private void addConversations(OllamaChatRequest toolRequest, ConversationHistory conversationHistory) {
-		conversationHistory.getConversations().forEach(c ->
-				toolRequest.getMessages().add(new OllamaChatMessage(OllamaChatMessageRole.newCustomRole(c.role().roleName),
-						c.content())));
-	}
-
-	private String formatToolCalls(List<OllamaChatMessage> history) {
-		StringBuilder formattedToolCallsBuilder = new StringBuilder();
-		history.stream()
-				.filter(msg -> msg.getToolCalls() != null)
-				.flatMap(msg -> msg.getToolCalls().stream())
-				.map(OllamaChatToolCalls::getFunction)
-				.forEach(function -> appendFunctionDetails(formattedToolCallsBuilder, function));
-		String formattedToolCalls = formattedToolCallsBuilder.toString();
-		if (!formattedToolCalls.isEmpty()) {
-			LogUtil.info(formattedToolCalls);
-		}
-		return formattedToolCalls;
-	}
-
-	private void appendFunctionDetails(StringBuilder builder, OllamaToolCallsFunction function) {
-		builder.append(function.getName())
-				.append(" - args: ")
-				.append(function.getArguments())
-				.append(StringUtils.SPACE);
 	}
 
 	@Override

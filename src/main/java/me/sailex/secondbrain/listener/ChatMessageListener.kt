@@ -16,7 +16,7 @@ class ChatMessageListener(
                 }
                 val chatMessage =
                     String.format(
-                        "%s has written the message: %s",
+                        "Player '%s' has written the message: %s",
                         sender.name.string ?: "Server Console",
                         message.content.string,
                     )

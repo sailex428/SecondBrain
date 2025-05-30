@@ -1,9 +1,7 @@
 package me.sailex.secondbrain.llm;
 
 import me.sailex.secondbrain.exception.LLMServiceException;
-import me.sailex.secondbrain.history.ConversationHistory;
 import me.sailex.secondbrain.llm.roles.BasicRole;
-import me.sailex.secondbrain.model.function_calling.FunctionResponse;
 
 import java.util.List;
 
@@ -14,11 +12,10 @@ public interface FunctionCallable<T> extends LLMClient {
      *
      * @throws LLMServiceException if any errors occur while calling functions
      */
-    FunctionResponse callFunctions(
+    String callFunctions(
         BasicRole role,
         String prompt,
-        List<T> functions,
-        ConversationHistory history
+        List<T> functions
     ) throws LLMServiceException;
 
 }

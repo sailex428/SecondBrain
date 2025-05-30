@@ -39,7 +39,7 @@ public abstract class AFunctionManager<T> implements FunctionManager<T> {
 
     protected List<Resource> getRelevantResources(String prompt) {
         return ResourceRecommender.getRelevantResources(
-                llmClient, prompt, vectorizedFunctions, 3
+                llmClient, prompt, vectorizedFunctions, 6
         );
     }
 

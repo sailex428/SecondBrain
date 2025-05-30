@@ -1,6 +1,7 @@
 package me.sailex.secondbrain.util;
 
 import me.sailex.secondbrain.constant.Instructions;
+import me.sailex.secondbrain.llm.function_calling.model.ChatMessage;
 import me.sailex.secondbrain.model.context.*;
 import me.sailex.secondbrain.model.database.Conversation;
 import me.sailex.secondbrain.model.database.Recipe;
@@ -19,13 +20,14 @@ public class PromptFormatter {
 
 	private PromptFormatter() {}
 
-	public static String format(String prompt, WorldContext worldContext) {
+	public static String format(String prompt, WorldContext worldContext, List<ChatMessage> conversations) {
 		return Instructions.PROMPT_TEMPLATE.formatted(
 				prompt,
 				formatEntities(worldContext.nearbyEntities(), 10),
 				formatBlocks(worldContext.nearbyBlocks(), 15),
 				formatInventory(worldContext.inventory()),
-				formatNPCState(worldContext.state())
+				formatNPCState(worldContext.state()),
+				formatConversations(conversations)
 		);
 	}
 
@@ -87,6 +89,12 @@ public class PromptFormatter {
 				recipe -> String.format(
 						"- Item to craft: %s, table needed: %s, needed items (recipe): %s",
 						recipe.getName(), recipe.getTableNeeded(), recipe.getItemsNeeded()));
+	}
+
+	private static String formatConversations(List<ChatMessage> conversations) {
+		return formatList(conversations, chatMessage ->
+			String.format("%s: %s", chatMessage.role(), chatMessage.content())
+		);
 	}
 
 	private static String formatItemsNeeded(Map<String, Integer> itemsNeeded) {

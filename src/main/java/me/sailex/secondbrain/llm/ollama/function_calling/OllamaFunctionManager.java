@@ -34,9 +34,6 @@ public class OllamaFunctionManager extends AFunctionManager<Tools.ToolSpecificat
 
     protected List<Tools.ToolSpecification> createFunctions() {
         return List.of(
-//            defineFunction(Function.Name.CHAT, Function.Description.CHAT, NPCFunction::chat, new Tools.PropsBuilder()
-//                    .withProperty(Property.Name.MESSAGE, Tools.PromptFuncDefinition.Property.builder().type("string").description(Property.Description.MESSAGE).required(true).build())
-//                    .build(), List.of(Property.Name.MESSAGE)),
             defineFunction(Function.Name.MOVE_TO_COORDINATES, Function.Description.MOVE_TO_COORDINATES, NPCFunction::moveToCoordinates, new Tools.PropsBuilder()
                     .withProperty(Property.Name.X, Tools.PromptFuncDefinition.Property.builder().type("int").required(true).build())
                     .withProperty(Property.Name.Y, Tools.PromptFuncDefinition.Property.builder().type("int").required(true).build())
@@ -128,13 +125,6 @@ public class OllamaFunctionManager extends AFunctionManager<Tools.ToolSpecificat
     }
 
     private static class NPCFunction {
-
-//        public static String chat(Map<String, Object> arguments) {
-//            String message = (String) arguments.get(Property.Name.MESSAGE);
-//
-//            controller.addGoal("chat", () -> controller.chat(message));
-//            return "chatted message " + message;
-//        }
 
         public static String moveToCoordinates(Map<String, Object> arguments) {
             int x = ArgumentParser.getInt(arguments, Property.Name.X);
