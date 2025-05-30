@@ -17,7 +17,6 @@ import me.sailex.secondbrain.llm.ollama.OllamaClient
 import me.sailex.secondbrain.llm.ollama.function_calling.OllamaFunctionManager
 import me.sailex.secondbrain.llm.player2.Player2APIClient
 import me.sailex.secondbrain.llm.player2.function_calling.Player2FunctionManager
-import me.sailex.secondbrain.llm.roles.ChatRole
 import me.sailex.secondbrain.mode.ModeController
 import me.sailex.secondbrain.mode.ModeInitializer
 import me.sailex.secondbrain.model.NPC
@@ -167,7 +166,8 @@ object NPCFactory {
 //                NPC(npcEntity, llmClient, history, eventHandler, controller, contextProvider, modeController, config)
 //            }
             LLMType.PLAYER2 -> {
-                val llmClient = Player2APIClient(config.voiceId, config.npcName, baseConfig.llmTimeout)
+                val llmClient = Player2APIClient(config.voiceId, config.npcName, baseConfig.llmTimeout,
+                    Instructions.PLAYER2_INIT_PROMPT.format(config.llmCharacter))
 
                 val (controller, history) = initBase(npcEntity, config.npcName, contextProvider)
 
@@ -182,10 +182,7 @@ object NPCFactory {
                     contextProvider, controller, config)
                 val modeController = initModeController(npcEntity, controller, contextProvider)
 
-                history.add(ChatRole.USER, String.format(Instructions.INIT_PROMPT, config.npcName))
-                eventHandler.onEvent(
-                    ChatRole.SYSTEM,
-                    Instructions.PLAYER2_INIT_PROMPT.format(config.llmCharacter))
+                eventHandler.onEvent(String.format(Instructions.INIT_PROMPT, config.npcName))
 
                 NPC(npcEntity, llmClient, history, eventHandler, controller, contextProvider, modeController, config)
             }
