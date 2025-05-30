@@ -38,8 +38,7 @@ A Fabric mod that brings intelligent NPCs to your minecraft world. Create player
 **Interact with NPCs**:
 - Just write in the chat to interact with the NPC.
 - 
-## Setup Ollama
-### Ollama (Local LLM)
+## Setup Ollama  (Local LLM)
 1. **Download Ollama**:
    - Visit [Ollamas Website](https://ollama.com/) and download the installer for your operating system.
 
@@ -51,7 +50,7 @@ A Fabric mod that brings intelligent NPCs to your minecraft world. Create player
    - Use the gui to create/edit an NPC and put in the address to your ollama server (complete url with http://...; 
      if you're running your ollama on your local pc then you can just use the one that's already typed in)
 
-### Usage with Player2 App
+## Usage with Player2 App
 
 >The mod will automatically sync the selected Characters from the player2 App to NPCs in your singleplayer world.
 If you updated a description/name in the player2 App you can sync these changes with the command `/secondbrain player2 SYNC`
@@ -62,7 +61,7 @@ It's not possible to change any configs from the Character with this mod.
 - Press and hold alt (win) or opt (macOS) key to talk directly to the LLM/AI
 - Activate Text-To-Speech for any NPC in the config gui to hear the LLM/AI output
 
-### Setup Player2
+## Setup Player2
 1. **Download Player2 App**
    - Visit [player2's website](https://player2.game) and download the App for your operating system.
 
