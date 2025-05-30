@@ -39,17 +39,19 @@ public class Player2APIClient extends ALLMClient<FunctionDef> {
 
     private final String voiceId;
     private final String npcName; //only for debugging
+    private final String systemPrompt;
     private final ObjectMapper mapper;
     private final HttpClient client;
     private final FunctionExecutor functionExecutor;
 
     public Player2APIClient() {
-        this(null, "default", 10);
+        this(null, "default", 10, null);
     }
 
-    public Player2APIClient(String voiceId, String npcName, int timeout) {
+    public Player2APIClient(String voiceId, String npcName, int timeout, String systemPrompt) {
         this.voiceId = voiceId;
         this.npcName = npcName;
+        this.systemPrompt = systemPrompt;
         this.mapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
         this.client = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(timeout))
@@ -91,8 +93,10 @@ public class Player2APIClient extends ALLMClient<FunctionDef> {
             StringBuilder calledFunctions = new StringBuilder();
             ChatRequest request = ChatRequest.builder()
                     .tools(functionExecutor.getToolFunctions())
-                    .messages(new ArrayList<>(List.of(ChatMessage.of((ChatRole) role, prompt))))
+                    .messages(new ArrayList<>(List.of(
+                            ChatMessage.of((ChatRole) role, prompt))))
                     .build();
+            if (systemPrompt != null) request.addMessage(ChatMessage.of(ChatRole.SYSTEM, systemPrompt));
 
             ResponseMessage result = sendChatRequest(request);
             List<ToolCall> toolCalls = result.tool_calls();

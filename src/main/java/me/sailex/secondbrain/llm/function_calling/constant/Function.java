@@ -29,7 +29,7 @@ public class Function {
         public static final String MOVE_TO_ENTITY = "Move to entity/player";
         public static final String MOVE_AWAY = "Move away from current position in a random direction";
         public static final String MINE_BLOCK = "Mine a block by name";
-        public static final String DROP_ITEM = "Drop item/s by name";
+        public static final String DROP_ITEM = "Drop item/s by name from inventory to the ground";
         public static final String ATTACK_ENTITY = "Attack an entity/player by name";
         public static final String GET_ENTITIES = "Get entities and players next to you";
         public static final String GET_BLOCKS = "Get all blocks next to you";
