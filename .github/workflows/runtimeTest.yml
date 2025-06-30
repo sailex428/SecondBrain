@@ -1,0 +1,34 @@
+name: runtimeTest
+
+on:
+  workflow_run:
+    workflows: [ 'main' ]
+    types: [ completed ]
+  workflow_dispatch:
+
+jobs:
+
+  prodRuntimeTest:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Grant gradlew permission
+        run: chmod +x ./gradlew
+
+      - name: Build and remap mod
+        run: ./gradlew build
+
+      - name: Run production server test
+        run: ./gradlew prodServer
+
+      - name: Run production client test
+        run: ./gradlew prodClient
