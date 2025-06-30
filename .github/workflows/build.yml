@@ -50,6 +50,12 @@ jobs:
         with:
           name: built-jars
 
+      - uses: gradle/actions/setup-gradle@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'oracle'
+          java-version: '21'
+
       - name: Run production server test
         run: ./gradlew prodServer
 
