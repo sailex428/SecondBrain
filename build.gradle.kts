@@ -2,6 +2,8 @@ import me.modmuss50.mpp.ReleaseType
 import net.fabricmc.loom.task.RemapJarTask
 import org.gradle.kotlin.dsl.named
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import net.fabricmc.loom.task.prod.ServerProductionRunTask
+import net.fabricmc.loom.task.prod.ClientProductionRunTask
 
 plugins {
     id("fabric-loom") version "1.10-SNAPSHOT"
@@ -74,6 +76,26 @@ dependencies {
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.11.3")
     testImplementation("org.mockito:mockito-core:5.14.2")
+}
+
+tasks.register<ServerProductionRunTask>("prodServer") {
+    mods.from(file("build/libs/" + jarName))
+
+    installerVersion.set("1.0.1")
+    loaderVersion.set("0.16.10")
+    minecraftVersion.set("1.21.1")
+
+    runDir.set(file("prod-server-run"))
+}
+
+tasks.register<ClientProductionRunTask>("prodClient") {
+    mods.from(file("build/libs/" + jarName))
+
+
+    runDir.set(file("prod-client-run"))
+
+    // Use XVFB on Linux CI for headless client runs (optional)
+    useXVFB.set(true)
 }
 
 loom {
