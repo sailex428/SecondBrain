@@ -56,6 +56,9 @@ jobs:
           distribution: 'oracle'
           java-version: '21'
 
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
       - name: Run production server test
         run: ./gradlew prodServer
 
