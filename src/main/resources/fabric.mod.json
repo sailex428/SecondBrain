@@ -21,10 +21,7 @@
     "me.sailex.secondbrain.mixins.json"
   ],
   "depends": {
-    "fabric-language-kotlin": ">=${fabricLangKotlin}",
     "fabricloader": ">=${fabricLoader}",
-    "fabric": "*",
-    "minecraft": "${mcDep}",
-    "owo-lib": ">=${owoLib}"
+    "minecraft": "${mcDep}"
   }
 }

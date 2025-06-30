@@ -43,10 +43,10 @@ dependencies {
     minecraft("com.mojang:minecraft:$mcVersion")
     mappings("net.fabricmc:yarn:$mcVersion+build.${property("deps.yarn_build")}:v2")
     modImplementation("net.fabricmc:fabric-loader:$fabricLoaderVersion")
-    modImplementation("net.fabricmc.fabric-api:fabric-api:${property("deps.fapi")}+$mcVersion")
-    modImplementation("net.fabricmc:fabric-language-kotlin:$fabricLangKotlin")
+    include(modImplementation("net.fabricmc.fabric-api:fabric-api:${property("deps.fapi")}+$mcVersion")!!)
+    include(modImplementation("net.fabricmc:fabric-language-kotlin:$fabricLangKotlin")!!)
 
-    modImplementation("io.wispforest:owo-lib:$owoLib")
+    include(modImplementation("io.wispforest:owo-lib:$owoLib")!!)
 
     compileOnly("org.projectlombok:lombok:1.18.34")
     annotationProcessor("org.projectlombok:lombok:1.18.34")
@@ -73,6 +73,7 @@ dependencies {
     include(modImplementation("org.ladysnake.cardinal-components-api:cardinal-components-entity:${property("cca_version")}")!!)
     include(modImplementation("org.ladysnake.cardinal-components-api:cardinal-components-world:${property("cca_version")}")!!)
     include(modImplementation("com.github.gnembon:fabric-carpet:${property("carpet_version")}")!!)
+    include(modImplementation("org.apache.httpcomponents:httpclient:4.5")!!)
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.11.3")
     testImplementation("org.mockito:mockito-core:5.14.2")
@@ -136,17 +137,13 @@ tasks.processResources {
     inputs.property("version", version)
     inputs.property("mcDep", mcVersion)
     inputs.property("fabricLoader", fabricLoaderVersion)
-    inputs.property("owoLib", owoLib)
-    inputs.property("fabricLangKotlin", fabricLangKotlin)
     filteringCharset = "UTF-8"
 
     filesMatching("fabric.mod.json") {
         expand(
             "version" to version,
             "mcDep" to mcVersion,
-            "fabricLoader" to fabricLoaderVersion,
-            "owoLib" to owoLib,
-            "fabricLangKotlin" to fabricLangKotlin,
+            "fabricLoader" to fabricLoaderVersion
         )
     }
 }
@@ -193,8 +190,6 @@ publishMods {
         accessToken.set(providers.environmentVariable("MODRINTH_TOKEN"))
         projectId.set(property("publish.modrinth").toString())
         minecraftVersions.add(mcVersion)
-        requires("fabric-api")
-        requires("owo-lib")
     }
 }
 
