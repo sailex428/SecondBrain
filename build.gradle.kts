@@ -2,9 +2,11 @@ import me.modmuss50.mpp.ReleaseType
 import net.fabricmc.loom.task.RemapJarTask
 import org.gradle.kotlin.dsl.named
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import net.fabricmc.loom.task.prod.ServerProductionRunTask
+import net.fabricmc.loom.task.prod.ClientProductionRunTask
 
 plugins {
-    id("fabric-loom") version "1.9-SNAPSHOT"
+    id("fabric-loom") version "1.10-SNAPSHOT"
     kotlin("jvm") version "2.1.0"
     id("maven-publish")
     id("me.modmuss50.mod-publish-plugin") version "0.8.1"
@@ -41,10 +43,10 @@ dependencies {
     minecraft("com.mojang:minecraft:$mcVersion")
     mappings("net.fabricmc:yarn:$mcVersion+build.${property("deps.yarn_build")}:v2")
     modImplementation("net.fabricmc:fabric-loader:$fabricLoaderVersion")
-    modImplementation("net.fabricmc.fabric-api:fabric-api:${property("deps.fapi")}+$mcVersion")
-    modImplementation("net.fabricmc:fabric-language-kotlin:$fabricLangKotlin")
+    include(modImplementation("net.fabricmc.fabric-api:fabric-api:${property("deps.fapi")}+$mcVersion")!!)
+    include(modImplementation("net.fabricmc:fabric-language-kotlin:$fabricLangKotlin")!!)
 
-    modImplementation("io.wispforest:owo-lib:$owoLib")
+    include(modImplementation("io.wispforest:owo-lib:$owoLib")!!)
 
     compileOnly("org.projectlombok:lombok:1.18.34")
     annotationProcessor("org.projectlombok:lombok:1.18.34")
@@ -71,9 +73,30 @@ dependencies {
     include(modImplementation("org.ladysnake.cardinal-components-api:cardinal-components-entity:${property("cca_version")}")!!)
     include(modImplementation("org.ladysnake.cardinal-components-api:cardinal-components-world:${property("cca_version")}")!!)
     include(modImplementation("com.github.gnembon:fabric-carpet:${property("carpet_version")}")!!)
+    include(modImplementation("org.apache.httpcomponents:httpcore:4.4")!!)
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.11.3")
     testImplementation("org.mockito:mockito-core:5.14.2")
+}
+
+tasks.register<ServerProductionRunTask>("prodServer") {
+    mods.from(file("build/libs/" + jarName))
+
+    installerVersion.set("1.0.1")
+    loaderVersion.set("0.16.10")
+    minecraftVersion.set("1.21.1")
+
+    runDir.set(file("prod-server-run"))
+}
+
+tasks.register<ClientProductionRunTask>("prodClient") {
+    mods.from(file("build/libs/" + jarName))
+
+
+    runDir.set(file("prod-client-run"))
+
+    // Use XVFB on Linux CI for headless client runs (optional)
+    useXVFB.set(true)
 }
 
 loom {
@@ -114,17 +137,13 @@ tasks.processResources {
     inputs.property("version", version)
     inputs.property("mcDep", mcVersion)
     inputs.property("fabricLoader", fabricLoaderVersion)
-    inputs.property("owoLib", owoLib)
-    inputs.property("fabricLangKotlin", fabricLangKotlin)
     filteringCharset = "UTF-8"
 
     filesMatching("fabric.mod.json") {
         expand(
             "version" to version,
             "mcDep" to mcVersion,
-            "fabricLoader" to fabricLoaderVersion,
-            "owoLib" to owoLib,
-            "fabricLangKotlin" to fabricLangKotlin,
+            "fabricLoader" to fabricLoaderVersion
         )
     }
 }
@@ -171,8 +190,6 @@ publishMods {
         accessToken.set(providers.environmentVariable("MODRINTH_TOKEN"))
         projectId.set(property("publish.modrinth").toString())
         minecraftVersions.add(mcVersion)
-        requires("fabric-api")
-        requires("owo-lib")
     }
 }
 
