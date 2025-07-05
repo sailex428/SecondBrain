@@ -73,7 +73,7 @@ dependencies {
     include(modImplementation("org.ladysnake.cardinal-components-api:cardinal-components-entity:${property("cca_version")}")!!)
     include(modImplementation("org.ladysnake.cardinal-components-api:cardinal-components-world:${property("cca_version")}")!!)
     include(modImplementation("com.github.gnembon:fabric-carpet:${property("carpet_version")}")!!)
-    include(modImplementation("org.apache.httpcomponents:httpclient:4.5")!!)
+    include(modImplementation("org.apache.httpcomponents:httpcore:4.4")!!)
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.11.3")
     testImplementation("org.mockito:mockito-core:5.14.2")
