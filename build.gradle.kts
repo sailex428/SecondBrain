@@ -18,7 +18,6 @@ val mcVersion = property("mc.version").toString()
 val fabricLoaderVersion = property("deps.fabric_loader").toString()
 val stage = rootProject.extra["deps.stage"].toString()
 val jarName = ("secondbrain-$mcVersion-v$version-$stage")
-val automatone = rootProject.extra["deps.automatone"].toString()
 val owoLib = properties["owo_version"].toString()
 val fabricLangKotlin = properties["fabric_lang_kotlin"].toString()
 
@@ -30,8 +29,6 @@ repositories {
     flatDir { dirs("../../libs") }
     maven("https://maven.shedaniel.me/")
     maven("https://maven.terraformersmc.com/releases/")
-    maven("https://maven.ladysnake.org/releases")
-    maven("https://jitpack.io")
     maven("https://maven.wispforest.io")
 }
 
@@ -57,9 +54,6 @@ dependencies {
     include(modImplementation("io.github.ollama4j:ollama4j:1.0.97")!!)
 
     //needed deps for openai communication
-    include(modRuntimeOnly("com.fasterxml.jackson.core:jackson-core:2.18.1")!!)
-    include(modRuntimeOnly("com.fasterxml.jackson.core:jackson-annotations:2.18.1")!!)
-    include(modRuntimeOnly("com.fasterxml.jackson.core:jackson-databind:2.18.1")!!)
     include(modRuntimeOnly("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.18.2")!!)
     include(modRuntimeOnly("com.fasterxml:classmate:1.7.0")!!)
     include(modRuntimeOnly("com.github.victools:jsonschema-generator:4.37.0")!!)
@@ -68,15 +62,9 @@ dependencies {
     include(modRuntimeOnly("io.github.sashirestela:cleverclient:1.4.4")!!)
     include(modImplementation("io.github.sashirestela:simple-openai:3.9.0")!!)
 
-    include(modImplementation("io.github.ladysnake:automatone:$automatone")!!)
-    include(modImplementation("org.ladysnake.cardinal-components-api:cardinal-components-base:${property("cca_version")}")!!)
-    include(modImplementation("org.ladysnake.cardinal-components-api:cardinal-components-entity:${property("cca_version")}")!!)
-    include(modImplementation("org.ladysnake.cardinal-components-api:cardinal-components-world:${property("cca_version")}")!!)
-    include(modImplementation("com.github.gnembon:fabric-carpet:${property("carpet_version")}")!!)
     include(modImplementation("org.apache.httpcomponents:httpcore:4.4")!!)
 
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.11.3")
-    testImplementation("org.mockito:mockito-core:5.14.2")
+    include(modImplementation("me.sailex:secondbrainengine:${property("deps.engine")}")!!)
 }
 
 tasks.register<ServerProductionRunTask>("prodServer") {
