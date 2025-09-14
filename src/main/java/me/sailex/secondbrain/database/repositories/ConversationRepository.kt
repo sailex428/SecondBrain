@@ -6,8 +6,13 @@ import me.sailex.secondbrain.model.database.Resource
 import me.sailex.secondbrain.util.VectorUtil
 
 class ConversationRepository(
-    sqliteClient: SqliteClient,
-) : ARepository(sqliteClient) {
+    val sqliteClient: SqliteClient,
+) : IRepository {
+
+    override fun init() {
+        createTable()
+    }
+
     override fun createTable() {
         val sql = """
             CREATE TABLE IF NOT EXISTS conversations (
