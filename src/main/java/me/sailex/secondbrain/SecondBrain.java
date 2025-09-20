@@ -34,7 +34,6 @@ public class SecondBrain implements ModInitializer {
         repositoryFactory.initRepositories();
 
         ResourceProvider resourceProvider = new ResourceProvider(repositoryFactory.getConversationRepository());
-        resourceProvider.loadResources(configProvider.getUuidsOfNpcs());
 
         NPCFactory npcFactory = new NPCFactory(configProvider, resourceProvider);
 
@@ -51,7 +50,10 @@ public class SecondBrain implements ModInitializer {
         CommandManager commandManager = new CommandManager(npcFactory, configProvider, networkManager, synchronizer);
         commandManager.registerAll();
 
-        ServerLifecycleEvents.SERVER_STARTED.register(server -> LogUtil.initialize(server, configProvider));
+        ServerLifecycleEvents.SERVER_STARTED.register(server -> {
+            LogUtil.initialize(server, configProvider);
+            resourceProvider.loadResources(configProvider.getUuidsOfNpcs());
+        });
 
         syncOnPlayerLoad(synchronizer);
         onStop(npcFactory, configProvider, sqlite, synchronizer, resourceProvider);
