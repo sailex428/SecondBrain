@@ -24,7 +24,7 @@ public class Player2NpcSynchronizer {
     private final NPCFactory npcFactory;
     private final ConfigProvider configProvider;
     private final Player2APIClient player2APIClient;
-    private ScheduledExecutorService executor;
+    private final ScheduledExecutorService executor;
     @Setter
     private MinecraftServer server;
 
@@ -32,9 +32,6 @@ public class Player2NpcSynchronizer {
         this.npcFactory = npcFactory;
         this.configProvider = configProvider;
         this.player2APIClient = new Player2APIClient();
-    }
-
-    public void initialize() {
         this.executor = Executors.newSingleThreadScheduledExecutor();
         scheduleHeartBeats();
     }
@@ -46,7 +43,7 @@ public class Player2NpcSynchronizer {
      *
      * @param spawnPos BlockPos where the NPCs will be spawned
      */
-    public void syncCharacters(BlockPos spawnPos) {
+    public void syncCharacters(BlockPos spawnPos, MinecraftServer server) {
         try {
             this.player2APIClient.getHealthStatus();
             List<Characters.Character> characters = player2APIClient.getSelectedCharacters().characters();
@@ -80,8 +77,8 @@ public class Player2NpcSynchronizer {
         }
     }
 
-    public void syncCharacters() {
-        this.syncCharacters(null);
+    public void syncCharacters(MinecraftServer server) {
+        this.syncCharacters(null, server);
     }
 
     /**
