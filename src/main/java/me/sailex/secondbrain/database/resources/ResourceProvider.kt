@@ -1,47 +1,38 @@
 package me.sailex.secondbrain.database.resources
 
 import me.sailex.secondbrain.database.repositories.ConversationRepository
-import me.sailex.secondbrain.llm.LLMClient
+import me.sailex.secondbrain.history.Message
 import me.sailex.secondbrain.model.database.Conversation
 import me.sailex.secondbrain.util.LogUtil
-import me.sailex.secondbrain.util.ResourceRecommender
+import java.util.UUID
 
-import java.sql.Timestamp
 import java.util.concurrent.CompletableFuture
 
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
-class ResourcesProvider(
-    private val conversationRepository: ConversationRepository,
-    val llmClient: LLMClient
+class ResourceProvider(
+    private val conversationRepository: ConversationRepository
 ) {
     private var executorService: ExecutorService = initExecutorPool()
-
-    private val conversations = arrayListOf<Conversation>()
+    private val loadedConversations = hashMapOf<UUID, List<Conversation>>()
 
     /**
      * Loads conversations recipes from db/mc into memory
      */
-    fun loadResources(npcName: String) {
+    fun loadResources(uuids: List<UUID>) {
         runAsync {
             LogUtil.info("Loading conversations into memory...")
-            this.conversations.addAll(conversationRepository.selectByName(npcName))
+            uuids.forEach {
+                this.loadedConversations[it] = conversationRepository.selectByUuid(it)
+            }
             executorService.shutdown()
         }
     }
 
-    fun getRelevantConversations(message: String): List<Conversation> {
-        return ResourceRecommender.getRelevantResources(llmClient, message, conversations, 3)
-            .filterIsInstance<Conversation>()
-    }
-
-    fun addConversation(npcName: String, message: String) {
-        this.conversations.add(Conversation(
-            npcName, message,
-            Timestamp(System.currentTimeMillis()),
-            llmClient.generateEmbedding(listOf(message))))
+    fun addConversations(uuid: UUID, messages: List<Message>) {
+        this.loadedConversations[uuid] = messages.map { Conversation(uuid, it.role, it.message) }
     }
 
     /**
@@ -53,7 +44,8 @@ class ResourcesProvider(
         shutdownServiceNow()
         executorService = initExecutorPool()
         runAsync {
-            conversations.forEach { conversation -> conversationRepository.insert(conversation) }
+            loadedConversations.forEach { conversations ->
+                conversations.value.forEach { conversationRepository.insert(it) } }
             LogUtil.info("Saved conversations to db")
         }.get()
         executorService.shutdownNow()

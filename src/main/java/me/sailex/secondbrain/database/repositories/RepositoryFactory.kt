@@ -16,10 +16,10 @@ class RepositoryFactory(
         CompletableFuture.runAsync({
             sqliteClient.initDatabase(SecondBrain.MOD_ID)
             conversationRepository.init()
-        }, executor).exceptionally( {
+        }, executor).exceptionally {
             LogUtil.error("Failed to init sql database", it)
             null
-        } )
+        }
         executor.shutdown()
     }
 }

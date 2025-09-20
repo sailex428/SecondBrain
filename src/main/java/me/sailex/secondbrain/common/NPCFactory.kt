@@ -10,8 +10,7 @@ import me.sailex.secondbrain.config.ConfigProvider
 import me.sailex.secondbrain.config.NPCConfig
 import me.sailex.secondbrain.constant.Instructions
 import me.sailex.secondbrain.context.ContextProvider
-import me.sailex.secondbrain.database.repositories.RepositoryFactory
-import me.sailex.secondbrain.database.resources.ResourcesProvider
+import me.sailex.secondbrain.database.resources.ResourceProvider
 import me.sailex.secondbrain.event.NPCEventHandler
 import me.sailex.secondbrain.exception.NPCCreationException
 import me.sailex.secondbrain.history.ConversationHistory
@@ -34,7 +33,7 @@ import java.util.concurrent.Executors
 
 class NPCFactory(
     private val configProvider: ConfigProvider,
-    repositoryFactory: RepositoryFactory,
+    private val resourceProvider: ResourceProvider
 ) {
     companion object {
         private const val MAX_NUMBER_OF_NPC = 10
@@ -42,7 +41,6 @@ class NPCFactory(
 
     private var executorService: ExecutorService = Executors.newSingleThreadExecutor()
     val uuidToNpc = ConcurrentHashMap<UUID, NPC>()
-    val resourcesProvider: ResourcesProvider = ResourcesProvider(repositoryFactory.conversationRepository)
 
     fun createNpc(config: NPCConfig, server: MinecraftServer, spawnPos: BlockPos?) {
         CompletableFuture.runAsync({
@@ -64,7 +62,10 @@ class NPCFactory(
 
                 LogUtil.infoInChat(("Added NPC with name: $name"))
             }
-            NPCEvents.ON_DEATH.register {  }
+
+            NPCEvents.ON_DEATH.register {
+                removeNpc(it.uuid, it.server.playerManager)
+            }
         }, executorService).exceptionally {
             LogUtil.errorInChat(it.message)
             LogUtil.error(it)
@@ -79,6 +80,7 @@ class NPCFactory(
             npcToRemove.llmClient.stopService()
             npcToRemove.eventHandler.stopService()
             npcToRemove.contextProvider.chunkManager.stopService()
+            resourceProvider.addConversations(uuid,npcToRemove.history.latestConversations)
             uuidToNpc.remove(uuid)
 
             val config = configProvider.getNpcConfig(uuid).get()
@@ -114,7 +116,7 @@ class NPCFactory(
                 val llmClient = OllamaClient(functionManager, config.ollamaUrl,SecondBrain.MOD_ID + "-" + config.npcName,
                     baseConfig.llmTimeout, baseConfig.isVerbose)
 
-                val history = ConversationHistory(resourcesProvider, llmClient, defaultPrompt)
+                val history = ConversationHistory(llmClient, defaultPrompt)
 
                 val eventHandler = NPCEventHandler(llmClient, history, functionManager,
                     contextProvider, controller, config)
@@ -126,7 +128,7 @@ class NPCFactory(
                 val functionManager = Player2FunctionManager(controller)
                 val llmClient = Player2APIClient(functionManager, config.voiceId, config.npcName, baseConfig.llmTimeout)
 
-                val history = ConversationHistory(resourcesProvider, llmClient, defaultPrompt)
+                val history = ConversationHistory(llmClient, defaultPrompt)
 
                 val eventHandler = NPCEventHandler(llmClient, history, functionManager,
                     contextProvider, controller, config)

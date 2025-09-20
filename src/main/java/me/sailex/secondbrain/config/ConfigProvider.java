@@ -117,6 +117,11 @@ public class ConfigProvider {
                 .findFirst();
     }
 
+    public List<UUID> getUuidsOfNpcs() {
+        return npcConfigs.stream()
+                .map(NPCConfig::getUuid).toList();
+    }
+
     public List<NPCConfig> getNpcConfigs() {
         return npcConfigs;
     }
