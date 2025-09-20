@@ -1,26 +1,48 @@
 package me.sailex.secondbrain.history
 
-import me.sailex.secondbrain.database.resources.ResourcesProvider
-import me.sailex.secondbrain.llm.function_calling.model.ChatMessage
-import me.sailex.secondbrain.llm.roles.ChatRole
-import java.util.concurrent.LinkedBlockingDeque
+import com.fasterxml.jackson.databind.ObjectMapper
+import me.sailex.secondbrain.constant.Instructions
+import me.sailex.secondbrain.llm.LLMClient
 
 class ConversationHistory(
-    private val resourcesProvider: ResourcesProvider?,
-    private val npcName: String
+    private val llmClient: LLMClient,
+    initMessage: String
 ) {
-    private val latestConversations = LinkedBlockingDeque<ChatMessage>(4)
+    companion object {
+        private const val MAX_HISTORY_LENGTH = 30
+        private val objectMapper = ObjectMapper()
+    }
+    val latestConversations = mutableListOf<Message>()
 
-    fun add(role: ChatRole, content: String) {
-        if (content.isEmpty()) return
-        if (latestConversations.remainingCapacity() == 0) {
-            val oldestConversation = latestConversations.takeFirst()
-            resourcesProvider?.addConversation(npcName, oldestConversation.content())
-        }
-        latestConversations.add(ChatMessage.of(role, content))
+    init {
+        setInitMessage(initMessage)
     }
 
-    fun getConversations(): List<ChatMessage> {
-        return latestConversations.toList()
+    @Synchronized
+    fun add(message: Message) {
+        latestConversations.add(message)
+
+        if (latestConversations.size >= MAX_HISTORY_LENGTH) {
+            updateConversations()
+        }
+    }
+
+    private fun updateConversations() {
+        val removeCount = MAX_HISTORY_LENGTH / 3
+        val toSummarize = latestConversations.subList(1, removeCount).toList()
+        val message = summarize(toSummarize)
+        latestConversations.removeAll(toSummarize)
+        latestConversations.add(1, message)
+    }
+
+    private fun summarize(conversations: List<Message>): Message {
+        val summarizeMessage = Message(
+            Instructions.SUMMARY + objectMapper.writeValueAsString(conversations),
+            "user")
+        return llmClient.chat(summarizeMessage)
+    }
+
+    private fun setInitMessage(initMessage: String) {
+        latestConversations.add(0, Message(initMessage, "system"))
     }
 }
