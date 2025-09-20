@@ -12,7 +12,6 @@ import me.sailex.secondbrain.util.LogUtil
 import me.sailex.secondbrain.util.PromptFormatter
 import java.util.concurrent.ArrayBlockingQueue
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.ExecutorService
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 
@@ -24,9 +23,9 @@ class NPCEventHandler(
     private val config: NPCConfig,
 ): EventHandler {
 
-    private val executorService: ExecutorService = ThreadPoolExecutor(
+    private val executorService: ThreadPoolExecutor = ThreadPoolExecutor(
         1, 1, 0L, TimeUnit.MILLISECONDS,
-        ArrayBlockingQueue<Runnable>(10),
+        ArrayBlockingQueue(10),
         ThreadPoolExecutor.DiscardPolicy()
     )
 
@@ -70,6 +69,10 @@ class NPCEventHandler(
 
     override fun stopService() {
         executorService.shutdown()
+    }
+
+    override fun queueIsEmpty(): Boolean {
+        return executorService.queue.isEmpty()
     }
 
 }

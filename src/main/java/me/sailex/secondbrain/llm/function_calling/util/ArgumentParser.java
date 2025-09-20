@@ -1,10 +1,19 @@
 package me.sailex.secondbrain.llm.function_calling.util;
 
+import java.util.List;
 import java.util.Map;
 
 public class ArgumentParser {
 
     private ArgumentParser() {}
+
+    public static <T> List<T> getList(Map<String, Object> arguments, String key) {
+        Object value = arguments.get(key);
+        if (value instanceof List) {
+            return (List<T>) value;
+        }
+        throw new IllegalArgumentException("Expected a List for key " + key + " but got " + (value != null ? value.getClass().getSimpleName() : "null"));
+    }
 
     public static int getInt(Map<String, Object> arguments, String key) {
         Object value = arguments.get(key);

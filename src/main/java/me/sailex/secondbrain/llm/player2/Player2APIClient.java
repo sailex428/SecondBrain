@@ -36,7 +36,7 @@ import static me.sailex.secondbrain.SecondBrain.MOD_ID;
 public class Player2APIClient extends ALLMClient<FunctionDef> {
 
     private static final String BASE_URL = "http://127.0.0.1:4315";
-    private static final int MAX_TOOL_CALL_RETRIES = 4;
+    private static final int MAX_TOOL_CALL_RETRIES = 1;
 
     private final String voiceId;
     private final String npcName; //only for debugging
@@ -90,16 +90,7 @@ public class Player2APIClient extends ALLMClient<FunctionDef> {
                     .build();
 
             ResponseMessage result = sendChatRequest(request);
-            List<ToolCall> toolCalls = result.tool_calls();
-
-            for (int toolCallTries = 0; toolCalls != null && !toolCalls.isEmpty() && toolCallTries < MAX_TOOL_CALL_RETRIES; ++toolCallTries) {
-                for (ToolCall toolCall : toolCalls) {
-                    executeFunction(toolCall, request, calledFunctions);
-
-                    result = sendChatRequest(request);
-                    toolCalls = result.tool_calls();
-                }
-            }
+            executeFunction(result.tool_calls().getFirst());
 
             return MessageConverter.toMessage(result);
         } catch (Exception e) {
@@ -115,7 +106,7 @@ public class Player2APIClient extends ALLMClient<FunctionDef> {
         ).firstMessage();
     }
 
-    private void executeFunction(ToolCall toolCall, ChatRequest request, StringBuilder calledFunctions) throws LLMServiceException {
+    private void executeFunction(ToolCall toolCall) {
         FunctionCall function = toolCall.function();
         String functionName = function.getName();
         String arguments = function.getArguments();
@@ -123,10 +114,7 @@ public class Player2APIClient extends ALLMClient<FunctionDef> {
         String result = functionExecutor.execute(function);
 
         String toolResult = functionName + "(" + arguments + ") : " + result;
-        calledFunctions.append(toolResult).append("; ");
         LogUtil.info(toolResult);
-
-        request.addMessage(ChatMessage.of(ChatRole.DEVELOPER, "[TOOL_RESULTS]" + toolResult + "[/TOOL_RESULTS]"));
     }
 
     @Override

@@ -7,4 +7,5 @@ interface EventHandler {
     fun onEvent(role: ChatRole, prompt: String)
     fun onEvent(prompt: String)
     fun stopService()
+    fun queueIsEmpty(): Boolean
 }

@@ -17,15 +17,15 @@ public class Player2FunctionManager extends OpenAiFunctionManager {
 
     protected List<FunctionDef> createFunctions() {
         return List.of(
-        defineFunction(Function.Name.MOVE_TO_COORDINATES, Function.Description.MOVE_TO_COORDINATES, MoveToCoordinates.class),
-        defineFunction(Function.Name.MOVE_TO_ENTITY, Function.Description.MOVE_TO_ENTITY, MoveToEntity.class),
-        defineFunction(Function.Name.MOVE_AWAY, Function.Description.MOVE_AWAY, MoveAway.class),
-        defineFunction(Function.Name.MINE_BLOCK, Function.Description.MINE_BLOCK, MineBlock.class),
-        defineFunction(Function.Name.DROP_ITEM, Function.Description.DROP_ITEM, DropItem.class),
-        defineFunction(Function.Name.ATTACK_ENTITY, Function.Description.ATTACK_ENTITY, AttackEntity.class),
-        defineFunction(Function.Name.GET_ENTITIES, Function.Description.GET_ENTITIES, GetEntities.class),
-        defineFunction(Function.Name.GET_BLOCKS, Function.Description.GET_BLOCKS, GetBlocks.class),
-        defineFunction(Function.Name.STOP, Function.Description.STOP, Stop.class)
+//        defineFunction(Function.Name.GET_ITEMS, Function.Description.GET_ITEMS, MoveToCoordinates.class),
+//        defineFunction(Function.Name.MOVE_TO_ENTITY, Function.Description.MOVE_TO_ENTITY, MoveToEntity.class),
+//        defineFunction(Function.Name.MOVE_AWAY, Function.Description.MOVE_AWAY, MoveAway.class),
+//        defineFunction(Function.Name.MINE_BLOCK, Function.Description.MINE_BLOCK, MineBlock.class),
+//        defineFunction(Function.Name.DROP_ITEM, Function.Description.DROP_ITEM, DropItem.class),
+//        defineFunction(Function.Name.ATTACK_ENTITY, Function.Description.ATTACK_ENTITY, AttackEntity.class),
+//        defineFunction(Function.Name.GET_ENTITIES, Function.Description.GET_ENTITIES, GetEntities.class),
+//        defineFunction(Function.Name.GET_BLOCKS, Function.Description.GET_BLOCKS, GetBlocks.class),
+//        defineFunction(Function.Name.STOP, Function.Description.STOP, Stop.class)
         );
     }
 

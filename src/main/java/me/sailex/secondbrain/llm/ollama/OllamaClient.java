@@ -41,7 +41,7 @@ public class OllamaClient extends ALLMClient<Tools.ToolSpecification> {
 		this.model = customModelName;
 		checkServiceIsReachable();
 		ollamaAPI.setVerbose(verbose);
-		ollamaAPI.setMaxChatToolCallRetries(4);
+		ollamaAPI.setMaxChatToolCallRetries(1);
 		ollamaAPI.setRequestTimeoutSeconds(timeout);
 		//initModels(defaultPrompt);
 	}

@@ -8,8 +8,8 @@ public class Property {
         private Name() {}
 
         public static final String MESSAGE = "message";
-        public static final String X = "x";
-        public static final String Y = "y";
+        public static final String ITEM_NAMES = "item_names";
+        public static final String ITEM_COUNTS = "item_counts";
         public static final String Z = "z";
         public static final String IS_PLAYER = "is_player";
         public static final String ENTITY_NAME = "entity_name";
@@ -25,9 +25,10 @@ public class Property {
         private Description() {}
 
         public static final String MESSAGE = "represents the message that will be printed in the game chat.";
+        public static final String ITEM_NAMES = "array of item names in form or a string like oak_log or iron_boots";
+        public static final String ITEM_COUNTS = "array of counts in form on an integer of the item names that will be collected";
         public static final String SLOT = "slot number of the item in the inventory";
         public static final String ENTITY_NAME = "name of the Entity/Player that will to be attacked";
-        public static final String ITEM_NAME = "item for which a recipe is wanted";
         public static final String TOPIC = "topic for which old conversations should be searched for";
         public static final String DROP_ALL = "whether to drop all items of the type or not";
         public static final String PLAYER_NAME = "name of a player/entity in the right casing";

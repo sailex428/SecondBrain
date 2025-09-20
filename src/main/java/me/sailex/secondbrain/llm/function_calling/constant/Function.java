@@ -8,7 +8,7 @@ public class Function {
         private Name() {}
 
         public static final String CHAT = "chat";
-        public static final String MOVE_TO_COORDINATES = "moveToCoordinates";
+        public static final String GET_ITEMS = "getItems";
         public static final String MOVE_TO_ENTITY = "moveToEntity";
         public static final String MOVE_AWAY = "moveAway";
         public static final String MINE_BLOCK  = "mineBlock";
@@ -25,7 +25,7 @@ public class Function {
         private Description() {}
 
         public static final String CHAT = "Print answers into game chat so the players can read it.";
-        public static final String MOVE_TO_COORDINATES = "Move to coordinates";
+        public static final String GET_ITEMS = "Gets items, e.g. diamond_chestplate, stone or dirt";
         public static final String MOVE_TO_ENTITY = "Move to entity/player";
         public static final String MOVE_AWAY = "Move away from current position in a random direction";
         public static final String MINE_BLOCK = "Mine a block by name";
