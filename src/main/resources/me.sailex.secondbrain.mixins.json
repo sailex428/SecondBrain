@@ -6,10 +6,6 @@
     "defaultRequire": 1
   },
   "mixins": [
-    "EntityAccessor",
-    "EntityPlayerMPFakeMixin",
-    "LivingEntityAccessor",
-    "PlayerDamageMixin",
-    "PlayerEntityAccessor"
+    "PacketByteBufMixin"
   ]
 }
