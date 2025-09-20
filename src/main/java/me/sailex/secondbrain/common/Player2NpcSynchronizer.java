@@ -25,8 +25,6 @@ public class Player2NpcSynchronizer {
     private final ConfigProvider configProvider;
     private final Player2APIClient player2APIClient;
     private final ScheduledExecutorService executor;
-    @Setter
-    private MinecraftServer server;
 
     public Player2NpcSynchronizer(NPCFactory npcFactory, ConfigProvider configProvider) {
         this.npcFactory = npcFactory;

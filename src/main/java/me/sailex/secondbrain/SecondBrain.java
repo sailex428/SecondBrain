@@ -8,6 +8,7 @@ import me.sailex.secondbrain.common.Player2NpcSynchronizer;
 import me.sailex.secondbrain.config.ConfigProvider;
 import me.sailex.secondbrain.database.SqliteClient;
 import me.sailex.secondbrain.database.repositories.RepositoryFactory;
+import me.sailex.secondbrain.database.resources.ResourceProvider;
 import me.sailex.secondbrain.listener.EventListenerRegisterer;
 import me.sailex.secondbrain.networking.NetworkHandler;
 import me.sailex.secondbrain.util.LogUtil;
@@ -32,7 +33,10 @@ public class SecondBrain implements ModInitializer {
         RepositoryFactory repositoryFactory = new RepositoryFactory(sqlite);
         repositoryFactory.initRepositories();
 
-        NPCFactory npcFactory = new NPCFactory(configProvider, repositoryFactory);
+        ResourceProvider resourceProvider = new ResourceProvider(repositoryFactory.getConversationRepository());
+        resourceProvider.loadResources(configProvider.getUuidsOfNpcs());
+
+        NPCFactory npcFactory = new NPCFactory(configProvider, resourceProvider);
 
         PlayerAuthorizer authorizer = new PlayerAuthorizer();
 
@@ -50,7 +54,7 @@ public class SecondBrain implements ModInitializer {
         ServerLifecycleEvents.SERVER_STARTED.register(server -> LogUtil.initialize(server, configProvider));
 
         syncOnPlayerLoad(synchronizer);
-        onStop(npcFactory, configProvider, sqlite, synchronizer);
+        onStop(npcFactory, configProvider, sqlite, synchronizer, resourceProvider);
     }
 
     private void syncOnPlayerLoad(Player2NpcSynchronizer synchronizer) {
@@ -63,13 +67,14 @@ public class SecondBrain implements ModInitializer {
     }
 
 	private void onStop(
-		NPCFactory npcFactory,
-		ConfigProvider configProvider,
-		SqliteClient sqlite,
-		Player2NpcSynchronizer synchronizer
+        NPCFactory npcFactory,
+        ConfigProvider configProvider,
+        SqliteClient sqlite,
+        Player2NpcSynchronizer synchronizer,
+        ResourceProvider resourceProvider
 	) {
         ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
-            npcFactory.getResourcesProvider().saveResources();
+            resourceProvider.saveResources();
             synchronizer.shutdown();
             npcFactory.shutdownNPCs(server);
             configProvider.saveAll();

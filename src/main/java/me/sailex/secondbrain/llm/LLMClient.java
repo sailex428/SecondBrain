@@ -1,21 +1,15 @@
 package me.sailex.secondbrain.llm;
 
-import java.util.List;
+import me.sailex.secondbrain.history.Message;
 
 public interface LLMClient {
-
-	/**
-	 * Generate an embedding for a given prompt
-	 *
-	 * @param prompt the text prompt that needs to get vectorized
-	 * @return the embedding as double array
-	 */
-	double[] generateEmbedding(List<String> prompt);
 
 	/**
 	 * Check if the service is reachable
 	 */
 	void checkServiceIsReachable();
+
+    Message chat(Message messages);
 
 	/**
 	 * Stops the Executor service

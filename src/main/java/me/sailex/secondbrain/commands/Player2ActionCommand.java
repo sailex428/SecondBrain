@@ -6,6 +6,7 @@ import com.mojang.brigadier.context.CommandContext;
 import lombok.AllArgsConstructor;
 import me.sailex.secondbrain.common.Player2NpcSynchronizer;
 import me.sailex.secondbrain.util.LogUtil;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 
@@ -39,10 +40,11 @@ public class Player2ActionCommand {
 
         if (action == PLAYER2_ACTION.SYNC) {
             ServerPlayerEntity player = context.getSource().getPlayer();
+            MinecraftServer server = context.getSource().getServer();
             if (player != null) {
-                synchronizer.syncCharacters(player.getBlockPos());
+                synchronizer.syncCharacters(player.getBlockPos(), server);
             } else {
-                synchronizer.syncCharacters();
+                synchronizer.syncCharacters(server);
             }
             return 1;
         }

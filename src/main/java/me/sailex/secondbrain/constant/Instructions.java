@@ -63,6 +63,8 @@ public class Instructions {
 		%s
 		""";
 
+    public static final String SUMMARY = "Write a summary: \n";
+
 	public static String getLlmSystemPrompt(String npcName, String llmDefaultPrompt) {
 		return Instructions.LLM_SYSTEM_PROMPT.formatted(npcName, llmDefaultPrompt);
 	}

@@ -4,32 +4,22 @@ import io.github.ollama4j.tools.ToolFunction;
 import io.github.ollama4j.tools.Tools;
 import static io.github.ollama4j.tools.Tools.PromptFuncDefinition;
 
-import me.sailex.secondbrain.common.NPCController;
-import me.sailex.secondbrain.context.ContextProvider;
-import me.sailex.secondbrain.database.resources.ResourcesProvider;
-import me.sailex.secondbrain.llm.LLMClient;
+import me.sailex.altoclef.AltoClefController;
 import me.sailex.secondbrain.llm.function_calling.AFunctionManager;
 import me.sailex.secondbrain.llm.function_calling.util.ArgumentParser;
 import me.sailex.secondbrain.llm.function_calling.constant.Function;
 import me.sailex.secondbrain.llm.function_calling.constant.Property;
-import me.sailex.secondbrain.model.function_calling.OllamaFunction;
 import me.sailex.secondbrain.util.PromptFormatter;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public class OllamaFunctionManager extends AFunctionManager<Tools.ToolSpecification> {
 
-    public OllamaFunctionManager(
-        ResourcesProvider resourcesProvider,
-        NPCController controller,
-        ContextProvider contextProvider,
-        LLMClient llmClient
-    ) {
-        super(resourcesProvider, controller, contextProvider, llmClient);
+    public OllamaFunctionManager(AltoClefController controller) {
+        super(controller);
     }
 
     protected List<Tools.ToolSpecification> createFunctions() {
@@ -65,7 +55,7 @@ public class OllamaFunctionManager extends AFunctionManager<Tools.ToolSpecificat
                     .withProperty(Property.Name.TOPIC, Tools.PromptFuncDefinition.Property.builder().type("string").description(Property.Description.TOPIC).required(true).build())
                     .build(), List.of(Property.Name.TOPIC)),
             defineVoidFunction(Function.Name.STOP, Function.Description.STOP, NPCFunction::stop)
-        );
+            );
     }
 
     private Tools.ToolSpecification defineVoidFunction(
@@ -102,26 +92,6 @@ public class OllamaFunctionManager extends AFunctionManager<Tools.ToolSpecificat
                         .function(funcDefinition)
                         .build()
                 ).build();
-    }
-
-    @Override
-    public void vectorizeFunctions(List<Tools.ToolSpecification> rawFunctions) {
-        rawFunctions.forEach(function -> {
-            OllamaFunction vectorizedFunction = new OllamaFunction(
-                    function.getFunctionName(),
-                    function,
-                    llmClient.generateEmbedding(List.of(function.getFunctionDescription()))
-            );
-            this.vectorizedFunctions.add(vectorizedFunction);
-        });
-    }
-
-    @Override
-    public List<Tools.ToolSpecification> getRelevantFunctions(String prompt) {
-        return getRelevantResources(prompt).stream()
-                .map(OllamaFunction.class::cast)
-                .map(OllamaFunction::getFunction)
-                .collect(Collectors.toList());
     }
 
     private static class NPCFunction {

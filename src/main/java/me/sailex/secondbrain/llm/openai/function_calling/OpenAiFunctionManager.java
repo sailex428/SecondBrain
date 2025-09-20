@@ -4,45 +4,35 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import io.github.sashirestela.openai.common.function.FunctionDef;
 import io.github.sashirestela.openai.common.function.Functional;
-import me.sailex.secondbrain.context.ContextProvider;
-import me.sailex.secondbrain.database.resources.ResourcesProvider;
-import me.sailex.secondbrain.llm.LLMClient;
+import me.sailex.altoclef.AltoClefController;
 import me.sailex.secondbrain.llm.function_calling.AFunctionManager;
 import me.sailex.secondbrain.llm.function_calling.constant.Function;
 import me.sailex.secondbrain.llm.function_calling.constant.Property;
-import me.sailex.secondbrain.common.NPCController;
-import me.sailex.secondbrain.model.function_calling.OpenAiFunction;
 import me.sailex.secondbrain.util.PromptFormatter;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class OpenAiFunctionManager extends AFunctionManager<FunctionDef> {
 
-    public OpenAiFunctionManager(
-        ResourcesProvider resourcesProvider,
-        NPCController controller,
-        ContextProvider contextProvider,
-        LLMClient llmClient
-    ) {
-        super(resourcesProvider, controller, contextProvider, llmClient);
+    public OpenAiFunctionManager(AltoClefController controller) {
+        super(controller);
     }
 
     protected List<FunctionDef> createFunctions() {
         return List.of(
-                defineFunction(Function.Name.CHAT, Function.Description.CHAT, Chat.class),
-                defineFunction(Function.Name.MOVE_TO_COORDINATES, Function.Description.MOVE_TO_COORDINATES, MoveToCoordinates.class),
-                defineFunction(Function.Name.MOVE_TO_ENTITY, Function.Description.MOVE_TO_ENTITY, MoveToEntity.class),
-                defineFunction(Function.Name.MOVE_AWAY, Function.Description.MOVE_AWAY, MoveAway.class),
-                defineFunction(Function.Name.MINE_BLOCK, Function.Description.MINE_BLOCK, MineBlock.class),
-                defineFunction(Function.Name.DROP_ITEM, Function.Description.DROP_ITEM, DropItem.class),
-                defineFunction(Function.Name.ATTACK_ENTITY, Function.Description.ATTACK_ENTITY, AttackEntity.class),
-                defineFunction(Function.Name.GET_ENTITIES, Function.Description.GET_ENTITIES, GetEntities.class),
-                defineFunction(Function.Name.GET_BLOCKS, Function.Description.GET_BLOCKS, GetBlocks.class),
-                defineFunction(Function.Name.GET_RECIPES, Function.Description.GET_RECIPES, GetRecipes.class),
-                defineFunction(Function.Name.GET_CONVERSATIONS, Function.Description.GET_CONVERSATIONS, GetConversations.class),
-                defineFunction(Function.Name.STOP, Function.Description.STOP, Stop.class)
+            defineFunction(Function.Name.CHAT, Function.Description.CHAT, Chat.class),
+            defineFunction(Function.Name.MOVE_TO_COORDINATES, Function.Description.MOVE_TO_COORDINATES, MoveToCoordinates.class),
+            defineFunction(Function.Name.MOVE_TO_ENTITY, Function.Description.MOVE_TO_ENTITY, MoveToEntity.class),
+            defineFunction(Function.Name.MOVE_AWAY, Function.Description.MOVE_AWAY, MoveAway.class),
+            defineFunction(Function.Name.MINE_BLOCK, Function.Description.MINE_BLOCK, MineBlock.class),
+            defineFunction(Function.Name.DROP_ITEM, Function.Description.DROP_ITEM, DropItem.class),
+            defineFunction(Function.Name.ATTACK_ENTITY, Function.Description.ATTACK_ENTITY, AttackEntity.class),
+            defineFunction(Function.Name.GET_ENTITIES, Function.Description.GET_ENTITIES, GetEntities.class),
+            defineFunction(Function.Name.GET_BLOCKS, Function.Description.GET_BLOCKS, GetBlocks.class),
+            defineFunction(Function.Name.GET_RECIPES, Function.Description.GET_RECIPES, GetRecipes.class),
+            defineFunction(Function.Name.GET_CONVERSATIONS, Function.Description.GET_CONVERSATIONS, GetConversations.class),
+            defineFunction(Function.Name.STOP, Function.Description.STOP, Stop.class)
         );
     }
 
@@ -53,26 +43,6 @@ public class OpenAiFunctionManager extends AFunctionManager<FunctionDef> {
                 .functionalClass(clazz)
                 .strict(true)
                 .build();
-    }
-
-    @Override
-    public void vectorizeFunctions(List<FunctionDef> rawFunctions) {
-        rawFunctions.forEach(function -> {
-            OpenAiFunction vectorizedFunction = new OpenAiFunction(
-                    function.getName(),
-                    function,
-                    llmClient.generateEmbedding(List.of(function.getDescription()))
-            );
-            this.vectorizedFunctions.add(vectorizedFunction);
-        });
-    }
-
-    @Override
-    public List<FunctionDef> getRelevantFunctions(String prompt) {
-        return getRelevantResources(prompt).stream()
-                .map(OpenAiFunction.class::cast)
-                .map(OpenAiFunction::getFunction)
-                .collect(Collectors.toList());
     }
 
     public static class Chat implements Functional {

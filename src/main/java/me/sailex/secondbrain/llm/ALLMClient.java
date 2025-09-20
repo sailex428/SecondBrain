@@ -1,17 +1,16 @@
 package me.sailex.secondbrain.llm;
 
-import java.util.List;
-
 import lombok.Setter;
+import me.sailex.secondbrain.llm.function_calling.FunctionProvider;
 
 @Setter
-public abstract class ALLMClient<T> implements FunctionCallable<T> {
+public abstract class ALLMClient<T> implements FunctionCallable {
 
-	protected double[] convertEmbedding(List<List<Double>> embedding) {
-		return embedding.stream()
-				.flatMapToDouble(innerList -> innerList.stream().mapToDouble(Double::doubleValue))
-				.toArray();
-	}
+    protected FunctionProvider<T> functionManager;
+
+    protected ALLMClient(FunctionProvider<T> functionManager) {
+        this.functionManager = functionManager;
+    }
 
 	@Override
 	public void checkServiceIsReachable() {

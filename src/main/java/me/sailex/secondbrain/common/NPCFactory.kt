@@ -113,27 +113,16 @@ class NPCFactory(
         return when (config.llmType) {
             LLMType.OLLAMA -> {
                 val functionManager = OllamaFunctionManager(controller)
-                val llmClient = OllamaClient(functionManager, config.ollamaUrl,SecondBrain.MOD_ID + "-" + config.npcName,
-                    baseConfig.llmTimeout, baseConfig.isVerbose)
-
+                val llmClient = OllamaClient(functionManager, config.ollamaUrl,SecondBrain.MOD_ID + "-" + config.npcName, baseConfig.llmTimeout, baseConfig.isVerbose)
                 val history = ConversationHistory(llmClient, defaultPrompt)
-
-                val eventHandler = NPCEventHandler(llmClient, history, functionManager,
-                    contextProvider, controller, config)
-                eventHandler.onEvent(String.format(Instructions.INIT_PROMPT, config.npcName))
-
+                val eventHandler = NPCEventHandler(llmClient, history, contextProvider, controller.controllerExtras, config)
                 NPC(npcEntity, llmClient, history, eventHandler, controller, contextProvider, config)
             }
             LLMType.PLAYER2 -> {
                 val functionManager = Player2FunctionManager(controller)
                 val llmClient = Player2APIClient(functionManager, config.voiceId, config.npcName, baseConfig.llmTimeout)
-
                 val history = ConversationHistory(llmClient, defaultPrompt)
-
-                val eventHandler = NPCEventHandler(llmClient, history, functionManager,
-                    contextProvider, controller, config)
-                eventHandler.onEvent(String.format(Instructions.INIT_PROMPT, config.npcName))
-
+                val eventHandler = NPCEventHandler(llmClient, history, contextProvider, controller.controllerExtras, config)
                 NPC(npcEntity, llmClient, history, eventHandler, controller, contextProvider, config)
             }
             else -> throw NPCCreationException("Invalid LLM type: ${config.llmType}")

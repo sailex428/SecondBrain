@@ -4,7 +4,6 @@ import io.github.sashirestela.openai.common.tool.Tool;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import me.sailex.secondbrain.llm.function_calling.model.ChatMessage;
 
 import java.util.List;
 

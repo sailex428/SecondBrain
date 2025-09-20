@@ -8,9 +8,11 @@ import io.github.sashirestela.openai.common.function.FunctionDef;
 import io.github.sashirestela.openai.common.function.FunctionExecutor;
 import lombok.Getter;
 import me.sailex.secondbrain.exception.LLMServiceException;
+import me.sailex.secondbrain.history.Message;
+import me.sailex.secondbrain.history.MessageConverter;
 import me.sailex.secondbrain.llm.ALLMClient;
-import me.sailex.secondbrain.llm.function_calling.model.ChatMessage;
-import me.sailex.secondbrain.llm.roles.BasicRole;
+import me.sailex.secondbrain.llm.function_calling.FunctionProvider;
+import me.sailex.secondbrain.llm.player2.model.ChatMessage;
 import me.sailex.secondbrain.llm.roles.ChatRole;
 import me.sailex.secondbrain.llm.player2.model.*;
 import me.sailex.secondbrain.util.LogUtil;
@@ -23,7 +25,6 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -39,19 +40,18 @@ public class Player2APIClient extends ALLMClient<FunctionDef> {
 
     private final String voiceId;
     private final String npcName; //only for debugging
-    private final String systemPrompt;
     private final ObjectMapper mapper;
     private final HttpClient client;
     private final FunctionExecutor functionExecutor;
 
     public Player2APIClient() {
-        this(null, "default", 10, null);
+        this(null, null, "default", 10);
     }
 
-    public Player2APIClient(String voiceId, String npcName, int timeout, String systemPrompt) {
+    public Player2APIClient(FunctionProvider<FunctionDef> functionManager, String voiceId, String npcName, int timeout) {
+        super(functionManager);
         this.voiceId = voiceId;
         this.npcName = npcName;
-        this.systemPrompt = systemPrompt;
         this.mapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
         this.client = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(timeout))
@@ -77,26 +77,17 @@ public class Player2APIClient extends ALLMClient<FunctionDef> {
 
     /**
      * Executes functions that the LLM called based on the prompt and registered functions.
-     *
-     * @param 	prompt 	   the user/system prompt
-     * @param 	functions  functions that the llm is allowed to call
-     * @return             the formatted results of the function calls.
      */
     @Override
-    public String callFunctions(
-        BasicRole role,
-        String prompt,
-        List<FunctionDef> functions
-    ) throws LLMServiceException {
+    public Message callFunctions(List<Message> messages) throws LLMServiceException {
         try {
-            functionExecutor.enrollFunctions(functions);
-            StringBuilder calledFunctions = new StringBuilder();
+            functionExecutor.enrollFunctions(functionManager.getFunctions());
             ChatRequest request = ChatRequest.builder()
                     .tools(functionExecutor.getToolFunctions())
-                    .messages(new ArrayList<>(List.of(
-                            ChatMessage.of((ChatRole) role, prompt))))
+                    .messages(messages.stream()
+                            .map(MessageConverter::toChatMessage)
+                            .toList())
                     .build();
-            if (systemPrompt != null) request.addMessage(ChatMessage.of(ChatRole.SYSTEM, systemPrompt));
 
             ResponseMessage result = sendChatRequest(request);
             List<ToolCall> toolCalls = result.tool_calls();
@@ -110,9 +101,9 @@ public class Player2APIClient extends ALLMClient<FunctionDef> {
                 }
             }
 
-            return result.content();
+            return MessageConverter.toMessage(result);
         } catch (Exception e) {
-            throw new LLMServiceException("Could not call functions for prompt: " + prompt, e);
+            throw new LLMServiceException("Could not call functions for prompt: " + messages.getLast(), e);
         }
     }
 
@@ -136,6 +127,11 @@ public class Player2APIClient extends ALLMClient<FunctionDef> {
         LogUtil.info(toolResult);
 
         request.addMessage(ChatMessage.of(ChatRole.DEVELOPER, "[TOOL_RESULTS]" + toolResult + "[/TOOL_RESULTS]"));
+    }
+
+    @Override
+    public Message chat(Message messages) {
+        return null;
     }
 
     /**
@@ -216,11 +212,6 @@ public class Player2APIClient extends ALLMClient<FunctionDef> {
     @Override
     public void checkServiceIsReachable() throws LLMServiceException {
         throw new UnsupportedOperationException("dont use this. this is checked by getHealthStatus");
-    }
-
-    @Override
-    public double[] generateEmbedding(List<String> prompt) {
-        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     private <T> T sendPostRequest(String url, Object requestBody, Class<T> responseType) throws IOException, HttpException {
