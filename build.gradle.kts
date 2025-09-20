@@ -48,8 +48,8 @@ dependencies {
     if (stonecutter.eval(mcVersion, "<=1.20.1")) {
         include(modImplementation("io.wispforest:endec:0.1.5")!!)
         include(modImplementation("io.wispforest.endec:gson:0.1.4")!!)
-        include(modImplementation("io.wispforest.endec:netty:0.1.2")!!)
-        include(modImplementation("io.wispforest.endec:jankson:0.1.3")!!)
+        include(modImplementation("io.wispforest.endec:netty:0.1.3")!!)
+        include(modImplementation("io.wispforest.endec:jankson:0.1.4")!!)
     }
 
     compileOnly("org.projectlombok:lombok:1.18.34")
