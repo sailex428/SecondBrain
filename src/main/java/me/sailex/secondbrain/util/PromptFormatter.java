@@ -2,12 +2,10 @@ package me.sailex.secondbrain.util;
 
 import me.sailex.secondbrain.constant.Instructions;
 import me.sailex.secondbrain.model.context.*;
-import me.sailex.secondbrain.model.database.Recipe;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -71,20 +69,6 @@ public class PromptFormatter {
 
 	private static String formatInventoryPart(List<ItemData> items) {
 		return formatList(items, ItemData::type);
-	}
-
-	public static String formatRecipes(List<Recipe> recipes) {
-		return formatList(
-				recipes,
-				recipe -> String.format(
-						"- Item to craft: %s, table needed: %s, needed items (recipe): %s",
-						recipe.getName(), recipe.getTableNeeded(), recipe.getItemsNeeded()));
-	}
-
-	private static String formatItemsNeeded(Map<String, Integer> itemsNeeded) {
-		return formatList(
-				new ArrayList<>(itemsNeeded.entrySet()),
-				entry -> String.format("- Item: %s, needed amount: %s", entry.getKey(), entry.getValue()));
 	}
 
 	private static String formatPosition(BlockPos position) {
