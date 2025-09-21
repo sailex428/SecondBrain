@@ -15,7 +15,7 @@ import me.sailex.secondbrain.llm.roles.ChatRole
 // player2/openai
 fun ResponseMessage.toMessage(): Message = Message(
     this.content,
-    this.role.toString(),
+    this.role.toString().lowercase(),
     this.tool_calls.map { toToolCall(it) },
 )
 
@@ -27,7 +27,7 @@ fun Message.toChatMessage(): ChatMessage = ChatMessage(
 // ollama
 fun OllamaChatMessage.toMessage(): Message = Message(
     this.content,
-    this.role.toString(),
+    this.role.toString().lowercase(),
     this.toolCalls.map { toToolCall(it) }
 )
 

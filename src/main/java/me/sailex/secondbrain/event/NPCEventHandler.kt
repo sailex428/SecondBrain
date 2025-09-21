@@ -46,7 +46,7 @@ class NPCEventHandler(
                 formattedPrompt = "system prompt: $prompt"
             }
 
-            history.add(Message(role.toString(), formattedPrompt))
+            history.add(Message(role.toString().lowercase(), formattedPrompt))
             val response = llmClient.callFunctions(history.latestConversations)
             history.add(response)
 
