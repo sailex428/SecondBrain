@@ -7,6 +7,7 @@ public class ArgumentParser {
 
     private ArgumentParser() {}
 
+    @SuppressWarnings("unchecked")
     public static <T> List<T> getList(Map<String, Object> arguments, String key) {
         Object value = arguments.get(key);
         if (value instanceof List) {

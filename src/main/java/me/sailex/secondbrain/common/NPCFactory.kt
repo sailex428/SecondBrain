@@ -3,9 +3,8 @@ package me.sailex.secondbrain.common
 import com.mojang.authlib.GameProfile
 import me.sailex.altoclef.AltoClefController
 import me.sailex.automatone.api.BaritoneAPI
-import me.sailex.common.NPCSpawner
-import me.sailex.common.callback.NPCEvents
 import me.sailex.secondbrain.SecondBrain
+import me.sailex.secondbrain.callback.NPCEvents
 import me.sailex.secondbrain.config.ConfigProvider
 import me.sailex.secondbrain.config.NPCConfig
 import me.sailex.secondbrain.constant.Instructions
