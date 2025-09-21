@@ -26,7 +26,7 @@ class ConversationRepository(
     fun insert(conversation: Conversation) {
         val statement =
             sqliteClient.buildPreparedStatement(
-                "INSERT INTO conversations (uuid, role, message, timestamp) VALUES (?, ?, ?, ?)",
+                "INSERT INTO conversations (uuid, role, message) VALUES (?, ?, ?)",
             )
         statement.setString(1, conversation.uuid.toString())
         statement.setString(2, conversation.role)
@@ -38,7 +38,7 @@ class ConversationRepository(
      * Selects latest one hundred conversations of an NPC
      */
     fun selectByUuid(uuid: UUID): List<Conversation> {
-        val sql = "SELECT * FROM conversations WHERE uuid = '%s' ORDER BY timestamp DESC LIMIT 100".format(uuid.toString())
+        val sql = "SELECT * FROM conversations WHERE uuid = '%s' ORDER BY id DESC LIMIT 100".format(uuid.toString())
         return executeAndProcessConversations(sql)
     }
 
@@ -46,6 +46,8 @@ class ConversationRepository(
     private fun executeAndProcessConversations(sql: String): List<Conversation> {
         val result = sqliteClient.select(sql)
         val conversations = arrayListOf<Conversation>()
+
+        if (result == null) return emptyList()
 
         while (result.next()) {
             val conversation =
