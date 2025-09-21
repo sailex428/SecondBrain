@@ -29,7 +29,7 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Build
-        run: gradle gradle
+        run: ./gradlew gradle
 
       - name: Capture build Artifacts
         uses: actions/upload-artifact@v4
