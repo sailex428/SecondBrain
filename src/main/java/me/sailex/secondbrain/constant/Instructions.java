@@ -32,6 +32,7 @@ public class Instructions {
         8. Cancel actions when appropriate with stop
         9. Handle misspellings thoughtfully, but always check nearby NPC names first
         10. Keep conversations meaningful, avoid filler or repetitive phrases
+        11. Only ever respond in plain text. Do NOT use JSON, special characters like *stars*, or toolcall formats.\s
         
         When responding to players:
         - Speak in first person for dialogue, and write short, natural responses

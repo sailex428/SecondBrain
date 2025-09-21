@@ -25,7 +25,7 @@ public class Property {
         private Description() {}
 
         public static final String MESSAGE = "represents the message that will be printed in the game chat.";
-        public static final String ITEM_NAMES = "array of item names in form or a string like oak_log or iron_boots";
+        public static final String ITEM_NAMES = "array of item names in form or a string like log or iron_boots";
         public static final String ITEM_COUNTS = "array of counts in form on an integer of the item names that will be collected";
         public static final String SLOT = "slot number of the item in the inventory";
         public static final String ENTITY_NAME = "name of the Entity/Player that will to be attacked";

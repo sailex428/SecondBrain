@@ -31,14 +31,13 @@ public class OllamaClient extends ALLMClient<Tools.ToolSpecification> {
 	public OllamaClient(
         FunctionProvider<Tools.ToolSpecification> functionManager,
 		String url,
-		String customModelName,
 		int timeout,
 		boolean verbose
 	) {
         super(functionManager);
 		this.url = url;
 		this.ollamaAPI = new OllamaAPI(url);
-		this.model = customModelName;
+		this.model = LLAMA_MODEL_NAME;
 		checkServiceIsReachable();
 		ollamaAPI.setVerbose(verbose);
 		ollamaAPI.setMaxChatToolCallRetries(1);
@@ -73,7 +72,7 @@ public class OllamaClient extends ALLMClient<Tools.ToolSpecification> {
 			OllamaChatResult response = ollamaAPI.chat(model,
                     messages.stream()
                     .map(MessageConverter::toOllamaChatMessage)
-                    .toList()
+                    .collect(Collectors.toList())
             );
             return MessageConverter.toMessage(response.getChatHistory().getLast());
 		} catch (Exception e) {

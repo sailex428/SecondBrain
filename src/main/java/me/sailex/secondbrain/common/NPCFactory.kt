@@ -114,7 +114,7 @@ class NPCFactory(
         return when (config.llmType) {
             LLMType.OLLAMA -> {
                 val functionManager = OllamaFunctionManager(controller)
-                val llmClient = OllamaClient(functionManager, config.ollamaUrl,SecondBrain.MOD_ID + "-" + config.npcName, baseConfig.llmTimeout, baseConfig.isVerbose)
+                val llmClient = OllamaClient(functionManager, config.ollamaUrl, baseConfig.llmTimeout, baseConfig.isVerbose)
                 val history = ConversationHistory(llmClient, defaultPrompt)
                 val eventHandler = NPCEventHandler(llmClient, history, contextProvider, controller.controllerExtras, config)
                 NPC(npcEntity, llmClient, history, eventHandler, controller, contextProvider, config)

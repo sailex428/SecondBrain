@@ -28,7 +28,7 @@ fun Message.toChatMessage(): ChatMessage = ChatMessage(
 fun OllamaChatMessage.toMessage(): Message = Message(
     this.content,
     this.role.toString().lowercase(),
-    this.toolCalls.map { toToolCall(it) }
+    this.toolCalls?.map { toToolCall(it) }
 )
 
 fun Message.toOllamaChatMessage(): OllamaChatMessage = OllamaChatMessage(
