@@ -30,6 +30,7 @@ repositories {
     maven("https://maven.shedaniel.me/")
     maven("https://maven.terraformersmc.com/releases/")
     maven("https://maven.wispforest.io")
+    maven("https://api.modrinth.com/maven")
 }
 
 dependencies {
@@ -62,6 +63,9 @@ dependencies {
 
     //needed deps for openai communication
     include(modRuntimeOnly("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.18.2")!!)
+    include(modImplementation("com.fasterxml.jackson.core:jackson-core:2.18.0")!!)
+    include(modImplementation("com.fasterxml.jackson.core:jackson-annotations:2.18.0")!!)
+    include(modImplementation("com.fasterxml.jackson.core:jackson-databind:2.18.0")!!)
     include(modRuntimeOnly("com.fasterxml:classmate:1.7.0")!!)
     include(modRuntimeOnly("com.github.victools:jsonschema-generator:4.37.0")!!)
     include(modRuntimeOnly("com.github.victools:jsonschema-module-jackson:4.36.0")!!)
@@ -72,6 +76,7 @@ dependencies {
     include(modImplementation("org.apache.httpcomponents:httpcore:4.4")!!)
 
     include(modImplementation("me.sailex:secondbrainengine:${property("deps.engine")}")!!)
+    include(modImplementation("maven.modrinth:carpet:${project.property("carpet_version")}")!!)
 }
 
 tasks.register<ServerProductionRunTask>("prodServer") {
