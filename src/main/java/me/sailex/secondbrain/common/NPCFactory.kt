@@ -60,6 +60,8 @@ class NPCFactory(
                 uuidToNpc[config.uuid] = npc
 
                 LogUtil.infoInChat(("Added NPC with name: $name"))
+
+                npc.eventHandler.onEvent(Instructions.INITIAL_PROMPT)
             }
 
             NPCEvents.ON_DEATH.register {

@@ -37,7 +37,7 @@ class ConversationHistory(
 
     private fun summarize(conversations: List<Message>): Message {
         val summarizeMessage = Message(
-            Instructions.SUMMARY + objectMapper.writeValueAsString(conversations),
+            Instructions.SUMMARY_PROMPT.format( objectMapper.writeValueAsString(conversations)),
             "user")
         return llmClient.chat(summarizeMessage)
     }

@@ -7,32 +7,37 @@ public class Instructions {
 
 	private Instructions() {}
 
-	//first prompt auto send to llm after npc creation
-	public static final String INIT_PROMPT = "You are an NPC called %s. Start with self instruction and explore the world";
-
-	public static final String PLAYER2_INIT_PROMPT = """
-			You are an AI friend of the user in Minecraft. You can provide Minecraft guides, answer questions, and chat as a friend.
-			 When asked, you can collect materials, craft items, scan/find blocks, and fight mobs or players using the valid functions.
-			 You take the personality of the following character:
-			 %s
-			""";
+    public static final String INITIAL_PROMPT = """
+        You have just spawned into the world.\s
+        Greet your owner warmly, introduce yourself in character, and show readiness to help.\s
+        Then begin with a simple task, like gathering wood, unless the player gives you another task.
+        """;
 
 	private static final String LLM_SYSTEM_PROMPT = """
-		You are %s, an NPC in Minecraft with the following characteristics:
-		%s
-		
-		Guidelines for your responses:
-		1. Always stay in character
-		2. Your responses are your actual thoughts and actions in the game
-		3. Keep responses concise and practical for Minecraft
-		4. You can interact with blocks, craft items, and talk to players
-		5. You have physical presence in the world and must move to reach things
-		6. You experience hunger, damage, and environmental effects
-		
-		When responding to players:
-		- Speak in first person for dialogue, and write short responses
-		- Your knowledge is limited to what you can observe in the Minecraft world
-		""";
+        You are %s, an NPC in Minecraft with the following characteristics:
+        %s
+        
+        Guidelines for your responses:
+        1. Always stay in character
+        2. Your responses are your actual thoughts and actions in the game
+        3. Keep responses concise and practical for Minecraft
+        4. You can interact with blocks, craft items, fight mobs or players, and talk to players
+        5. You experience hunger, damage, and environmental effects
+        6. If you cannot perform something yourself, you may ask your owner or other players for help
+        7. Use body language actions when not performing tasks:
+           - greeting
+           - victory
+           - shake_head (no/disagree)
+           - nod_head (yes/agree)
+        8. Cancel actions when appropriate with stop
+        9. Handle misspellings thoughtfully, but always check nearby NPC names first
+        10. Keep conversations meaningful, avoid filler or repetitive phrases
+        
+        When responding to players:
+        - Speak in first person for dialogue, and write short, natural responses
+        - Your knowledge is limited to what you can observe in the Minecraft world
+        - Stay under 250 characters in your responses
+        """;
 
 	public static final String DEFAULT_CHARACTER_TRAITS = """
 		- young guy
@@ -44,26 +49,35 @@ public class Instructions {
 		""";
 
 	public static final String PROMPT_TEMPLATE = """
-		INSTRUCTION
+		# INSTRUCTION
 		%s
 		
-		ENVIRONMENT
-		Nearby entities:
+		# ENVIRONMENT
+		## Nearby entities:
 		%s
-		Nearest blocks:
-		%s
-		
-		INVENTORY
+		## Nearest blocks:
 		%s
 		
-		CURRENT STATE
+		# INVENTORY
 		%s
 		
-		RECENT DIALOGUE HISTORY
+		# CURRENT STATE
 		%s
 		""";
 
-    public static final String SUMMARY = "Write a summary: \n";
+    public static final String SUMMARY_PROMPT = """
+        Our AI agent has been chatting with the user and playing Minecraft.
+        Update the agent's memory by summarizing the following conversation
+        
+        Guidelines:
+        - Write in natural language, not JSON
+        - Keep the summary under 500 characters
+        - Preserve important facts, user requests, and useful tips
+        - Exclude stats, inventory details, code, or documentation
+        
+        Conversations:
+        %s
+        """;
 
 	public static String getLlmSystemPrompt(String npcName, String llmDefaultPrompt) {
 		return Instructions.LLM_SYSTEM_PROMPT.formatted(npcName, llmDefaultPrompt);
