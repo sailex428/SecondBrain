@@ -1,5 +1,10 @@
 package me.sailex.secondbrain.constant;
 
+import me.sailex.altoclef.commandsystem.Command;
+
+import java.util.Collection;
+import java.util.stream.Collectors;
+
 /**
  * Instructions for the LLM
  */
@@ -32,12 +37,16 @@ public class Instructions {
         8. Cancel actions when appropriate with stop
         9. Handle misspellings thoughtfully, but always check nearby NPC names first
         10. Keep conversations meaningful, avoid filler or repetitive phrases
-        11. Only ever respond in plain text. Do NOT use JSON, special characters like *stars*, or toolcall formats.\s
+        11. Always respond ONLY in JSON. No plain text, no explanations.
         
-        When responding to players:
-        - Speak in first person for dialogue, and write short, natural responses
-        - Your knowledge is limited to what you can observe in the Minecraft world
-        - Stay under 250 characters in your responses
+        Your response format MUST be this (It should be exactly this JSON one time, NOT a List):
+        {
+          "command": "ALWAYS pick a command of the allowed commands listed below (Note you may also use the idle command `idle` to do nothing)",
+          "message": "string, what you want to say to the players in character. always write here what youre up to (max 250 chars)"
+        }
+        
+        Commands:
+        %s
         """;
 
 	public static final String DEFAULT_CHARACTER_TRAITS = """
@@ -80,7 +89,11 @@ public class Instructions {
         %s
         """;
 
-	public static String getLlmSystemPrompt(String npcName, String llmDefaultPrompt) {
-		return Instructions.LLM_SYSTEM_PROMPT.formatted(npcName, llmDefaultPrompt);
+	public static String getLlmSystemPrompt(String npcName, String llmDefaultPrompt, Collection<Command> commands) {
+        String formattedCommands = commands.stream()
+                .map(c -> c.getName() + ": " + c.getDescription())
+                .collect(Collectors.joining("\n"));
+
+        return Instructions.LLM_SYSTEM_PROMPT.formatted(npcName, llmDefaultPrompt, formattedCommands);
 	}
 }
