@@ -16,12 +16,12 @@ import me.sailex.secondbrain.llm.roles.ChatRole
 fun ResponseMessage.toMessage(): Message = Message(
     this.content,
     this.role.toString().lowercase(),
-    this.tool_calls.map { toToolCall(it) },
+    this.tool_calls?.map { toToolCall(it) },
 )
 
 fun Message.toChatMessage(): ChatMessage = ChatMessage(
     ChatRole.valueOf(this.role.uppercase()),
-    "${this.message} - TOOL_CALLS: ${this.tools?.joinToString { toString(it) }}"
+    this.message
 )
 
 // ollama

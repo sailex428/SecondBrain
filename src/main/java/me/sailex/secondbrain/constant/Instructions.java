@@ -89,7 +89,7 @@ public class Instructions {
         %s
         """;
 
-    public static final String COMMAND_FINISHED_PROMPT = "Command %s finished running. What should we do next?";
+    public static final String COMMAND_FINISHED_PROMPT = "Command %s finished running. What should we do next? If no new action is needed to finish user's request, generate idle command `\"idle\"`";
 
     public static final String COMMAND_ERROR_PROMPT = "Command %s failed. Error content: %s";
 

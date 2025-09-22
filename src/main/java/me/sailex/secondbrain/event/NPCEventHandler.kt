@@ -1,6 +1,6 @@
 package me.sailex.secondbrain.event
 
-import com.google.gson.Gson
+import com.google.gson.GsonBuilder
 import me.sailex.altoclef.AltoClefController
 import me.sailex.altoclef.tasks.LookAtOwnerTask
 import me.sailex.secondbrain.config.NPCConfig
@@ -26,7 +26,9 @@ class NPCEventHandler(
     private val config: NPCConfig,
 ): EventHandler {
     companion object {
-        private val gson = Gson()
+        private val gson = GsonBuilder()
+            .setLenient()
+            .create()
     }
 
     private val executorService: ThreadPoolExecutor = ThreadPoolExecutor(
@@ -100,7 +102,7 @@ class NPCEventHandler(
         cmdExecutor.execute(commandWithPrefix, {
             controller.runUserTask(LookAtOwnerTask())
             if (queueIsEmpty()) {
-                this.onEvent(Instructions.COMMAND_FINISHED_PROMPT.format(commandWithPrefix))
+                //this.onEvent(Instructions.COMMAND_FINISHED_PROMPT.format(commandWithPrefix))
             }
         }, {
             this.onEvent(Instructions.COMMAND_ERROR_PROMPT.format(commandWithPrefix, it.message))
