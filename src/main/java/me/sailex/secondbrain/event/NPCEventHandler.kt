@@ -1,7 +1,10 @@
 package me.sailex.secondbrain.event
 
-import me.sailex.altoclef.control.PlayerExtraController
+import com.google.gson.GsonBuilder
+import me.sailex.altoclef.AltoClefController
+import me.sailex.altoclef.tasks.LookAtOwnerTask
 import me.sailex.secondbrain.config.NPCConfig
+import me.sailex.secondbrain.constant.Instructions
 import me.sailex.secondbrain.context.ContextProvider
 import me.sailex.secondbrain.history.ConversationHistory
 import me.sailex.secondbrain.history.Message
@@ -19,9 +22,14 @@ class NPCEventHandler(
     private val llmClient: FunctionCallable,
     private val history: ConversationHistory,
     private val contextProvider: ContextProvider,
-    private val extraController: PlayerExtraController,
+    private val controller: AltoClefController,
     private val config: NPCConfig,
 ): EventHandler {
+    companion object {
+        private val gson = GsonBuilder()
+            .setLenient()
+            .create()
+    }
 
     private val executorService: ThreadPoolExecutor = ThreadPoolExecutor(
         1, 1, 0L, TimeUnit.MILLISECONDS,
@@ -50,15 +58,18 @@ class NPCEventHandler(
             val response = llmClient.callFunctions(history.latestConversations)
             history.add(response)
 
+            val parsedMessage = parse(response.message)
+            execute(parsedMessage.command)
+
             if (llmClient is Player2APIClient && config.isTTS) {
-                llmClient.startTextToSpeech(response.message)
+                llmClient.startTextToSpeech(parsedMessage.message)
             } else {
-                extraController.chat(response.message)
+                controller.controllerExtras.chat(parsedMessage.message)
             }
         }, executorService)
             .exceptionally {
-                LogUtil.debugInChat("'" + config.npcName + "' didn’t understand what to do. The AI response may have failed.")
-                LogUtil.error("Error occurred handling event", it.cause)
+                LogUtil.debugInChat("Error occurred while handling prompt: ${it.cause?.message}")
+                LogUtil.error("Error occurred handling event: $prompt", it.cause)
                 null
             }
     }
@@ -74,5 +85,34 @@ class NPCEventHandler(
     override fun queueIsEmpty(): Boolean {
         return executorService.queue.isEmpty()
     }
+
+    //TODO: refactor this
+    fun parse(content: String): CommandMessage {
+        val message = gson.fromJson(content, CommandMessage::class.java)
+        return message
+    }
+
+    fun execute(command: String) {
+        val cmdExecutor = controller.commandExecutor
+        val commandWithPrefix = if (cmdExecutor.isClientCommand(command)) {
+            command
+        } else {
+            cmdExecutor.commandPrefix + command
+        }
+        cmdExecutor.execute(commandWithPrefix, {
+            controller.runUserTask(LookAtOwnerTask())
+            if (queueIsEmpty()) {
+                //this.onEvent(Instructions.COMMAND_FINISHED_PROMPT.format(commandWithPrefix))
+            }
+        }, {
+            this.onEvent(Instructions.COMMAND_ERROR_PROMPT.format(commandWithPrefix, it.message))
+            LogUtil.error("Error executing command: $commandWithPrefix", it)
+        })
+    }
+
+    data class CommandMessage(
+        val command: String,
+        val message: String
+    )
 
 }

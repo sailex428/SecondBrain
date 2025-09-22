@@ -86,7 +86,7 @@ public class NetworkHandler {
         CHANNEL.registerServerbound(CreateNpcPacket.class, (createNpcPacket, serverAccess) -> {
             if (authorizer.isAuthorized(serverAccess)) {
                 npcFactory.createNpc(createNpcPacket.npcConfig(), serverAccess.runtime(),
-                        serverAccess.player().getBlockPos());
+                        serverAccess.player().getBlockPos(), serverAccess.player());
             }
         });
     }
@@ -151,6 +151,11 @@ public class NetworkHandler {
                 STTPacket.class,
                 (buf, packet) -> ((EndecBuffer) buf).write(STTPacket.ENDEC, packet),
                 buf -> ((EndecBuffer) buf).read(STTPacket.ENDEC)
+        );
+        PacketBufSerializer.register(
+                CreateNpcPacket.class,
+                (buf, packet) -> ((EndecBuffer) buf).write(CreateNpcPacket.ENDEC, packet),
+                buf -> ((EndecBuffer) buf).read(CreateNpcPacket.ENDEC)
         );
         //?} else {
         /*
