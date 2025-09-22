@@ -8,5 +8,5 @@ public record Chat(List<Choice> choices) {
         return choices.getFirst().message();
     }
 
-    public record Choice(ResponseMessage message) {}
+    public record Choice(int index, ResponseMessage message) {}
 }
