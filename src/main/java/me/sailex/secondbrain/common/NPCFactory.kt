@@ -117,14 +117,14 @@ class NPCFactory(
                 val functionManager = OllamaFunctionManager(controller)
                 val llmClient = OllamaClient(functionManager, config.ollamaUrl, baseConfig.llmTimeout, baseConfig.isVerbose)
                 val history = ConversationHistory(llmClient, defaultPrompt)
-                val eventHandler = NPCEventHandler(llmClient, history, contextProvider, controller.controllerExtras, config)
+                val eventHandler = NPCEventHandler(llmClient, history, contextProvider, controller, config)
                 NPC(npcEntity, llmClient, history, eventHandler, controller, contextProvider, config)
             }
             LLMType.PLAYER2 -> {
                 val functionManager = Player2FunctionManager(controller)
                 val llmClient = Player2APIClient(functionManager, config.voiceId, config.npcName, baseConfig.llmTimeout)
                 val history = ConversationHistory(llmClient, defaultPrompt)
-                val eventHandler = NPCEventHandler(llmClient, history, contextProvider, controller.controllerExtras, config)
+                val eventHandler = NPCEventHandler(llmClient, history, contextProvider, controller, config)
                 NPC(npcEntity, llmClient, history, eventHandler, controller, contextProvider, config)
             }
             else -> throw NPCCreationException("Invalid LLM type: ${config.llmType}")

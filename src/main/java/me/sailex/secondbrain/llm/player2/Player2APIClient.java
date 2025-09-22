@@ -36,7 +36,6 @@ import static me.sailex.secondbrain.SecondBrain.MOD_ID;
 public class Player2APIClient extends ALLMClient<FunctionDef> {
 
     private static final String BASE_URL = "http://127.0.0.1:4315";
-    private static final int MAX_TOOL_CALL_RETRIES = 1;
 
     private final String voiceId;
     private final String npcName; //only for debugging
@@ -81,17 +80,14 @@ public class Player2APIClient extends ALLMClient<FunctionDef> {
     @Override
     public Message callFunctions(List<Message> messages) throws LLMServiceException {
         try {
-            functionExecutor.enrollFunctions(functionManager.getFunctions());
+//            functionExecutor.enrollFunctions(functionManager.getFunctions());
             ChatRequest request = ChatRequest.builder()
-                    .tools(functionExecutor.getToolFunctions())
+//                    .tools(functionExecutor.getToolFunctions())
                     .messages(messages.stream()
                             .map(MessageConverter::toChatMessage)
                             .toList())
                     .build();
-
             ResponseMessage result = sendChatRequest(request);
-            executeFunction(result.tool_calls().getFirst());
-
             return MessageConverter.toMessage(result);
         } catch (Exception e) {
             throw new LLMServiceException("Could not call functions for prompt: " + messages.getLast(), e);
@@ -104,17 +100,6 @@ public class Player2APIClient extends ALLMClient<FunctionDef> {
                 request,
                 Chat.class
         ).firstMessage();
-    }
-
-    private void executeFunction(ToolCall toolCall) {
-        FunctionCall function = toolCall.function();
-        String functionName = function.getName();
-        String arguments = function.getArguments();
-
-        String result = functionExecutor.execute(function);
-
-        String toolResult = functionName + "(" + arguments + ") : " + result;
-        LogUtil.info(toolResult);
     }
 
     @Override
@@ -134,7 +119,7 @@ public class Player2APIClient extends ALLMClient<FunctionDef> {
     }
 
     /**
-     * Initiates a text-to-speech process for the provided message using the specified voice IDs.
+     * Initiates a text-to-speech process for the provided content using the specified voice IDs.
      */
     public String startTextToSpeech(String message) throws LLMServiceException {
         try {
@@ -143,7 +128,7 @@ public class Player2APIClient extends ALLMClient<FunctionDef> {
             TTSSpeakResponse speakResponse = sendPostRequest(url, speakRequest, TTSSpeakResponse.class);
             return speakResponse.data();
         } catch (Exception e) {
-            throw new LLMServiceException("Failed to start text to speech for message: " + message, e);
+            throw new LLMServiceException("Failed to start text to speech for content: " + message, e);
         }
     }
 

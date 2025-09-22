@@ -20,7 +20,7 @@ fun ResponseMessage.toMessage(): Message = Message(
 )
 
 fun Message.toChatMessage(): ChatMessage = ChatMessage(
-    ChatRole.valueOf(this.role),
+    ChatRole.valueOf(this.role.uppercase()),
     "${this.message} - TOOL_CALLS: ${this.tools?.joinToString { toString(it) }}"
 )
 

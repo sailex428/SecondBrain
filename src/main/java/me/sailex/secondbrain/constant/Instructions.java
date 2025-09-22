@@ -89,6 +89,10 @@ public class Instructions {
         %s
         """;
 
+    public static final String COMMAND_FINISHED_PROMPT = "Command %s finished running. What should we do next?";
+
+    public static final String COMMAND_ERROR_PROMPT = "Command %s failed. Error content: %s";
+
 	public static String getLlmSystemPrompt(String npcName, String llmDefaultPrompt, Collection<Command> commands) {
         String formattedCommands = commands.stream()
                 .map(c -> c.getName() + ": " + c.getDescription())

@@ -20,7 +20,7 @@ import me.sailex.secondbrain.util.LogUtil;
 
 public class OllamaClient extends ALLMClient<Tools.ToolSpecification> {
 
-	private static final String LLAMA_MODEL_NAME = "llama3.2";
+	private static final String LLAMA_MODEL_NAME = "mistral";
 	private static final List<String> REQUIRED_MODELS = List.of(LLAMA_MODEL_NAME);
 
 	@Setter
@@ -68,7 +68,7 @@ public class OllamaClient extends ALLMClient<Tools.ToolSpecification> {
 	@Override
 	public Message callFunctions(List<Message> messages) {
 		try {
-			ollamaAPI.registerTools(functionManager.getFunctions());
+//			ollamaAPI.registerTools(functionManager.getFunctions());
 			OllamaChatResult response = ollamaAPI.chat(model,
                     messages.stream()
                     .map(MessageConverter::toOllamaChatMessage)
