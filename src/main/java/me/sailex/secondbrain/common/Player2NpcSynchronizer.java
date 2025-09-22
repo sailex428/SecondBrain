@@ -1,6 +1,5 @@
 package me.sailex.secondbrain.common;
 
-import lombok.Setter;
 import me.sailex.secondbrain.config.ConfigProvider;
 import me.sailex.secondbrain.config.NPCConfig;
 import me.sailex.secondbrain.exception.LLMServiceException;
@@ -8,6 +7,7 @@ import me.sailex.secondbrain.llm.LLMType;
 import me.sailex.secondbrain.llm.player2.Player2APIClient;
 import me.sailex.secondbrain.llm.player2.model.Characters;
 import me.sailex.secondbrain.util.LogUtil;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 
@@ -41,7 +41,7 @@ public class Player2NpcSynchronizer {
      *
      * @param spawnPos BlockPos where the NPCs will be spawned
      */
-    public void syncCharacters(BlockPos spawnPos, MinecraftServer server) {
+    public void syncCharacters(BlockPos spawnPos, MinecraftServer server, PlayerEntity owner) {
         try {
             this.player2APIClient.getHealthStatus();
             List<Characters.Character> characters = player2APIClient.getSelectedCharacters().characters();
@@ -67,7 +67,7 @@ public class Player2NpcSynchronizer {
                         .voiceId(character.voice_ids().getFirst())
                         .skinUrl(character.meta().skin_url())
                         .build();
-                npcFactory.createNpc(config, server, spawnPos);
+                npcFactory.createNpc(config, server, spawnPos, owner);
             }
         } catch (Exception e) {
             LogUtil.errorInChat(e.getMessage());
@@ -75,8 +75,8 @@ public class Player2NpcSynchronizer {
         }
     }
 
-    public void syncCharacters(MinecraftServer server) {
-        this.syncCharacters(null, server);
+    public void syncCharacters(MinecraftServer server, PlayerEntity owner) {
+        this.syncCharacters(null, server, owner);
     }
 
     /**

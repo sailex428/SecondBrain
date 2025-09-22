@@ -3,7 +3,6 @@ package me.sailex.secondbrain.common
 import com.mojang.authlib.GameProfile
 import me.sailex.altoclef.AltoClefController
 import me.sailex.automatone.api.BaritoneAPI
-import me.sailex.secondbrain.SecondBrain
 import me.sailex.secondbrain.callback.NPCEvents
 import me.sailex.secondbrain.config.ConfigProvider
 import me.sailex.secondbrain.config.NPCConfig
@@ -20,6 +19,7 @@ import me.sailex.secondbrain.llm.player2.Player2APIClient
 import me.sailex.secondbrain.llm.player2.function_calling.Player2FunctionManager
 import me.sailex.secondbrain.model.NPC
 import me.sailex.secondbrain.util.LogUtil
+import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.PlayerManager
 import net.minecraft.server.network.ServerPlayerEntity
@@ -41,7 +41,7 @@ class NPCFactory(
     private var executorService: ExecutorService = Executors.newSingleThreadExecutor()
     val uuidToNpc = ConcurrentHashMap<UUID, NPC>()
 
-    fun createNpc(config: NPCConfig, server: MinecraftServer, spawnPos: BlockPos?) {
+    fun createNpc(config: NPCConfig, server: MinecraftServer, spawnPos: BlockPos?, owner: PlayerEntity?) {
         CompletableFuture.runAsync({
             val name = config.npcName
             checkLimit()
@@ -50,6 +50,7 @@ class NPCFactory(
             NPCSpawner.spawn(GameProfile(config.uuid, name), server, spawnPos) { npcEntity ->
                 config.uuid = npcEntity.uuid
                 val npc = createNpcInstance(npcEntity, config)
+                npc.controller.owner = owner
 
                 val matchingConfig = configProvider.getNpcConfig(config.uuid)
                 if (matchingConfig.isEmpty) {
@@ -108,8 +109,8 @@ class NPCFactory(
         val baseConfig = configProvider.baseConfig
         val contextProvider = ContextProvider(npcEntity, baseConfig)
 
-        val defaultPrompt = Instructions.getLlmSystemPrompt(config.npcName, config.llmCharacter)
         val controller = initController(npcEntity)
+        val defaultPrompt = Instructions.getLlmSystemPrompt(config.npcName, config.llmCharacter, controller.commandExecutor.allCommands())
 
         return when (config.llmType) {
             LLMType.OLLAMA -> {

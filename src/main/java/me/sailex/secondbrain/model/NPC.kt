@@ -13,7 +13,7 @@ data class NPC(
     val llmClient: LLMClient,
     val history: ConversationHistory,
     val eventHandler: EventHandler,
-    val npcController: AltoClefController,
+    val controller: AltoClefController,
     val contextProvider: ContextProvider,
     val config: NPCConfig
 )

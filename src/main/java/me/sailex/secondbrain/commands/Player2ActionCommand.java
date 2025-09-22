@@ -39,12 +39,12 @@ public class Player2ActionCommand {
         PLAYER2_ACTION action = PLAYER2_ACTION.valueOf(StringArgumentType.getString(context, "action"));
 
         if (action == PLAYER2_ACTION.SYNC) {
-            ServerPlayerEntity player = context.getSource().getPlayer();
+            ServerPlayerEntity owner = context.getSource().getPlayer();
             MinecraftServer server = context.getSource().getServer();
-            if (player != null) {
-                synchronizer.syncCharacters(player.getBlockPos(), server);
+            if (owner != null) {
+                synchronizer.syncCharacters(owner.getBlockPos(), server, owner);
             } else {
-                synchronizer.syncCharacters(server);
+                synchronizer.syncCharacters(server, null);
             }
             return 1;
         }

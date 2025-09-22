@@ -15,6 +15,7 @@ import me.sailex.secondbrain.util.LogUtil;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.minecraft.entity.player.PlayerEntity;
 
 /**
  * Main class for the SecondBrain mod.
@@ -62,7 +63,7 @@ public class SecondBrain implements ModInitializer {
     private void syncOnPlayerLoad(Player2NpcSynchronizer synchronizer) {
         ServerEntityEvents.ENTITY_LOAD.register((entity, world) -> {
             if (entity.isPlayer() && isFirstPlayerJoins) {
-                synchronizer.syncCharacters(world.getServer());
+                synchronizer.syncCharacters(world.getServer(), (PlayerEntity) entity);
                 isFirstPlayerJoins = false;
             }
         });
