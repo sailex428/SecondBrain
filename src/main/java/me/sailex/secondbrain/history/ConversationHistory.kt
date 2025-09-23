@@ -39,7 +39,7 @@ class ConversationHistory(
         val summarizeMessage = Message(
             Instructions.SUMMARY_PROMPT.format( objectMapper.writeValueAsString(conversations)),
             "user")
-        return llmClient.chat(summarizeMessage)
+        return llmClient.chat(listOf(summarizeMessage))
     }
 
     private fun setInitMessage(initMessage: String) {

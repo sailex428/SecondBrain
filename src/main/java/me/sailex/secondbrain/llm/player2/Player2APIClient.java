@@ -3,17 +3,12 @@ package me.sailex.secondbrain.llm.player2;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.github.sashirestela.openai.common.function.FunctionCall;
 import io.github.sashirestela.openai.common.function.FunctionDef;
-import io.github.sashirestela.openai.common.function.FunctionExecutor;
 import lombok.Getter;
 import me.sailex.secondbrain.exception.LLMServiceException;
 import me.sailex.secondbrain.history.Message;
 import me.sailex.secondbrain.history.MessageConverter;
-import me.sailex.secondbrain.llm.ALLMClient;
-import me.sailex.secondbrain.llm.function_calling.FunctionProvider;
-import me.sailex.secondbrain.llm.player2.model.ChatMessage;
-import me.sailex.secondbrain.llm.roles.ChatRole;
+import me.sailex.secondbrain.llm.LLMClient;
 import me.sailex.secondbrain.llm.player2.model.*;
 import me.sailex.secondbrain.util.LogUtil;
 import org.apache.http.HttpException;
@@ -33,7 +28,7 @@ import static me.sailex.secondbrain.SecondBrain.MOD_ID;
 /**
  * This class acts as a client for interacting with the Player2 API.
  */
-public class Player2APIClient extends ALLMClient<FunctionDef> {
+public class Player2APIClient implements LLMClient {
 
     private static final String BASE_URL = "http://127.0.0.1:4315";
 
@@ -41,21 +36,18 @@ public class Player2APIClient extends ALLMClient<FunctionDef> {
     private final String npcName; //only for debugging
     private final ObjectMapper mapper;
     private final HttpClient client;
-    private final FunctionExecutor functionExecutor;
 
     public Player2APIClient() {
-        this(null, null, "default", 10);
+        this(null, "default", 10);
     }
 
-    public Player2APIClient(FunctionProvider<FunctionDef> functionManager, String voiceId, String npcName, int timeout) {
-        super(functionManager);
+    public Player2APIClient(String voiceId, String npcName, int timeout) {
         this.voiceId = voiceId;
         this.npcName = npcName;
         this.mapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
         this.client = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(timeout))
                 .build();
-        this.functionExecutor = new FunctionExecutor();
     }
 
     @Getter
@@ -78,11 +70,9 @@ public class Player2APIClient extends ALLMClient<FunctionDef> {
      * Executes functions that the LLM called based on the prompt and registered functions.
      */
     @Override
-    public Message callFunctions(List<Message> messages) throws LLMServiceException {
+    public Message chat(List<Message> messages) throws LLMServiceException {
         try {
-//            functionExecutor.enrollFunctions(functionManager.getFunctions());
             ChatRequest request = ChatRequest.builder()
-//                    .tools(functionExecutor.getToolFunctions())
                     .messages(messages.stream()
                             .map(MessageConverter::toChatMessage)
                             .toList())
@@ -100,11 +90,6 @@ public class Player2APIClient extends ALLMClient<FunctionDef> {
                 request,
                 Chat.class
         ).firstMessage();
-    }
-
-    @Override
-    public Message chat(Message messages) {
-        return null;
     }
 
     /**
@@ -184,6 +169,11 @@ public class Player2APIClient extends ALLMClient<FunctionDef> {
 
     @Override
     public void checkServiceIsReachable() throws LLMServiceException {
+        throw new UnsupportedOperationException("dont use this. this is checked by getHealthStatus");
+    }
+
+    @Override
+    public void stopService() {
         throw new UnsupportedOperationException("dont use this. this is checked by getHealthStatus");
     }
 

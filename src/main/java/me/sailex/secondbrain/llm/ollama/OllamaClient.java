@@ -4,7 +4,6 @@ import io.github.ollama4j.OllamaAPI;
 import io.github.ollama4j.models.chat.*;
 import io.github.ollama4j.models.request.CustomModelRequest;
 import io.github.ollama4j.models.response.Model;
-import io.github.ollama4j.tools.Tools;
 import me.sailex.secondbrain.exception.LLMServiceException;
 
 import java.util.List;
@@ -14,11 +13,10 @@ import java.util.stream.Collectors;
 import lombok.Setter;
 import me.sailex.secondbrain.history.Message;
 import me.sailex.secondbrain.history.MessageConverter;
-import me.sailex.secondbrain.llm.ALLMClient;
-import me.sailex.secondbrain.llm.function_calling.FunctionProvider;
+import me.sailex.secondbrain.llm.LLMClient;
 import me.sailex.secondbrain.util.LogUtil;
 
-public class OllamaClient extends ALLMClient<Tools.ToolSpecification> {
+public class OllamaClient implements LLMClient {
 
 	private static final String LLAMA_MODEL_NAME = "mistral";
 	private static final List<String> REQUIRED_MODELS = List.of(LLAMA_MODEL_NAME);
@@ -29,12 +27,10 @@ public class OllamaClient extends ALLMClient<Tools.ToolSpecification> {
 	private final String url;
 
 	public OllamaClient(
-        FunctionProvider<Tools.ToolSpecification> functionManager,
 		String url,
 		int timeout,
 		boolean verbose
 	) {
-        super(functionManager);
 		this.url = url;
 		this.ollamaAPI = new OllamaAPI(url);
 		this.model = LLAMA_MODEL_NAME;
@@ -66,9 +62,8 @@ public class OllamaClient extends ALLMClient<Tools.ToolSpecification> {
 	 * Executes functions called by the LLM.
 	 */
 	@Override
-	public Message callFunctions(List<Message> messages) {
+	public Message chat(List<Message> messages) {
 		try {
-//			ollamaAPI.registerTools(functionManager.getFunctions());
 			OllamaChatResult response = ollamaAPI.chat(model,
                     messages.stream()
                     .map(MessageConverter::toOllamaChatMessage)
@@ -79,18 +74,6 @@ public class OllamaClient extends ALLMClient<Tools.ToolSpecification> {
 			throw new LLMServiceException("Could not call functions for prompt: " + messages.getLast(), e);
 		}
 	}
-
-    @Override
-    public Message chat(Message message) {
-        try {
-            OllamaChatRequest chatRequest = new OllamaChatRequest();
-            chatRequest.setMessages(List.of(MessageConverter.toOllamaChatMessage(message)));
-            OllamaChatResult response = ollamaAPI.chat(chatRequest);
-            return MessageConverter.toMessage(response.getChatHistory().getLast());
-        } catch (Exception e) {
-            throw new LLMServiceException("Could chat for prompt: " + message, e);
-        }
-    }
 
     private void initModels(String defaultPrompt) {
         pullRequiredModels();

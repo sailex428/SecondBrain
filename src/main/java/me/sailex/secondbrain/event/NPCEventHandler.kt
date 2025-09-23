@@ -8,7 +8,7 @@ import me.sailex.secondbrain.constant.Instructions
 import me.sailex.secondbrain.context.ContextProvider
 import me.sailex.secondbrain.history.ConversationHistory
 import me.sailex.secondbrain.history.Message
-import me.sailex.secondbrain.llm.FunctionCallable
+import me.sailex.secondbrain.llm.LLMClient
 import me.sailex.secondbrain.llm.player2.Player2APIClient
 import me.sailex.secondbrain.llm.roles.ChatRole
 import me.sailex.secondbrain.util.LogUtil
@@ -19,7 +19,7 @@ import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 
 class NPCEventHandler(
-    private val llmClient: FunctionCallable,
+    private val llmClient: LLMClient,
     private val history: ConversationHistory,
     private val contextProvider: ContextProvider,
     private val controller: AltoClefController,
@@ -55,7 +55,7 @@ class NPCEventHandler(
             }
 
             history.add(Message(formattedPrompt, role.toString().lowercase()))
-            val response = llmClient.callFunctions(history.latestConversations)
+            val response = llmClient.chat(history.latestConversations)
             history.add(response)
 
             val parsedMessage = parse(response.message)
