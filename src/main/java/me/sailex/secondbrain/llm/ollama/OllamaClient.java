@@ -71,7 +71,7 @@ public class OllamaClient implements LLMClient {
             );
             return MessageConverter.toMessage(response.getChatHistory().getLast());
 		} catch (Exception e) {
-			throw new LLMServiceException("Could not call functions for prompt: " + messages.getLast(), e);
+            throw new LLMServiceException("Could not generate Response for prompt: " + messages.getLast(), e);
 		}
 	}
 

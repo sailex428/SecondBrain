@@ -3,7 +3,6 @@ package me.sailex.secondbrain.llm.player2;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.github.sashirestela.openai.common.function.FunctionDef;
 import lombok.Getter;
 import me.sailex.secondbrain.exception.LLMServiceException;
 import me.sailex.secondbrain.history.Message;
@@ -74,17 +73,17 @@ public class Player2APIClient implements LLMClient {
         try {
             ChatRequest request = ChatRequest.builder()
                     .messages(messages.stream()
-                            .map(MessageConverter::toChatMessage)
+                            .map(MessageConverter::toPlayer2ChatMessage)
                             .toList())
                     .build();
-            ResponseMessage result = sendChatRequest(request);
+            Player2ResponseMessage result = sendChatRequest(request);
             return MessageConverter.toMessage(result);
         } catch (Exception e) {
-            throw new LLMServiceException("Could not call functions for prompt: " + messages.getLast(), e);
+            throw new LLMServiceException("Could not generate Response for prompt: " + messages.getLast(), e);
         }
     }
 
-    private ResponseMessage sendChatRequest(ChatRequest request) throws IOException, HttpException {
+    private Player2ResponseMessage sendChatRequest(ChatRequest request) throws IOException, HttpException {
         return sendPostRequest(
                 API_ENDPOINT.CHAT_COMPLETION.getUrl(),
                 request,
@@ -174,7 +173,7 @@ public class Player2APIClient implements LLMClient {
 
     @Override
     public void stopService() {
-        throw new UnsupportedOperationException("dont use this. this is checked by getHealthStatus");
+        throw new UnsupportedOperationException("Not Implemented");
     }
 
     private <T> T sendPostRequest(String url, Object requestBody, Class<T> responseType) throws IOException, HttpException {

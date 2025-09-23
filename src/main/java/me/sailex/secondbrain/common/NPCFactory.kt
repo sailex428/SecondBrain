@@ -14,9 +14,8 @@ import me.sailex.secondbrain.exception.NPCCreationException
 import me.sailex.secondbrain.history.ConversationHistory
 import me.sailex.secondbrain.llm.LLMType
 import me.sailex.secondbrain.llm.ollama.OllamaClient
-import me.sailex.secondbrain.llm.ollama.function_calling.OllamaFunctionManager
+import me.sailex.secondbrain.llm.openai.OpenAiClient
 import me.sailex.secondbrain.llm.player2.Player2APIClient
-import me.sailex.secondbrain.llm.player2.function_calling.Player2FunctionManager
 import me.sailex.secondbrain.model.NPC
 import me.sailex.secondbrain.util.LogUtil
 import net.minecraft.entity.player.PlayerEntity
@@ -112,21 +111,15 @@ class NPCFactory(
         val controller = initController(npcEntity)
         val defaultPrompt = Instructions.getLlmSystemPrompt(config.npcName, config.llmCharacter, controller.commandExecutor.allCommands())
 
-        return when (config.llmType) {
-            LLMType.OLLAMA -> {
-                val llmClient = OllamaClient(config.ollamaUrl, baseConfig.llmTimeout, baseConfig.isVerbose)
-                val history = ConversationHistory(llmClient, defaultPrompt)
-                val eventHandler = NPCEventHandler(llmClient, history, contextProvider, controller, config)
-                NPC(npcEntity, llmClient, history, eventHandler, controller, contextProvider, config)
-            }
-            LLMType.PLAYER2 -> {
-                val llmClient = Player2APIClient(config.voiceId, config.npcName, baseConfig.llmTimeout)
-                val history = ConversationHistory(llmClient, defaultPrompt)
-                val eventHandler = NPCEventHandler(llmClient, history, contextProvider, controller, config)
-                NPC(npcEntity, llmClient, history, eventHandler, controller, contextProvider, config)
-            }
+        val llmClient = when (config.llmType) {
+            LLMType.OLLAMA -> OllamaClient(config.ollamaUrl, baseConfig.llmTimeout, baseConfig.isVerbose)
+            LLMType.OPENAI -> OpenAiClient(config.openaiApiKey, baseConfig.llmTimeout)
+            LLMType.PLAYER2 -> Player2APIClient(config.voiceId, config.npcName, baseConfig.llmTimeout)
             else -> throw NPCCreationException("Invalid LLM type: ${config.llmType}")
         }
+        val history = ConversationHistory(llmClient, defaultPrompt)
+        val eventHandler = NPCEventHandler(llmClient, history, contextProvider, controller, config)
+        return NPC(npcEntity, llmClient, history, eventHandler, controller, contextProvider, config)
     }
 
     private fun initController(npcEntity: ServerPlayerEntity): AltoClefController {
