@@ -10,7 +10,7 @@ import me.sailex.secondbrain.history.ConversationHistory
 import me.sailex.secondbrain.history.Message
 import me.sailex.secondbrain.llm.LLMClient
 import me.sailex.secondbrain.llm.player2.Player2APIClient
-import me.sailex.secondbrain.llm.roles.ChatRole
+import me.sailex.secondbrain.llm.roles.Player2ChatRole
 import me.sailex.secondbrain.util.LogUtil
 import me.sailex.secondbrain.util.PromptFormatter
 import java.util.concurrent.ArrayBlockingQueue
@@ -43,12 +43,12 @@ class NPCEventHandler(
      *
      * @param prompt prompt of a user or system e.g. chatmessage of a player
      */
-    override fun onEvent(role: ChatRole, prompt: String) {
+    override fun onEvent(role: Player2ChatRole, prompt: String) {
         CompletableFuture.runAsync({
             LogUtil.info("onEvent: $prompt")
 
             var formattedPrompt: String
-            if (role == ChatRole.USER) {
+            if (role == Player2ChatRole.USER) {
                 formattedPrompt = PromptFormatter.format(prompt,contextProvider.buildContext())
             } else {
                 formattedPrompt = "system prompt: $prompt"
@@ -75,7 +75,7 @@ class NPCEventHandler(
     }
 
     override fun onEvent(prompt: String) {
-        this.onEvent(ChatRole.USER, prompt)
+        this.onEvent(Player2ChatRole.USER, prompt)
     }
 
     override fun stopService() {

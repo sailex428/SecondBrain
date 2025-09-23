@@ -7,10 +7,10 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record Chat(List<Choice> choices) {
 
-    public ResponseMessage firstMessage() {
+    public Player2ResponseMessage firstMessage() {
         return choices.getFirst().message();
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public record Choice(ResponseMessage message) {}
+    public record Choice(Player2ResponseMessage message) {}
 }

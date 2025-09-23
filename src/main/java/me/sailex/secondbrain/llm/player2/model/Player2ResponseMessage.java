@@ -1,11 +1,11 @@
 package me.sailex.secondbrain.llm.player2.model;
 
-import me.sailex.secondbrain.llm.roles.ChatRole;
+import me.sailex.secondbrain.llm.roles.Player2ChatRole;
 
 import java.util.List;
 
-public record ResponseMessage(
-    ChatRole role,
+public record Player2ResponseMessage(
+    Player2ChatRole role,
     String content,
     List<ToolCall> tool_calls
 ) {}

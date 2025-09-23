@@ -1,77 +1,50 @@
 @file:JvmName("MessageConverter")
 package me.sailex.secondbrain.history
 
-import com.fasterxml.jackson.core.type.TypeReference
-import com.fasterxml.jackson.databind.ObjectMapper
 import io.github.ollama4j.models.chat.OllamaChatMessage
 import io.github.ollama4j.models.chat.OllamaChatMessageRole
-import io.github.ollama4j.models.chat.OllamaChatToolCalls
-import io.github.ollama4j.tools.OllamaToolCallsFunction
-import io.github.sashirestela.openai.common.function.FunctionCall
-import me.sailex.secondbrain.llm.player2.model.ChatMessage
-import me.sailex.secondbrain.llm.player2.model.ResponseMessage
-import me.sailex.secondbrain.llm.roles.ChatRole
+import io.github.sashirestela.openai.domain.chat.ChatMessage
+import me.sailex.secondbrain.llm.player2.model.Player2ChatMessage
+import me.sailex.secondbrain.llm.player2.model.Player2ResponseMessage
+import me.sailex.secondbrain.llm.roles.Player2ChatRole
 
-// player2/openai
-fun ResponseMessage.toMessage(): Message = Message(
+// player2
+fun Player2ResponseMessage.toMessage(): Message = Message(
     this.content,
-    this.role.toString().lowercase(),
-    this.tool_calls?.map { toToolCall(it) },
+    this.role.toString().lowercase()
 )
 
-fun Message.toChatMessage(): ChatMessage = ChatMessage(
-    ChatRole.valueOf(this.role.uppercase()),
+fun Message.toPlayer2ChatMessage(): Player2ChatMessage = Player2ChatMessage(
+    Player2ChatRole.valueOf(this.role.uppercase()),
     this.message
 )
 
 // ollama
 fun OllamaChatMessage.toMessage(): Message = Message(
     this.content,
-    this.role.toString().lowercase(),
-    this.toolCalls?.map { toToolCall(it) }
+    this.role.toString().lowercase()
 )
 
 fun Message.toOllamaChatMessage(): OllamaChatMessage = OllamaChatMessage(
     OllamaChatMessageRole.getRole(this.role),
-    this.message,
-    this.tools?.map { toOllamaToolCallsFunction(it) },
-    emptyList()
+    this.message
 )
 
-val objectMapper = ObjectMapper()
-
-fun toToolCall(toolCall: OllamaChatToolCalls): ToolCall {
-    val arguments = objectMapper.writeValueAsString(toolCall.function.arguments)
-    return ToolCall( null, toolCall.function.name, arguments)
-}
-
-fun toToolCall(toolCall: me.sailex.secondbrain.llm.player2.model.ToolCall): ToolCall {
-    val arguments = objectMapper.writeValueAsString(toolCall.function.arguments)
-    return ToolCall( toolCall.id, toolCall.function.name, arguments)
-}
-
-fun toOllamaToolCallsFunction(toolCall: ToolCall): OllamaChatToolCalls {
-    val argumentsMap: Map<String, Object> = try {
-        objectMapper.readValue(toolCall.arguments, object : TypeReference<Map<String, Object>>() {})
-    } catch (_: Exception) {
-        emptyMap()
+//openai
+fun ChatMessage.toMessage(): Message {
+    return if (this is ChatMessage.SystemMessage) {
+        Message(this.content, this.role.toString().lowercase())
+    } else {
+        this as ChatMessage.UserMessage
+        return Message(this.content as String, this.role.toString().lowercase())
     }
-
-    return OllamaChatToolCalls(OllamaToolCallsFunction(
-        toolCall.name,
-        argumentsMap,
-    ))
 }
 
-fun toPlayer2ToolCall(toolCall: ToolCall): me.sailex.secondbrain.llm.player2.model.ToolCall {
-    return me.sailex.secondbrain.llm.player2.model.ToolCall(
-        0,
-        toolCall.id,
-        "function",
-        FunctionCall(toolCall.name, toolCall.arguments)
-    )
-}
-
-fun toString(toolCall: ToolCall): String {
-    return "${toolCall.name}: ${toolCall.arguments}; "
+fun Message.toChatMessage(): ChatMessage {
+    val role = ChatMessage.ChatRole.valueOf(this.role)
+    return if (role == ChatMessage.ChatRole.SYSTEM) {
+        ChatMessage.SystemMessage.of(this.message)
+    } else {
+        ChatMessage.UserMessage.of(this.message)
+    }
 }

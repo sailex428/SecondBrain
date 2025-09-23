@@ -12,10 +12,10 @@ import java.util.List;
 @Getter
 public class ChatRequest {
 
-    private List<ChatMessage> messages;
+    private List<Player2ChatMessage> messages;
     private List<Tool> tools;
 
-    public void addMessage(ChatMessage message) {
+    public void addMessage(Player2ChatMessage message) {
         messages.add(message);
     }
 

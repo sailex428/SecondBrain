@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @AllArgsConstructor
-public enum ChatRole implements BasicRole {
+public enum Player2ChatRole implements BasicRole {
     @JsonProperty("system")
     SYSTEM("system"),
 
