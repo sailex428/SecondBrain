@@ -18,7 +18,6 @@ val mcVersion = property("mc.version").toString()
 val fabricLoaderVersion = property("deps.fabric_loader").toString()
 val stage = rootProject.extra["deps.stage"].toString()
 val jarName = ("secondbrain-$mcVersion-v$version-$stage")
-val automatone = rootProject.extra["deps.automatone"].toString()
 val owoLib = properties["owo_version"].toString()
 val fabricLangKotlin = properties["fabric_lang_kotlin"].toString()
 
@@ -30,9 +29,8 @@ repositories {
     flatDir { dirs("../../libs") }
     maven("https://maven.shedaniel.me/")
     maven("https://maven.terraformersmc.com/releases/")
-    maven("https://maven.ladysnake.org/releases")
-    maven("https://jitpack.io")
     maven("https://maven.wispforest.io")
+    maven("https://api.modrinth.com/maven")
 }
 
 dependencies {
@@ -48,6 +46,13 @@ dependencies {
 
     include(modImplementation("io.wispforest:owo-lib:$owoLib")!!)
 
+    if (stonecutter.eval(mcVersion, "<=1.20.1")) {
+        include(modImplementation("io.wispforest:endec:0.1.5")!!)
+        include(modImplementation("io.wispforest.endec:gson:0.1.4")!!)
+        include(modImplementation("io.wispforest.endec:netty:0.1.3")!!)
+        include(modImplementation("io.wispforest.endec:jankson:0.1.4")!!)
+    }
+
     compileOnly("org.projectlombok:lombok:1.18.34")
     annotationProcessor("org.projectlombok:lombok:1.18.34")
 
@@ -57,10 +62,10 @@ dependencies {
     include(modImplementation("io.github.ollama4j:ollama4j:1.0.97")!!)
 
     //needed deps for openai communication
-    include(modRuntimeOnly("com.fasterxml.jackson.core:jackson-core:2.18.1")!!)
-    include(modRuntimeOnly("com.fasterxml.jackson.core:jackson-annotations:2.18.1")!!)
-    include(modRuntimeOnly("com.fasterxml.jackson.core:jackson-databind:2.18.1")!!)
     include(modRuntimeOnly("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.18.2")!!)
+    include(modImplementation("com.fasterxml.jackson.core:jackson-core:2.18.0")!!)
+    include(modImplementation("com.fasterxml.jackson.core:jackson-annotations:2.18.0")!!)
+    include(modImplementation("com.fasterxml.jackson.core:jackson-databind:2.18.0")!!)
     include(modRuntimeOnly("com.fasterxml:classmate:1.7.0")!!)
     include(modRuntimeOnly("com.github.victools:jsonschema-generator:4.37.0")!!)
     include(modRuntimeOnly("com.github.victools:jsonschema-module-jackson:4.36.0")!!)
@@ -68,15 +73,10 @@ dependencies {
     include(modRuntimeOnly("io.github.sashirestela:cleverclient:1.4.4")!!)
     include(modImplementation("io.github.sashirestela:simple-openai:3.9.0")!!)
 
-    include(modImplementation("io.github.ladysnake:automatone:$automatone")!!)
-    include(modImplementation("org.ladysnake.cardinal-components-api:cardinal-components-base:${property("cca_version")}")!!)
-    include(modImplementation("org.ladysnake.cardinal-components-api:cardinal-components-entity:${property("cca_version")}")!!)
-    include(modImplementation("org.ladysnake.cardinal-components-api:cardinal-components-world:${property("cca_version")}")!!)
-    include(modImplementation("com.github.gnembon:fabric-carpet:${property("carpet_version")}")!!)
     include(modImplementation("org.apache.httpcomponents:httpcore:4.4")!!)
 
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.11.3")
-    testImplementation("org.mockito:mockito-core:5.14.2")
+    include(modImplementation("me.sailex:secondbrainengine:${property("deps.engine")}")!!)
+    include(modImplementation("maven.modrinth:carpet:${project.property("carpet_version")}")!!)
 }
 
 tasks.register<ServerProductionRunTask>("prodServer") {

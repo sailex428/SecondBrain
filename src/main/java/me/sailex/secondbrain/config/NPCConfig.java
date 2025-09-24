@@ -1,12 +1,12 @@
 package me.sailex.secondbrain.config;
 
+import me.sailex.secondbrain.constant.Instructions;
+import me.sailex.secondbrain.llm.LLMType;
+import java.util.UUID;
+
 import io.wispforest.endec.Endec;
 import io.wispforest.endec.StructEndec;
 import io.wispforest.endec.impl.StructEndecBuilder;
-import me.sailex.secondbrain.constant.Instructions;
-import me.sailex.secondbrain.llm.LLMType;
-
-import java.util.UUID;
 
 public class NPCConfig implements Configurable {
 
@@ -180,7 +180,8 @@ public class NPCConfig implements Configurable {
 		return npcName.toLowerCase();
 	}
 
-	public static final StructEndec<NPCConfig> ENDEC = StructEndecBuilder.of(
+
+    public static final StructEndec<NPCConfig> ENDEC = StructEndecBuilder.of(
 			Endec.STRING.fieldOf("npcName", NPCConfig::getNpcName),
 			Endec.STRING.fieldOf("uuid", config -> config.getUuid().toString()),
 			Endec.BOOLEAN.fieldOf("isActive", NPCConfig::isActive),

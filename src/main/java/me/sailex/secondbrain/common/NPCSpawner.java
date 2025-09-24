@@ -3,18 +3,14 @@ package me.sailex.secondbrain.common;
 import carpet.patches.EntityPlayerMPFake;
 import carpet.patches.FakeClientConnection;
 import com.mojang.authlib.GameProfile;
-import me.sailex.secondbrain.config.NPCConfig;
 import me.sailex.secondbrain.mixin.PlayerEntityAccessor;
 import net.minecraft.block.entity.SkullBlockEntity;
-import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.network.NetworkSide;
-import net.minecraft.network.packet.c2s.common.SyncedClientOptions;
 import net.minecraft.network.packet.s2c.play.EntityPositionS2CPacket;
 import net.minecraft.network.packet.s2c.play.EntitySetHeadYawS2CPacket;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerManager;
-import net.minecraft.server.network.ConnectedClientData;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
@@ -24,7 +20,14 @@ import net.minecraft.world.World;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CountDownLatch;
+import java.util.function.Consumer;
+
+//? if >=1.21.1 {
+/*
+import net.minecraft.server.network.ConnectedClientData;
+import net.minecraft.network.packet.c2s.common.SyncedClientOptions;
+import net.minecraft.entity.attribute.EntityAttributes;
+*///?}
 
 public class NPCSpawner {
 
@@ -32,23 +35,21 @@ public class NPCSpawner {
 
     /**
      * Spawns a fake NPC player entity in the server world.
-     * Uses uuid and npcName from the config to create gameprofile.
+     * Uses uuid and npcName from the given gameProfile
      * Fetches skin of the provided player name from mojang api and uses it on the NPC.
      */
     public static void spawn(
-        NPCConfig config,
+        GameProfile profile,
         MinecraftServer server,
         BlockPos spawnPos,
-        CountDownLatch latch
+        Consumer<ServerPlayerEntity> npcConsumer
     ) {
-        GameProfile gameProfile = new GameProfile(config.getUuid(), config.getNpcName());
-
-        fetchGameProfile(config.getNpcName()).thenAcceptAsync(p -> {
-            GameProfile current = gameProfile;
-            if (p.isPresent() && p.get().getName().equals(config.getNpcName())) {
+        fetchGameProfile(profile).thenAcceptAsync(p -> {
+            GameProfile current = profile;
+            if (p.isPresent() && p.get().getName().equals(profile.getName())) {
                 current = p.get();
             }
-            spawnEntity(server, current, spawnPos, latch);
+            spawnEntity(server, current, spawnPos, npcConsumer);
         }, server);
     }
 
@@ -56,23 +57,30 @@ public class NPCSpawner {
         MinecraftServer server,
         GameProfile gameProfile,
         BlockPos spawnPos,
-        CountDownLatch latch
+        Consumer<ServerPlayerEntity> npcConsumer
     ) {
         double yaw = 0;
         double pitch = 0;
         ServerWorld worldIn = server.getOverworld();
         RegistryKey<World> dimensionKey = worldIn.getRegistryKey();
 
-        EntityPlayerMPFake instance = EntityPlayerMPFake.respawnFake(server, worldIn, gameProfile, SyncedClientOptions.createDefault());
-        BlockPos finalSpawnPos = spawnPos != null ? spawnPos : instance.getWorldSpawnPos(worldIn,
-                worldIn.getSpawnPos());
+        EntityPlayerMPFake instance = EntityPlayerMPFake.respawnFake(server, worldIn, gameProfile /*? >=1.21.1  {*/ /*, SyncedClientOptions.createDefault()*/ /*?} else {*//*?}*/);
+
+        BlockPos finalSpawnPos = spawnPos != null ? spawnPos : instance.getSpawnPointPosition();
         instance.fixStartingPosition = () -> instance.refreshPositionAndAngles(finalSpawnPos.getX(), finalSpawnPos.getY(), finalSpawnPos.getZ(), (float) yaw, (float) pitch);
-        server.getPlayerManager().onPlayerConnect(new FakeClientConnection(NetworkSide.SERVERBOUND), instance, new ConnectedClientData(gameProfile, 0, instance.getClientOptions(), false));
+        server.getPlayerManager().onPlayerConnect(new FakeClientConnection(NetworkSide.SERVERBOUND), instance /*? >=1.21.1  {*/ /*, new ConnectedClientData(gameProfile, 0, instance.getClientOptions(), false)*/ /*?} else {*//*?}*/);
         instance.teleport(worldIn, finalSpawnPos.getX(), finalSpawnPos.getY(), finalSpawnPos.getZ(), (float) yaw,
                 (float) pitch);
         instance.setHealth(20.0F);
         //((EntityAccessor) instance).unsetRemoved();
+
+        //? if >=1.21.1 {
+        /*
         instance.getAttributeInstance(EntityAttributes.GENERIC_STEP_HEIGHT).setBaseValue(0.6F);
+        *///?} else {
+        instance.setStepHeight(0.6F);
+        //?}
+
         instance.interactionManager.changeGameMode(GameMode.SURVIVAL);
         server.getPlayerManager().sendToDimension(new EntitySetHeadYawS2CPacket(instance,
                 (byte) (instance.headYaw * 256 / 360)), dimensionKey);
@@ -80,11 +88,24 @@ public class NPCSpawner {
 
         instance.getDataTracker().set(PlayerEntityAccessor.getPlayerModelParts(), (byte) 0x7f);
         instance.getAbilities().flying = false;
-        latch.countDown();
+        npcConsumer.accept(instance);
     }
 
-    private static CompletableFuture<Optional<GameProfile>> fetchGameProfile(final String name) {
-        return SkullBlockEntity.fetchProfileByName(name);
+    private static CompletableFuture<Optional<GameProfile>> fetchGameProfile(final GameProfile profile) {
+        //? if <=1.20.1 {
+        CompletableFuture<Optional<GameProfile>> future = new CompletableFuture<>();
+        SkullBlockEntity.loadProperties(profile, gp -> {
+            if (gp != null) {
+                future.complete(Optional.of(gp));
+            } else {
+                future.complete(Optional.empty());
+            }
+        });
+        return future;
+        //?} else {
+        /*
+        return SkullBlockEntity.fetchProfileByName(profile.getName());
+        *///?}
     }
 
     public static void remove(UUID uuid, PlayerManager playerManager) {

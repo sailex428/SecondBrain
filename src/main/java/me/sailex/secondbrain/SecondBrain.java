@@ -8,14 +8,14 @@ import me.sailex.secondbrain.common.Player2NpcSynchronizer;
 import me.sailex.secondbrain.config.ConfigProvider;
 import me.sailex.secondbrain.database.SqliteClient;
 import me.sailex.secondbrain.database.repositories.RepositoryFactory;
-import me.sailex.secondbrain.database.resources.ResourcesProvider;
+import me.sailex.secondbrain.database.resources.ResourceProvider;
 import me.sailex.secondbrain.listener.EventListenerRegisterer;
 import me.sailex.secondbrain.networking.NetworkHandler;
 import me.sailex.secondbrain.util.LogUtil;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
-import net.minecraft.server.MinecraftServer;
+import net.minecraft.entity.player.PlayerEntity;
 
 /**
  * Main class for the SecondBrain mod.
@@ -28,55 +28,61 @@ public class SecondBrain implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
-		ConfigProvider configProvider = new ConfigProvider();
+        ConfigProvider configProvider = new ConfigProvider();
 
-		SqliteClient sqlite = new SqliteClient();
-		RepositoryFactory repositoryFactory = new RepositoryFactory(sqlite);
-		repositoryFactory.initRepositories();
+        SqliteClient sqlite = new SqliteClient();
+        RepositoryFactory repositoryFactory = new RepositoryFactory(sqlite);
+        repositoryFactory.initRepositories();
 
-		NPCFactory npcFactory = NPCFactory.INSTANCE;
+        ResourceProvider resourceProvider = new ResourceProvider(repositoryFactory.getConversationRepository());
 
-		PlayerAuthorizer authorizer = new PlayerAuthorizer();
+        NPCFactory npcFactory = new NPCFactory(configProvider, resourceProvider);
 
-		NetworkHandler networkManager = new NetworkHandler(configProvider, npcFactory, authorizer);
-		networkManager.registerPacketReceiver();
+        PlayerAuthorizer authorizer = new PlayerAuthorizer();
 
-		EventListenerRegisterer eventListenerRegisterer = new EventListenerRegisterer(npcFactory.getUuidToNpc());
-		eventListenerRegisterer.register();
+        NetworkHandler networkManager = new NetworkHandler(configProvider, npcFactory, authorizer);
+        networkManager.registerPacketReceiver();
 
-		Player2NpcSynchronizer synchronizer = new Player2NpcSynchronizer(npcFactory, configProvider);
+        EventListenerRegisterer eventListenerRegisterer = new EventListenerRegisterer(npcFactory.getUuidToNpc());
+        eventListenerRegisterer.register();
 
-		CommandManager commandManager = new CommandManager(npcFactory, configProvider, networkManager, synchronizer);
-		commandManager.registerAll();
+        Player2NpcSynchronizer synchronizer = new Player2NpcSynchronizer(npcFactory, configProvider);
 
-		ServerLifecycleEvents.SERVER_STARTED.register(server -> LogUtil.initialize(server, configProvider));
+        CommandManager commandManager = new CommandManager(npcFactory, configProvider, networkManager, synchronizer);
+        commandManager.registerAll();
 
-		ServerEntityEvents.ENTITY_LOAD.register((entity, world) -> {
-			if (entity.isPlayer() && isFirstPlayerJoins) {
-				npcFactory.initialize(configProvider, repositoryFactory);
-				synchronizer.initialize();
-				synchronizer.setServer(world.getServer());
-				synchronizer.syncCharacters();
-				isFirstPlayerJoins = false;
-			}
-		});
-		ServerLifecycleEvents.SERVER_STOPPING.register(server ->
-				onStop(npcFactory, configProvider, sqlite, synchronizer, server));
-	}
+        ServerLifecycleEvents.SERVER_STARTED.register(server -> {
+            LogUtil.initialize(server, configProvider);
+            resourceProvider.loadResources(configProvider.getUuidsOfNpcs());
+        });
+
+        syncOnPlayerLoad(synchronizer);
+        onStop(npcFactory, configProvider, sqlite, synchronizer, resourceProvider);
+    }
+
+    private void syncOnPlayerLoad(Player2NpcSynchronizer synchronizer) {
+        ServerEntityEvents.ENTITY_LOAD.register((entity, world) -> {
+            if (entity.isPlayer() && isFirstPlayerJoins) {
+                synchronizer.syncCharacters(world.getServer(), (PlayerEntity) entity);
+                isFirstPlayerJoins = false;
+            }
+        });
+    }
 
 	private void onStop(
-		NPCFactory npcFactory,
-		ConfigProvider configProvider,
-		SqliteClient sqlite,
-		Player2NpcSynchronizer synchronizer,
-		MinecraftServer server
+        NPCFactory npcFactory,
+        ConfigProvider configProvider,
+        SqliteClient sqlite,
+        Player2NpcSynchronizer synchronizer,
+        ResourceProvider resourceProvider
 	) {
-		ResourcesProvider resourcesProvider = npcFactory.getResourcesProvider();
-		if (resourcesProvider != null) resourcesProvider.saveResources();
-		synchronizer.shutdown();
-		npcFactory.shutdownNpcs(server);
-		configProvider.saveAll();
-		sqlite.closeConnection();
-		isFirstPlayerJoins = true;
+        ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
+            resourceProvider.saveResources();
+            synchronizer.shutdown();
+            npcFactory.shutdownNPCs(server);
+            configProvider.saveAll();
+            sqlite.closeConnection();
+            isFirstPlayerJoins = true;
+        });
 	}
 }

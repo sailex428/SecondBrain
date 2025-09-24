@@ -14,10 +14,7 @@ class EventListenerRegisterer(
      */
     fun register() {
         listOf<IEventListener>(
-//            BlockInteractionListener(npcs),
-            EntityLoadListener(npcs),
             ChatMessageListener(npcs),
-            CombatEventListener(npcs),
             STTListener(npcs)
         ).forEach { listener -> listener.register() }
     }

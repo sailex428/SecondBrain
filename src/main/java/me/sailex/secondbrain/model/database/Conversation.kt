@@ -1,10 +1,9 @@
 package me.sailex.secondbrain.model.database
 
-import java.sql.Timestamp
+import java.util.UUID
 
 data class Conversation(
-    val npcName: String,
-    val message: String,
-    val timestamp: Timestamp,
-    override val embedding: DoubleArray
-) : Resource
+    val uuid: UUID,
+    val role: String,
+    val message: String
+)

@@ -3,15 +3,11 @@ package me.sailex.secondbrain.llm.player2;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.github.sashirestela.openai.common.function.FunctionCall;
-import io.github.sashirestela.openai.common.function.FunctionDef;
-import io.github.sashirestela.openai.common.function.FunctionExecutor;
 import lombok.Getter;
 import me.sailex.secondbrain.exception.LLMServiceException;
-import me.sailex.secondbrain.llm.ALLMClient;
-import me.sailex.secondbrain.llm.function_calling.model.ChatMessage;
-import me.sailex.secondbrain.llm.roles.BasicRole;
-import me.sailex.secondbrain.llm.roles.ChatRole;
+import me.sailex.secondbrain.history.Message;
+import me.sailex.secondbrain.history.MessageConverter;
+import me.sailex.secondbrain.llm.LLMClient;
 import me.sailex.secondbrain.llm.player2.model.*;
 import me.sailex.secondbrain.util.LogUtil;
 import org.apache.http.HttpException;
@@ -23,7 +19,6 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -32,31 +27,26 @@ import static me.sailex.secondbrain.SecondBrain.MOD_ID;
 /**
  * This class acts as a client for interacting with the Player2 API.
  */
-public class Player2APIClient extends ALLMClient<FunctionDef> {
+public class Player2APIClient implements LLMClient {
 
     private static final String BASE_URL = "http://127.0.0.1:4315";
-    private static final int MAX_TOOL_CALL_RETRIES = 4;
 
     private final String voiceId;
     private final String npcName; //only for debugging
-    private final String systemPrompt;
     private final ObjectMapper mapper;
     private final HttpClient client;
-    private final FunctionExecutor functionExecutor;
 
     public Player2APIClient() {
-        this(null, "default", 10, null);
+        this(null, "default", 10);
     }
 
-    public Player2APIClient(String voiceId, String npcName, int timeout, String systemPrompt) {
+    public Player2APIClient(String voiceId, String npcName, int timeout) {
         this.voiceId = voiceId;
         this.npcName = npcName;
-        this.systemPrompt = systemPrompt;
         this.mapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
         this.client = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(timeout))
                 .build();
-        this.functionExecutor = new FunctionExecutor();
     }
 
     @Getter
@@ -77,65 +67,28 @@ public class Player2APIClient extends ALLMClient<FunctionDef> {
 
     /**
      * Executes functions that the LLM called based on the prompt and registered functions.
-     *
-     * @param 	prompt 	   the user/system prompt
-     * @param 	functions  functions that the llm is allowed to call
-     * @return             the formatted results of the function calls.
      */
     @Override
-    public String callFunctions(
-        BasicRole role,
-        String prompt,
-        List<FunctionDef> functions
-    ) throws LLMServiceException {
+    public Message chat(List<Message> messages) throws LLMServiceException {
         try {
-            functionExecutor.enrollFunctions(functions);
-            StringBuilder calledFunctions = new StringBuilder();
             ChatRequest request = ChatRequest.builder()
-                    .tools(functionExecutor.getToolFunctions())
-                    .messages(new ArrayList<>(List.of(
-                            ChatMessage.of((ChatRole) role, prompt))))
+                    .messages(messages.stream()
+                            .map(MessageConverter::toPlayer2ChatMessage)
+                            .toList())
                     .build();
-            if (systemPrompt != null) request.addMessage(ChatMessage.of(ChatRole.SYSTEM, systemPrompt));
-
-            ResponseMessage result = sendChatRequest(request);
-            List<ToolCall> toolCalls = result.tool_calls();
-
-            for (int toolCallTries = 0; toolCalls != null && !toolCalls.isEmpty() && toolCallTries < MAX_TOOL_CALL_RETRIES; ++toolCallTries) {
-                for (ToolCall toolCall : toolCalls) {
-                    executeFunction(toolCall, request, calledFunctions);
-
-                    result = sendChatRequest(request);
-                    toolCalls = result.tool_calls();
-                }
-            }
-
-            return result.content();
+            Player2ResponseMessage result = sendChatRequest(request);
+            return MessageConverter.toMessage(result);
         } catch (Exception e) {
-            throw new LLMServiceException("Could not call functions for prompt: " + prompt, e);
+            throw new LLMServiceException("Could not generate Response for prompt: " + messages.getLast(), e);
         }
     }
 
-    private ResponseMessage sendChatRequest(ChatRequest request) throws IOException, HttpException {
+    private Player2ResponseMessage sendChatRequest(ChatRequest request) throws IOException, HttpException {
         return sendPostRequest(
                 API_ENDPOINT.CHAT_COMPLETION.getUrl(),
                 request,
                 Chat.class
         ).firstMessage();
-    }
-
-    private void executeFunction(ToolCall toolCall, ChatRequest request, StringBuilder calledFunctions) throws LLMServiceException {
-        FunctionCall function = toolCall.function();
-        String functionName = function.getName();
-        String arguments = function.getArguments();
-
-        String result = functionExecutor.execute(function);
-
-        String toolResult = functionName + "(" + arguments + ") : " + result;
-        calledFunctions.append(toolResult).append("; ");
-        LogUtil.info(toolResult);
-
-        request.addMessage(ChatMessage.of(ChatRole.DEVELOPER, "[TOOL_RESULTS]" + toolResult + "[/TOOL_RESULTS]"));
     }
 
     /**
@@ -150,7 +103,7 @@ public class Player2APIClient extends ALLMClient<FunctionDef> {
     }
 
     /**
-     * Initiates a text-to-speech process for the provided message using the specified voice IDs.
+     * Initiates a text-to-speech process for the provided content using the specified voice IDs.
      */
     public String startTextToSpeech(String message) throws LLMServiceException {
         try {
@@ -159,7 +112,7 @@ public class Player2APIClient extends ALLMClient<FunctionDef> {
             TTSSpeakResponse speakResponse = sendPostRequest(url, speakRequest, TTSSpeakResponse.class);
             return speakResponse.data();
         } catch (Exception e) {
-            throw new LLMServiceException("Failed to start text to speech for message: " + message, e);
+            throw new LLMServiceException("Failed to start text to speech for content: " + message, e);
         }
     }
 
@@ -219,8 +172,8 @@ public class Player2APIClient extends ALLMClient<FunctionDef> {
     }
 
     @Override
-    public double[] generateEmbedding(List<String> prompt) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public void stopService() {
+        throw new UnsupportedOperationException("Not Implemented");
     }
 
     private <T> T sendPostRequest(String url, Object requestBody, Class<T> responseType) throws IOException, HttpException {

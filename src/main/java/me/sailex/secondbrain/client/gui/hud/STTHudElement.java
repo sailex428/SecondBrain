@@ -22,7 +22,7 @@ public class STTHudElement implements HudRenderCallback {
     private boolean isActive = false;
 
     @Override
-    public void onHudRender(DrawContext drawContext, RenderTickCounter renderTickCounter) {
+    public void onHudRender(DrawContext drawContext, /*? <=1.20.1  {*/ float tickDelta /*?} else {*/  /*RenderTickCounter renderTickCounter*/  /*?}*/) {
         if (isActive) {
             int screenCenter = drawContext.getScaledWindowWidth() / 2;
             drawContext.drawTexture(Identifier.of(MOD_ID, "stt-background.png"),

@@ -1,6 +1,5 @@
 package me.sailex.secondbrain.common;
 
-import lombok.Setter;
 import me.sailex.secondbrain.config.ConfigProvider;
 import me.sailex.secondbrain.config.NPCConfig;
 import me.sailex.secondbrain.exception.LLMServiceException;
@@ -8,6 +7,7 @@ import me.sailex.secondbrain.llm.LLMType;
 import me.sailex.secondbrain.llm.player2.Player2APIClient;
 import me.sailex.secondbrain.llm.player2.model.Characters;
 import me.sailex.secondbrain.util.LogUtil;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 
@@ -24,17 +24,12 @@ public class Player2NpcSynchronizer {
     private final NPCFactory npcFactory;
     private final ConfigProvider configProvider;
     private final Player2APIClient player2APIClient;
-    private ScheduledExecutorService executor;
-    @Setter
-    private MinecraftServer server;
+    private final ScheduledExecutorService executor;
 
     public Player2NpcSynchronizer(NPCFactory npcFactory, ConfigProvider configProvider) {
         this.npcFactory = npcFactory;
         this.configProvider = configProvider;
         this.player2APIClient = new Player2APIClient();
-    }
-
-    public void initialize() {
         this.executor = Executors.newSingleThreadScheduledExecutor();
         scheduleHeartBeats();
     }
@@ -46,7 +41,7 @@ public class Player2NpcSynchronizer {
      *
      * @param spawnPos BlockPos where the NPCs will be spawned
      */
-    public void syncCharacters(BlockPos spawnPos) {
+    public void syncCharacters(BlockPos spawnPos, MinecraftServer server, PlayerEntity owner) {
         try {
             this.player2APIClient.getHealthStatus();
             List<Characters.Character> characters = player2APIClient.getSelectedCharacters().characters();
@@ -72,7 +67,7 @@ public class Player2NpcSynchronizer {
                         .voiceId(character.voice_ids().getFirst())
                         .skinUrl(character.meta().skin_url())
                         .build();
-                npcFactory.createNpc(config, server, spawnPos);
+                npcFactory.createNpc(config, server, spawnPos, owner);
             }
         } catch (Exception e) {
             LogUtil.errorInChat(e.getMessage());
@@ -80,8 +75,8 @@ public class Player2NpcSynchronizer {
         }
     }
 
-    public void syncCharacters() {
-        this.syncCharacters(null);
+    public void syncCharacters(MinecraftServer server, PlayerEntity owner) {
+        this.syncCharacters(null, server, owner);
     }
 
     /**

@@ -1,21 +1,22 @@
 package me.sailex.secondbrain.llm;
 
+import me.sailex.secondbrain.history.Message;
+
 import java.util.List;
 
 public interface LLMClient {
 
-	/**
-	 * Generate an embedding for a given prompt
-	 *
-	 * @param prompt the text prompt that needs to get vectorized
-	 * @return the embedding as double array
-	 */
-	double[] generateEmbedding(List<String> prompt);
+    /**
+     * Lets the LLM generate a chat response to the conversationHistory.
+     * @param messages conversationHistory
+     * @return responseMessage
+     */
+    Message chat(List<Message> messages);
 
-	/**
-	 * Check if the service is reachable
-	 */
-	void checkServiceIsReachable();
+    /**
+     * Check if the service is reachable
+     */
+    void checkServiceIsReachable();
 
 	/**
 	 * Stops the Executor service

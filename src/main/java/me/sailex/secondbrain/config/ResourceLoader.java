@@ -20,10 +20,10 @@ public class ResourceLoader {
 	private ResourceLoader() {}
 
 	/**
-	 *	Loads file content by given file path
+	 *	Loads file message by given file path
 	 *
 	 * @param resourcePath path of the resource
-	 * @return file name mapped to file content
+	 * @return file name mapped to file message
 	 */
 	public static Map<String, String> getAllResourcesContent(String resourcePath) {
 		Map<String, String> contentMap = new HashMap<>();

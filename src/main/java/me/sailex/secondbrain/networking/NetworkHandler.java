@@ -17,6 +17,11 @@ import java.util.UUID;
 
 import static me.sailex.secondbrain.SecondBrain.MOD_ID;
 
+//? if <=1.20.1 {
+import io.wispforest.endec.util.EndecBuffer;
+import io.wispforest.owo.network.serialization.PacketBufSerializer;
+//?}
+
 /**
  * Serverside NetworkHandler that sends and receives packets to/from the client
  */
@@ -81,7 +86,7 @@ public class NetworkHandler {
         CHANNEL.registerServerbound(CreateNpcPacket.class, (createNpcPacket, serverAccess) -> {
             if (authorizer.isAuthorized(serverAccess)) {
                 npcFactory.createNpc(createNpcPacket.npcConfig(), serverAccess.runtime(),
-                        serverAccess.player().getBlockPos());
+                        serverAccess.player().getBlockPos(), serverAccess.player());
             }
         });
     }
@@ -111,6 +116,49 @@ public class NetworkHandler {
     }
 
     private void registerEndecs() {
+        //? if <=1.20.1 {
+        PacketBufSerializer.register(
+                ConfigPacket.class,
+                (buf, packet) -> ((EndecBuffer) buf).write(ConfigPacket.ENDEC, packet),
+                buf -> ((EndecBuffer) buf).read(ConfigPacket.ENDEC)
+        );
+        PacketBufSerializer.register(
+                BaseConfig.class,
+                (buf, packet) -> ((EndecBuffer) buf).write(BaseConfig.ENDEC, packet),
+                buf -> ((EndecBuffer) buf).read(BaseConfig.ENDEC)
+        );
+        PacketBufSerializer.register(
+                NPCConfig.class,
+                (buf, packet) -> ((EndecBuffer) buf).write(NPCConfig.ENDEC, packet),
+                buf -> ((EndecBuffer) buf).read(NPCConfig.ENDEC)
+        );
+        PacketBufSerializer.register(
+                DeleteNpcPacket.class,
+                (buf, packet) -> ((EndecBuffer) buf).write(DeleteNpcPacket.ENDEC, packet),
+                buf -> ((EndecBuffer) buf).read(DeleteNpcPacket.ENDEC)
+        );
+        PacketBufSerializer.register(
+                UpdateNpcConfigPacket.class,
+                (buf, packet) -> ((EndecBuffer) buf).write(UpdateNpcConfigPacket.ENDEC, packet),
+                buf -> ((EndecBuffer) buf).read(UpdateNpcConfigPacket.ENDEC)
+        );
+        PacketBufSerializer.register(
+                UpdateBaseConfigPacket.class,
+                (buf, packet) -> ((EndecBuffer) buf).write(UpdateBaseConfigPacket.ENDEC, packet),
+                buf -> ((EndecBuffer) buf).read(UpdateBaseConfigPacket.ENDEC)
+        );
+        PacketBufSerializer.register(
+                STTPacket.class,
+                (buf, packet) -> ((EndecBuffer) buf).write(STTPacket.ENDEC, packet),
+                buf -> ((EndecBuffer) buf).read(STTPacket.ENDEC)
+        );
+        PacketBufSerializer.register(
+                CreateNpcPacket.class,
+                (buf, packet) -> ((EndecBuffer) buf).write(CreateNpcPacket.ENDEC, packet),
+                buf -> ((EndecBuffer) buf).read(CreateNpcPacket.ENDEC)
+        );
+        //?} else {
+        /*
         CHANNEL.addEndecs(builder -> {
             builder.register(ConfigPacket.ENDEC, ConfigPacket.class);
             builder.register(BaseConfig.ENDEC, BaseConfig.class);
@@ -121,5 +169,6 @@ public class NetworkHandler {
             builder.register(UpdateBaseConfigPacket.ENDEC, UpdateBaseConfigPacket.class);
             builder.register(STTPacket.ENDEC, STTPacket.class);
         });
+        *///?}
     }
 }
