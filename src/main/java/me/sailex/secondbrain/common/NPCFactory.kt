@@ -65,7 +65,7 @@ class NPCFactory(
             }
 
             NPCEvents.ON_DEATH.register {
-                removeNpc(it.uuid, it.server.playerManager)
+                removeNpc(it.uuid, it.server!!.playerManager)
             }
         }, executorService).exceptionally {
             LogUtil.errorInChat(it.message)

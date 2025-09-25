@@ -1,4 +1,4 @@
 plugins {
     id("dev.kikugie.stonecutter")
 }
-stonecutter active "1.20.1" /* [SC] DO NOT EDIT */
+stonecutter active "1.20.1"
