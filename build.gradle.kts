@@ -6,7 +6,7 @@ import net.fabricmc.loom.task.prod.ServerProductionRunTask
 import net.fabricmc.loom.task.prod.ClientProductionRunTask
 
 plugins {
-    id("fabric-loom") version "1.10-SNAPSHOT"
+    id("fabric-loom") version "1.11-SNAPSHOT"
     kotlin("jvm") version "2.1.0"
     id("maven-publish")
     id("me.modmuss50.mod-publish-plugin") version "0.8.1"
@@ -34,10 +34,6 @@ repositories {
 }
 
 dependencies {
-    configurations.all {
-        exclude(group = "org.slf4j", module = "slf4j-simple")
-    }
-
     minecraft("com.mojang:minecraft:$mcVersion")
     mappings("net.fabricmc:yarn:$mcVersion+build.${property("deps.yarn_build")}:v2")
     modImplementation("net.fabricmc:fabric-loader:$fabricLoaderVersion")
@@ -83,7 +79,7 @@ tasks.register<ServerProductionRunTask>("prodServer") {
     mods.from(file("build/libs/" + jarName))
 
     installerVersion.set("1.0.1")
-    loaderVersion.set("0.16.10")
+    loaderVersion.set(loaderVersion)
     minecraftVersion.set("1.21.1")
 
     runDir.set(file("prod-server-run"))
