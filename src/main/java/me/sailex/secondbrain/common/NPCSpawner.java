@@ -6,7 +6,6 @@ import com.mojang.authlib.GameProfile;
 import me.sailex.secondbrain.mixin.PlayerEntityAccessor;
 import net.minecraft.block.entity.SkullBlockEntity;
 import net.minecraft.network.NetworkSide;
-import net.minecraft.network.packet.s2c.play.EntityPositionS2CPacket;
 import net.minecraft.network.packet.s2c.play.EntitySetHeadYawS2CPacket;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.MinecraftServer;
@@ -22,12 +21,22 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
-//? if >=1.21.1 {
+//? if >=1.21.6 {
+/*import net.minecraft.network.packet.s2c.play.EntityPositionSyncS2CPacket;
+import net.minecraft.server.network.ConnectedClientData;
+import net.minecraft.network.packet.c2s.common.SyncedClientOptions;
+import net.minecraft.entity.attribute.EntityAttributes;
+import java.util.Set;
+*///?} elif >=1.21.1 {
 /*
 import net.minecraft.server.network.ConnectedClientData;
 import net.minecraft.network.packet.c2s.common.SyncedClientOptions;
 import net.minecraft.entity.attribute.EntityAttributes;
-*///?}
+import net.minecraft.network.packet.s2c.play.EntityPositionS2CPacket;
+*///?} else {
+
+import net.minecraft.network.packet.s2c.play.EntityPositionS2CPacket;
+//?}
 
 public class NPCSpawner {
 
@@ -64,19 +73,23 @@ public class NPCSpawner {
         ServerWorld worldIn = server.getOverworld();
         RegistryKey<World> dimensionKey = worldIn.getRegistryKey();
 
-        EntityPlayerMPFake instance = EntityPlayerMPFake.respawnFake(server, worldIn, gameProfile /*? >=1.21.1  {*/ /*, SyncedClientOptions.createDefault()*/ /*?} else {*//*?}*/);
+        EntityPlayerMPFake instance = EntityPlayerMPFake.respawnFake(server, worldIn, gameProfile /*? >=1.21.1 {*/ /*, SyncedClientOptions.createDefault() *//*?} else {*//*?}*/);
 
-        BlockPos finalSpawnPos = spawnPos != null ? spawnPos : instance.getSpawnPointPosition();
+        BlockPos finalSpawnPos = spawnPos != null ? spawnPos : /*? >=1.21.6 {*/ /*worldIn.getSpawnPos() *//*?} else {*/ instance.getSpawnPointPosition() /*?}*/;
         instance.fixStartingPosition = () -> instance.refreshPositionAndAngles(finalSpawnPos.getX(), finalSpawnPos.getY(), finalSpawnPos.getZ(), (float) yaw, (float) pitch);
-        server.getPlayerManager().onPlayerConnect(new FakeClientConnection(NetworkSide.SERVERBOUND), instance /*? >=1.21.1  {*/ /*, new ConnectedClientData(gameProfile, 0, instance.getClientOptions(), false)*/ /*?} else {*//*?}*/);
+        server.getPlayerManager().onPlayerConnect(new FakeClientConnection(NetworkSide.SERVERBOUND), instance /*? >=1.21.1 {*/ /*, new ConnectedClientData(gameProfile, 0, instance.getClientOptions(), false) *//*?} else {*//*?}*/);
+        //? if >=1.21.6 {
+        /*instance.teleport(worldIn, finalSpawnPos.getX(), finalSpawnPos.getY(), finalSpawnPos.getZ(), Set.of(), (float) yaw,
+                (float) pitch, true);
+        *///?} else {
         instance.teleport(worldIn, finalSpawnPos.getX(), finalSpawnPos.getY(), finalSpawnPos.getZ(), (float) yaw,
                 (float) pitch);
+         //?}
         instance.setHealth(20.0F);
         //((EntityAccessor) instance).unsetRemoved();
 
         //? if >=1.21.1 {
-        /*
-        instance.getAttributeInstance(EntityAttributes.GENERIC_STEP_HEIGHT).setBaseValue(0.6F);
+        /*instance.getAttributeInstance(/^? >=1.21.6 {^/ /^EntityAttributes.STEP_HEIGHT^//^?} else {^/EntityAttributes.GENERIC_STEP_HEIGHT/^?}^/).setBaseValue(0.6F);
         *///?} else {
         instance.setStepHeight(0.6F);
         //?}
@@ -84,7 +97,14 @@ public class NPCSpawner {
         instance.interactionManager.changeGameMode(GameMode.SURVIVAL);
         server.getPlayerManager().sendToDimension(new EntitySetHeadYawS2CPacket(instance,
                 (byte) (instance.headYaw * 256 / 360)), dimensionKey);
-        server.getPlayerManager().sendToDimension(new EntityPositionS2CPacket(instance), dimensionKey);
+
+        //? if >=1.21.6 {
+        /*EntityPositionSyncS2CPacket positionPacket = EntityPositionSyncS2CPacket.create(instance);
+        *///?} else {
+        EntityPositionS2CPacket positionPacket = new EntityPositionS2CPacket(instance);
+         //?}
+
+        server.getPlayerManager().sendToDimension(positionPacket, dimensionKey);
 
         instance.getDataTracker().set(PlayerEntityAccessor.getPlayerModelParts(), (byte) 0x7f);
         instance.getAbilities().flying = false;
@@ -103,8 +123,7 @@ public class NPCSpawner {
         });
         return future;
         //?} else {
-        /*
-        return SkullBlockEntity.fetchProfileByName(profile.getName());
+        /*return SkullBlockEntity.fetchProfileByName(profile.getName());
         *///?}
     }
 

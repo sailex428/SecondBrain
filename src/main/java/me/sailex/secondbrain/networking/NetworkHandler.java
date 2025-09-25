@@ -158,8 +158,7 @@ public class NetworkHandler {
                 buf -> ((EndecBuffer) buf).read(CreateNpcPacket.ENDEC)
         );
         //?} else {
-        /*
-        CHANNEL.addEndecs(builder -> {
+        /*CHANNEL.addEndecs(builder -> {
             builder.register(ConfigPacket.ENDEC, ConfigPacket.class);
             builder.register(BaseConfig.ENDEC, BaseConfig.class);
             builder.register(NPCConfig.ENDEC, NPCConfig.class);
