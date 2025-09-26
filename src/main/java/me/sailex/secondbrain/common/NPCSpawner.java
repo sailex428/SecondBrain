@@ -75,7 +75,7 @@ public class NPCSpawner {
 
         EntityPlayerMPFake instance = EntityPlayerMPFake.respawnFake(server, worldIn, gameProfile /*? >=1.21.1 {*/ /*, SyncedClientOptions.createDefault() *//*?} else {*//*?}*/);
 
-        BlockPos finalSpawnPos = spawnPos != null ? spawnPos : /*? >=1.21.6 {*/ /*worldIn.getSpawnPos() *//*?} else {*/ instance.getSpawnPointPosition() /*?}*/;
+        BlockPos finalSpawnPos = spawnPos != null ? spawnPos : worldIn.getSpawnPos();
         instance.fixStartingPosition = () -> instance.refreshPositionAndAngles(finalSpawnPos.getX(), finalSpawnPos.getY(), finalSpawnPos.getZ(), (float) yaw, (float) pitch);
         server.getPlayerManager().onPlayerConnect(new FakeClientConnection(NetworkSide.SERVERBOUND), instance /*? >=1.21.1 {*/ /*, new ConnectedClientData(gameProfile, 0, instance.getClientOptions(), false) *//*?} else {*//*?}*/);
         //? if >=1.21.6 {
