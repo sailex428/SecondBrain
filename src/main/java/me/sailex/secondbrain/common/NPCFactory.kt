@@ -84,7 +84,7 @@ class NPCFactory(
     fun removeNpc(uuid: UUID, playerManager: PlayerManager) {
         val npcToRemove = uuidToNpc[uuid]
         if (npcToRemove != null) {
-            NPCSpawner.remove(npcToRemove.entity.uuid, playerManager)
+            npcToRemove.controller.stop()
             npcToRemove.llmClient.stopService()
             npcToRemove.eventHandler.stopService()
             npcToRemove.contextProvider.chunkManager.stopService()
@@ -93,6 +93,9 @@ class NPCFactory(
 
             val config = configProvider.getNpcConfig(uuid).get()
             config.isActive = false
+
+            NPCSpawner.remove(npcToRemove.entity.uuid, playerManager)
+
             LogUtil.infoInChat("Removed NPC with name ${config.npcName}")
         } else {
             LogUtil.errorInChat("No NPC with the uuid: $uuid exists!")
