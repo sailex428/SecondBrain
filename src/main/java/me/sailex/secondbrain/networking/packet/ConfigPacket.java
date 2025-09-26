@@ -19,7 +19,7 @@ public record ConfigPacket(BaseConfig baseConfig, List<NPCConfig> npcConfigs) {
      * Removes llm secret from the npcConfigs.
      */
     public void hideSecret() {
-        npcConfigs.forEach(config -> config.setOpenaiApiKey("this secret wont be shared with clients"));
+        npcConfigs.forEach(config -> config.setOpenaiApiKey("this wont be ever shared with any client. (to overwrite it create a new NPC)"));
     }
 
     @Override
