@@ -1,9 +1,9 @@
 import me.modmuss50.mpp.ReleaseType
 import net.fabricmc.loom.task.RemapJarTask
+import net.fabricmc.loom.task.prod.ClientProductionRunTask
+import net.fabricmc.loom.task.prod.ServerProductionRunTask
 import org.gradle.kotlin.dsl.named
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import net.fabricmc.loom.task.prod.ServerProductionRunTask
-import net.fabricmc.loom.task.prod.ClientProductionRunTask
 
 plugins {
     id("fabric-loom") version "1.11-SNAPSHOT"
@@ -34,6 +34,10 @@ repositories {
 }
 
 dependencies {
+    configurations.all {
+        exclude(group = "org.slf4j", module = "slf4j-simple")
+    }
+
     minecraft("com.mojang:minecraft:$mcVersion")
     mappings("net.fabricmc:yarn:$mcVersion+build.${property("deps.yarn_build")}:v2")
     modImplementation("net.fabricmc:fabric-loader:$fabricLoaderVersion")
@@ -73,26 +77,6 @@ dependencies {
 
     include(modImplementation("me.sailex:secondbrainengine:${property("deps.engine")}")!!)
     include(modImplementation("maven.modrinth:carpet:${project.property("carpet_version")}")!!)
-}
-
-tasks.register<ServerProductionRunTask>("prodServer") {
-    mods.from(file("build/libs/" + jarName))
-
-    installerVersion.set("1.0.1")
-    loaderVersion.set(loaderVersion)
-    minecraftVersion.set("1.21.1")
-
-    runDir.set(file("prod-server-run"))
-}
-
-tasks.register<ClientProductionRunTask>("prodClient") {
-    mods.from(file("build/libs/" + jarName))
-
-
-    runDir.set(file("prod-client-run"))
-
-    // Use XVFB on Linux CI for headless client runs (optional)
-    useXVFB.set(true)
 }
 
 loom {
@@ -189,4 +173,22 @@ publishMods {
     }
 }
 
+val jarPath = "versions/$mcVersion/build/libs"
 
+tasks.register<ServerProductionRunTask>("prodServer") {
+    group = "testing"
+    mods.from(file(jarPath))
+
+    installerVersion.set("1.0.1")
+    loaderVersion.set(fabricLoaderVersion)
+
+    runDir.set(file("prod-server-run"))
+}
+
+tasks.register<ClientProductionRunTask>("prodClient") {
+    group = "testing"
+    mods.from(file(jarPath))
+    // Use XVFB on Linux CI for headless client runs (optional)
+    useXVFB.set(false)
+    runDir.set(file("prod-client-run"))
+}
