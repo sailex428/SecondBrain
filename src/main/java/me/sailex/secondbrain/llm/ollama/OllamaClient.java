@@ -70,7 +70,7 @@ public class OllamaClient implements LLMClient {
             );
             return MessageConverter.toMessage(response.getChatHistory().getLast());
 		} catch (Exception e) {
-            throw new LLMServiceException("Could not generate Response for prompt: " + messages.getLast().getMessage(), e);
+            throw new LLMServiceException("Could not generate Response for last prompt: " + messages.getLast().getMessage(), e);
 		}
 	}
 

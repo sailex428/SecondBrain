@@ -67,7 +67,7 @@ class NPCEventHandler(
             }
         }, executorService)
             .exceptionally {
-                LogUtil.debugInChat(it.cause?.message)
+                LogUtil.debugInChat("Could not generate a response for prompt: $prompt")
                 LogUtil.error("Error occurred handling event: $prompt", it.cause)
                 null
             }
@@ -78,7 +78,7 @@ class NPCEventHandler(
     }
 
     override fun stopService() {
-        executorService.shutdown()
+        executorService.shutdownNow()
     }
 
     override fun queueIsEmpty(): Boolean {
