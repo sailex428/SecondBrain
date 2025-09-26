@@ -34,7 +34,6 @@ public class OllamaClient implements LLMClient {
 		this.url = url;
 		this.ollamaAPI = new OllamaAPI(url);
 		this.model = LLAMA_MODEL_NAME;
-		checkServiceIsReachable();
 		ollamaAPI.setVerbose(verbose);
 		ollamaAPI.setMaxChatToolCallRetries(1);
 		ollamaAPI.setRequestTimeoutSeconds(timeout);
@@ -50,8 +49,8 @@ public class OllamaClient implements LLMClient {
 		try {
 			boolean isOllamaServerReachable = ollamaAPI.ping();
 			if (!isOllamaServerReachable) {
-				throw new LLMServiceException();
-			}
+                throw new LLMServiceException("Ollama server is not reachable at: " +  url);
+            }
 		} catch (Exception e) {
 			throw new LLMServiceException("Ollama server is not reachable at: " +  url, e);
 		}
@@ -71,7 +70,7 @@ public class OllamaClient implements LLMClient {
             );
             return MessageConverter.toMessage(response.getChatHistory().getLast());
 		} catch (Exception e) {
-            throw new LLMServiceException("Could not generate Response for prompt: " + messages.getLast(), e);
+            throw new LLMServiceException("Could not generate Response for prompt: " + messages.getLast().getMessage(), e);
 		}
 	}
 

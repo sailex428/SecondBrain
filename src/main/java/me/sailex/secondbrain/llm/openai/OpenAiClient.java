@@ -50,12 +50,12 @@ public class OpenAiClient implements LLMClient {
 
     @Override
     public void checkServiceIsReachable() {
-        throw new UnsupportedOperationException("Not Implemented");
+        //i guess its always reachable?
     }
 
     @Override
     public void stopService() {
-        throw new UnsupportedOperationException("Not Implemented");
+        //theres also nothing to stop
 	}
 
 }
