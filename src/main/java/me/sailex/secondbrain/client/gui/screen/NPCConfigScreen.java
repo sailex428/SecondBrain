@@ -44,6 +44,7 @@ public class NPCConfigScreen extends ConfigScreen<NPCConfig> {
         }
 
         drawLLMTypeDropDown(panel);
+        drawLLMModelInput(panel);
 
         //draw without any dropdown click the fields of active llmType
         drawLlmInfo(panel);
@@ -73,7 +74,6 @@ public class NPCConfigScreen extends ConfigScreen<NPCConfig> {
                         .onChanged()
                         .subscribe(config::setOllamaUrl);
                 llmInfo.child(llmInfoTextArea);
-                drawLLMModelInput(panel);
             }
             case PLAYER2 -> {
                 CheckboxComponent isTTS = Components.checkbox(Text.of(NPCConfig.IS_TTS))
@@ -87,7 +87,6 @@ public class NPCConfigScreen extends ConfigScreen<NPCConfig> {
                         .onChanged()
                         .subscribe(config::setOpenaiApiKey);
                 llmInfo.child(llmInfoTextArea);
-                drawLLMModelInput(panel);
             }
         }
         //system prompt
@@ -123,9 +122,13 @@ public class NPCConfigScreen extends ConfigScreen<NPCConfig> {
 
     private void drawLLMModelInput(FlowLayout panel) {
         panel.childById(LabelComponent.class, "llmModel-label").text(Text.of(NPCConfig.LLM_MODEL));
-        TextAreaComponent llmModel = Components.textArea(Sizing.fill(17), Sizing.fill(7))
-                .text(config.getLlmModel());
-        llmModel.onChanged().subscribe(config::setLlmModel);
-        panel.childById(FlowLayout.class, "llmModel").child(llmModel);
+        switch (config.getLlmType()) {
+            case OLLAMA, OPENAI -> {
+                TextAreaComponent llmModel = Components.textArea(Sizing.fill(17), Sizing.fill(7))
+                        .text(config.getLlmModel());
+                llmModel.onChanged().subscribe(config::setLlmModel);
+                panel.childById(FlowLayout.class, "llmModel").child(llmModel);
+            }
+        }
     }
 }
