@@ -122,7 +122,10 @@ class NPCFactory(
         val controller = initController(npcEntity)
         val defaultPrompt = Instructions.getLlmSystemPrompt(config.npcName, config.llmCharacter, controller.commandExecutor.allCommands())
 
-        val history = ConversationHistory(llmClient, defaultPrompt)
+        val messages = resourceProvider.loadedConversations[npcEntity.uuid]
+            ?.map { Message(it.message, it.role) }
+            ?.toMutableList() ?: mutableListOf()
+        val history = ConversationHistory(llmClient, defaultPrompt, messages)
         val eventHandler = NPCEventHandler(llmClient, history, contextProvider, controller, config)
         return NPC(npcEntity, llmClient, history, eventHandler, controller, contextProvider, config)
     }

@@ -16,7 +16,7 @@ class ResourceProvider(
     private val conversationRepository: ConversationRepository
 ) {
     private lateinit var executorService: ExecutorService
-    private val loadedConversations = hashMapOf<UUID, List<Conversation>>()
+    val loadedConversations = hashMapOf<UUID, List<Conversation>>()
 
     /**
      * Loads conversations recipes from db/mc into memory
