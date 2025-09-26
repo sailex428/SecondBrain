@@ -44,7 +44,6 @@ public class NPCConfigScreen extends ConfigScreen<NPCConfig> {
         }
 
         drawLLMTypeDropDown(panel);
-        drawLLMModelInput(panel);
 
         //draw without any dropdown click the fields of active llmType
         drawLlmInfo(panel);
@@ -74,6 +73,7 @@ public class NPCConfigScreen extends ConfigScreen<NPCConfig> {
                         .onChanged()
                         .subscribe(config::setOllamaUrl);
                 llmInfo.child(llmInfoTextArea);
+                drawLLMModelInput(panel);
             }
             case PLAYER2 -> {
                 CheckboxComponent isTTS = Components.checkbox(Text.of(NPCConfig.IS_TTS))
@@ -87,6 +87,7 @@ public class NPCConfigScreen extends ConfigScreen<NPCConfig> {
                         .onChanged()
                         .subscribe(config::setOpenaiApiKey);
                 llmInfo.child(llmInfoTextArea);
+                drawLLMModelInput(panel);
             }
         }
         //system prompt
