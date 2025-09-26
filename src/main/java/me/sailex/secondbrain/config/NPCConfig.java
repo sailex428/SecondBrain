@@ -16,6 +16,7 @@ public class NPCConfig implements Configurable {
 	private String llmCharacter = Instructions.DEFAULT_CHARACTER_TRAITS;
 	private LLMType llmType = LLMType.OLLAMA;
 	private String ollamaUrl = "http://localhost:11434";
+    private String llmModel = "";
 	private String openaiApiKey = "not set"; //currently not needed
 	private String voiceId = "not set";
 	private String skinUrl = "not set";
@@ -28,12 +29,13 @@ public class NPCConfig implements Configurable {
 		this.npcName = npcName;
 	}
 
-	public NPCConfig(
+    public NPCConfig(
 		String npcName,
 		String uuid,
 		boolean isActive,
 		String llmCharacter,
 		LLMType llmType,
+        String llmModel,
 		String ollamaUrl,
 		String openaiApiKey,
 		boolean isTTS,
@@ -45,6 +47,7 @@ public class NPCConfig implements Configurable {
 		this.isActive = isActive;
 		this.llmCharacter = llmCharacter;
 		this.llmType = llmType;
+        this.llmModel = llmModel;
 		this.ollamaUrl = ollamaUrl;
 		this.openaiApiKey = openaiApiKey;
 		this.isTTS = isTTS;
@@ -111,7 +114,16 @@ public class NPCConfig implements Configurable {
 		return llmType;
 	}
 
-	public String getOllamaUrl() {
+    public String getLlmModel() {
+        return llmModel;
+    }
+
+    public void setLlmModel(String llmModel) {
+        this.llmModel = llmModel;
+    }
+
+
+    public String getOllamaUrl() {
 		return ollamaUrl;
 	}
 
@@ -187,6 +199,7 @@ public class NPCConfig implements Configurable {
 			Endec.BOOLEAN.fieldOf("isActive", NPCConfig::isActive),
 			Endec.STRING.fieldOf("llmDefaultPrompt", NPCConfig::getLlmCharacter),
 			Endec.forEnum(LLMType.class).fieldOf("llmType", NPCConfig::getLlmType),
+            Endec.STRING.fieldOf("llmModel", NPCConfig::getLlmModel),
 			Endec.STRING.fieldOf("ollamaUrl", NPCConfig::getOllamaUrl),
 			Endec.STRING.fieldOf("openaiApiKey", NPCConfig::getOpenaiApiKey),
 			Endec.BOOLEAN.fieldOf("isTTS", NPCConfig::isTTS),
@@ -211,7 +224,8 @@ public class NPCConfig implements Configurable {
 	public static final String NPC_NAME = "Name of the NPC";
 	public static final String EDIT_NPC = "Edit '%s'";
 	public static final String LLM_CHARACTER = "Characteristics";
-	public static final String LLM_TYPE = "Type of the LLM";
+	public static final String LLM_TYPE = "Type";
+    public static final String LLM_MODEL = "LLM Model";
 	public static final String OLLAMA_URL = "Ollama URL";
 	public static final String OPENAI_API_KEY = "OpenAI API Key";
 	public static final String IS_TTS = "Text to Speech";

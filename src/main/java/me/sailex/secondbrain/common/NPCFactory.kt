@@ -12,6 +12,7 @@ import me.sailex.secondbrain.database.resources.ResourceProvider
 import me.sailex.secondbrain.event.NPCEventHandler
 import me.sailex.secondbrain.exception.NPCCreationException
 import me.sailex.secondbrain.history.ConversationHistory
+import me.sailex.secondbrain.history.Message
 import me.sailex.secondbrain.llm.LLMClient
 import me.sailex.secondbrain.llm.LLMType
 import me.sailex.secondbrain.llm.ollama.OllamaClient
@@ -134,8 +135,8 @@ class NPCFactory(
     private fun initLLMClient(config: NPCConfig): LLMClient {
         val baseConfig = configProvider.baseConfig
         val llmClient = when (config.llmType) {
-            LLMType.OLLAMA -> OllamaClient(config.ollamaUrl, baseConfig.llmTimeout, baseConfig.isVerbose)
-            LLMType.OPENAI -> OpenAiClient(config.openaiApiKey, baseConfig.llmTimeout)
+            LLMType.OLLAMA -> OllamaClient(config.llmModel, config.ollamaUrl, baseConfig.llmTimeout, baseConfig.isVerbose)
+            LLMType.OPENAI -> OpenAiClient(config.llmModel, config.openaiApiKey, baseConfig.llmTimeout)
             LLMType.PLAYER2 -> Player2APIClient(config.voiceId, config.npcName, baseConfig.llmTimeout)
             else -> throw NPCCreationException("Invalid LLM type: ${config.llmType}")
         }
