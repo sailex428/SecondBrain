@@ -91,14 +91,6 @@ public class NPCConfigScreen extends ConfigScreen<NPCConfig> {
                         .onChanged()
                         .subscribe(config::setOllamaUrl);
                 llmInfo.child(llmInfoTextArea);
-
-                //system prompt
-                llmInfo.child(Components.label(Text.of(NPCConfig.LLM_CHARACTER)).shadow(true).margins(Insets.top(7)));
-                TextAreaComponent llmCharacter = Components.textArea(Sizing.fill(35), Sizing.fill(25));
-                llmCharacter.text(config.getLlmCharacter())
-                        .onChanged()
-                        .subscribe(config::setLlmCharacter);
-                llmInfo.child(llmCharacter);
             }
             case PLAYER2 -> {
                 CheckboxComponent isTTS = Components.checkbox(Text.of(NPCConfig.IS_TTS))
@@ -114,5 +106,12 @@ public class NPCConfigScreen extends ConfigScreen<NPCConfig> {
                 llmInfo.child(llmInfoTextArea);
             }
         }
+        //system prompt
+        llmInfo.child(Components.label(Text.of(NPCConfig.LLM_CHARACTER)).shadow(true).margins(Insets.top(7)));
+        TextAreaComponent llmCharacter = Components.textArea(Sizing.fill(35), Sizing.fill(25));
+        llmCharacter.text(config.getLlmCharacter())
+                .onChanged()
+                .subscribe(config::setLlmCharacter);
+        llmInfo.child(llmCharacter);
     }
 }
