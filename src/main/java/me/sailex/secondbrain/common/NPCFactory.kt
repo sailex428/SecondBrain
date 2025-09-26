@@ -37,8 +37,12 @@ class NPCFactory(
         private const val MAX_NUMBER_OF_NPC = 10
     }
 
-    private var executorService: ExecutorService = Executors.newSingleThreadExecutor()
+    private lateinit var executorService: ExecutorService
     val uuidToNpc = ConcurrentHashMap<UUID, NPC>()
+
+    fun init() {
+        executorService = Executors.newSingleThreadExecutor()
+    }
 
     fun createNpc(config: NPCConfig, server: MinecraftServer, spawnPos: BlockPos?, owner: PlayerEntity?) {
         CompletableFuture.runAsync({

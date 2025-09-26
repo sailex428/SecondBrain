@@ -173,7 +173,7 @@ public class Player2APIClient implements LLMClient {
 
     @Override
     public void stopService() {
-        throw new UnsupportedOperationException("Not Implemented");
+        //theres nothing to stop
     }
 
     private <T> T sendPostRequest(String url, Object requestBody, Class<T> responseType) throws IOException, HttpException {
