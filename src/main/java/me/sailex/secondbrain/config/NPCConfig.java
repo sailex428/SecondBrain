@@ -17,7 +17,7 @@ public class NPCConfig implements Configurable {
 	private LLMType llmType = LLMType.OLLAMA;
 	private String ollamaUrl = "http://localhost:11434";
     private String llmModel = "";
-	private String openaiApiKey = "not set"; //currently not needed
+	private String openaiApiKey = "";
 	private String voiceId = "not set";
 	private String skinUrl = "not set";
 

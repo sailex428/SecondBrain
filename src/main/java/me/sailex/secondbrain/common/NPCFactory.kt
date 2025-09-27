@@ -148,7 +148,7 @@ class NPCFactory(
     }
 
     private fun checkNpcName(npcName: String) {
-        if (uuidToNpc.values.any { it.entity.name.string == npcName }) {
+        if (uuidToNpc.values.any { it.entity.name.string == npcName } || configProvider.getNpcConfigByName(npcName).isPresent) {
             throw NPCCreationException("A NPC with the name '$npcName' already exists.")
         }
     }
