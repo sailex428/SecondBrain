@@ -93,8 +93,9 @@ public class ConfigProvider {
         npcConfigs.removeIf(config -> config != null && config.getLlmType() == llmType);
     }
 
-    public synchronized void addNpcConfig(NPCConfig npcConfig) {
+    public synchronized NPCConfig addNpcConfig(NPCConfig npcConfig) {
         npcConfigs.add(npcConfig);
+        return npcConfig;
     }
 
     public synchronized void updateNpcConfig(NPCConfig updatedConfig) {

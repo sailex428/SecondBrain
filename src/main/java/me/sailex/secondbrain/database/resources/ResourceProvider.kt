@@ -28,7 +28,7 @@ class ResourceProvider(
             uuids.forEach {
                 this.loadedConversations[it] = conversationRepository.selectByUuid(it)
             }
-            executorService.shutdown()
+            executorService.shutdownNow()
         }
     }
 

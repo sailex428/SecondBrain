@@ -208,6 +208,22 @@ public class NPCConfig implements Configurable {
 			NPCConfig::new
 	);
 
+    public static NPCConfig deepCopy(NPCConfig config) {
+        return new NPCConfig(
+                config.npcName,
+                config.uuid.toString(),
+                config.isActive,
+                config.llmCharacter,
+                config.llmType,
+                config.llmModel,
+                config.ollamaUrl,
+                config.openaiApiKey,
+                config.isTTS,
+                config.voiceId,
+                config.skinUrl
+        );
+    }
+
 	@Override
 	public String toString() {
 		return "NPCConfig{npcName=" + npcName +
@@ -219,6 +235,8 @@ public class NPCConfig implements Configurable {
 				",llmCharacter=" + llmCharacter +
 				",voiceId=" + voiceId + "}";
 	}
+
+
 
 	//name for fields for npc config screen
 	public static final String NPC_NAME = "Name of the NPC";
