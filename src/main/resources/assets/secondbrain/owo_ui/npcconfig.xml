@@ -17,17 +17,30 @@
                                     </children>
                                 </flow-layout>
 
-                                <flow-layout direction="vertical">
+                                <flow-layout direction="horizontal">
                                     <children>
-                                        <label id="llmType-label">
-                                            <shadow>true</shadow>
-                                        </label>
-                                        <dropdown id="llmType">
-                                            <sizing>
-                                                <horizontal method="fill">35</horizontal>
-                                                <vertical method="fill">14</vertical>
-                                            </sizing>
-                                        </dropdown>
+
+                                        <flow-layout direction="vertical">
+                                            <children>
+                                                <label id="llmType-label">
+                                                    <shadow>true</shadow>
+                                                </label>
+                                                <dropdown id="llmType">
+                                                    <sizing>
+                                                        <horizontal method="fill">18</horizontal>
+                                                    </sizing>
+                                                </dropdown>
+                                            </children>
+                                        </flow-layout>
+
+                                        <flow-layout direction="vertical" id="llmModel">
+                                            <children>
+                                                <label id="llmModel-label">
+                                                    <shadow>true</shadow>
+                                                </label>
+                                            </children>
+                                        </flow-layout>
+
                                     </children>
                                 </flow-layout>
 

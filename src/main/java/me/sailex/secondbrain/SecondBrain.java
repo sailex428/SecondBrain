@@ -32,7 +32,6 @@ public class SecondBrain implements ModInitializer {
 
         SqliteClient sqlite = new SqliteClient();
         RepositoryFactory repositoryFactory = new RepositoryFactory(sqlite);
-        repositoryFactory.initRepositories();
 
         ResourceProvider resourceProvider = new ResourceProvider(repositoryFactory.getConversationRepository());
 
@@ -53,7 +52,9 @@ public class SecondBrain implements ModInitializer {
 
         ServerLifecycleEvents.SERVER_STARTED.register(server -> {
             LogUtil.initialize(server, configProvider);
+            repositoryFactory.initRepositories();
             resourceProvider.loadResources(configProvider.getUuidsOfNpcs());
+            npcFactory.init();
         });
 
         syncOnPlayerLoad(synchronizer);
@@ -77,11 +78,11 @@ public class SecondBrain implements ModInitializer {
         ResourceProvider resourceProvider
 	) {
         ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
-            resourceProvider.saveResources();
             synchronizer.shutdown();
             npcFactory.shutdownNPCs(server);
-            configProvider.saveAll();
+            resourceProvider.saveResources();
             sqlite.closeConnection();
+            configProvider.saveAll();
             isFirstPlayerJoins = true;
         });
 	}
