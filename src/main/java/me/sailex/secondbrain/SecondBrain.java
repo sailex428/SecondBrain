@@ -78,11 +78,11 @@ public class SecondBrain implements ModInitializer {
         ResourceProvider resourceProvider
 	) {
         ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
-            resourceProvider.saveResources();
             synchronizer.shutdown();
             npcFactory.shutdownNPCs(server);
-            configProvider.saveAll();
+            resourceProvider.saveResources();
             sqlite.closeConnection();
+            configProvider.saveAll();
             isFirstPlayerJoins = true;
         });
 	}

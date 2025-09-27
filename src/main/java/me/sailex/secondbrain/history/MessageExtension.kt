@@ -32,7 +32,7 @@ fun Message.toOllamaChatMessage(): OllamaChatMessage = OllamaChatMessage(
 
 //openai
 fun ChatMessage.ResponseMessage.toMessage(): Message {
-    return Message(this.content, this.role.toString())
+    return Message(this.content, this.role.toString().lowercase())
 }
 
 fun Message.toChatMessage(): ChatMessage {
