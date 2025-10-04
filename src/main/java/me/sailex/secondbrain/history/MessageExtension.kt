@@ -31,17 +31,12 @@ fun Message.toOllamaChatMessage(): OllamaChatMessage = OllamaChatMessage(
 )
 
 //openai
-fun ChatMessage.toMessage(): Message {
-    return if (this is ChatMessage.SystemMessage) {
-        Message(this.content, this.role.toString().lowercase())
-    } else {
-        this as ChatMessage.UserMessage
-        return Message(this.content as String, this.role.toString().lowercase())
-    }
+fun ChatMessage.ResponseMessage.toMessage(): Message {
+    return Message(this.content, this.role.toString().lowercase())
 }
 
 fun Message.toChatMessage(): ChatMessage {
-    val role = ChatMessage.ChatRole.valueOf(this.role)
+    val role = ChatMessage.ChatRole.valueOf(this.role.uppercase())
     return if (role == ChatMessage.ChatRole.SYSTEM) {
         ChatMessage.SystemMessage.of(this.message)
     } else {
