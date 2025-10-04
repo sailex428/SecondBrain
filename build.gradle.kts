@@ -161,7 +161,6 @@ publishMods {
     discord {
         webhookUrl.set(providers.environmentVariable("DISCORD_WEBHOOK"))
         username.set("Update Bot")
-        avatarUrl.set("https://www.sailex.me/img/sailex_head.png")
         content.set(changelog.map { "## New version of SecondBrain is out! [$modVersion] \n$it" })
     }
 
