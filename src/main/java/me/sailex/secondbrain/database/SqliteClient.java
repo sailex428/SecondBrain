@@ -41,10 +41,10 @@ public class SqliteClient {
 	}
 
 	/**
-	 * Select data from the database.
+	 * Query the db.
 	 * @param sql the SQL query
 	 */
-	public ResultSet select(String sql) {
+	public ResultSet query(String sql) {
 		try {
 			Statement statement = connection.createStatement();
 			statement.closeOnCompletion();
@@ -56,7 +56,7 @@ public class SqliteClient {
 	}
 
 	/**
-	 * Insert data into the database.
+	 * Execute prepared statement.
 	 * @param statement the prepared statement
 	 */
 	public void insert(PreparedStatement statement) {

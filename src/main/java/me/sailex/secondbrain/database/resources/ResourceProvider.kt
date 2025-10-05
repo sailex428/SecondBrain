@@ -13,7 +13,7 @@ import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 class ResourceProvider(
-    private val conversationRepository: ConversationRepository
+    val conversationRepository: ConversationRepository
 ) {
     private lateinit var executorService: ExecutorService
     val loadedConversations = hashMapOf<UUID, List<Conversation>>()

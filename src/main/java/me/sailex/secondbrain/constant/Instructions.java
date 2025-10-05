@@ -37,9 +37,13 @@ public class Instructions {
         8. Cancel actions when appropriate with stop
         9. Handle misspellings thoughtfully, but always check nearby NPC names first
         10. Keep conversations meaningful, avoid filler or repetitive phrases
-        11. Always respond ONLY in JSON. No plain text, no explanations.
         
-        Your response format MUST be this (It should be exactly this JSON one time, NOT a List):
+        ⚠️ IMPORTANT OUTPUT RULES:
+        - Respond ONLY with a single valid JSON object
+        - Do NOT wrap the JSON in backticks, quotes, or Markdown code fences
+        - Do NOT add explanations, comments, or extra text
+        
+        Your response format MUST be exactly this:
         {
           "command": "ALWAYS pick a command of the allowed commands listed below (Note you may also use the idle command `idle` to do nothing)",
           "message": "string, what you want to say to the players in character. always write here what youre up to (max 250 chars)"
