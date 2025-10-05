@@ -42,9 +42,16 @@ class ConversationRepository(
         return executeAndProcessConversations(sql)
     }
 
+    /**
+     * Deletes all conversations of the given uuid.
+     */
+    fun deleteByUuid(uuid: UUID) {
+        val sql = "DELETE FROM conversations WHERE uuid = '%s'".format(uuid.toString())
+        sqliteClient.query(sql)
+    }
 
     private fun executeAndProcessConversations(sql: String): List<Conversation> {
-        val result = sqliteClient.select(sql)
+        val result = sqliteClient.query(sql)
         val conversations = arrayListOf<Conversation>()
 
         if (result == null) return emptyList()

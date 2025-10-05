@@ -46,7 +46,7 @@ public class NPCCreateCommand {
 		LLMType llmType = LLMType.valueOf(StringArgumentType.getString(context, LLM_TYPE));
 
 		NPCConfig config = NPCConfig.builder(name).llmType(llmType).build();
-		npcFactory.createNpc(config,  source.server, source.getBlockPos(), source);
+		npcFactory.createNpc(config, source.getServer(), source.getBlockPos(), source);
 		return 1;
 	}
 

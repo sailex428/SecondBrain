@@ -79,7 +79,7 @@ public class Player2APIClient implements LLMClient {
             Player2ResponseMessage result = sendChatRequest(request);
             return MessageConverter.toMessage(result);
         } catch (Exception e) {
-            throw new LLMServiceException("Could not generate Response for prompt: " + messages.getLast(), e);
+            throw new LLMServiceException("Could not generate Response for prompt: " + messages.getLast().getMessage(), e);
         }
     }
 
@@ -168,12 +168,12 @@ public class Player2APIClient implements LLMClient {
 
     @Override
     public void checkServiceIsReachable() throws LLMServiceException {
-        throw new UnsupportedOperationException("dont use this. this is checked by getHealthStatus");
+        this.getHealthStatus();
     }
 
     @Override
     public void stopService() {
-        throw new UnsupportedOperationException("Not Implemented");
+        //theres nothing to stop
     }
 
     private <T> T sendPostRequest(String url, Object requestBody, Class<T> responseType) throws IOException, HttpException {

@@ -93,13 +93,15 @@ public class ConfigProvider {
         npcConfigs.removeIf(config -> config != null && config.getLlmType() == llmType);
     }
 
-    public synchronized void addNpcConfig(NPCConfig npcConfig) {
+    public synchronized NPCConfig addNpcConfig(NPCConfig npcConfig) {
         npcConfigs.add(npcConfig);
+        return npcConfig;
     }
 
     public synchronized void updateNpcConfig(NPCConfig updatedConfig) {
         npcConfigs.forEach(config -> {
             if (config.getNpcName().equals(updatedConfig.getNpcName())) {
+                if (config.getOpenaiApiKey().isEmpty()) updatedConfig.setOpenaiApiKey(config.getOpenaiApiKey()); //prevent overwriting key with default string
                 npcConfigs.set(npcConfigs.indexOf(config), updatedConfig);
             }
         });

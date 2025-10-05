@@ -6,13 +6,13 @@ import me.sailex.secondbrain.llm.LLMClient
 
 class ConversationHistory(
     private val llmClient: LLMClient,
-    initMessage: String
+    initMessage: String,
+    val latestConversations: MutableList<Message>
 ) {
     companion object {
         private const val MAX_HISTORY_LENGTH = 30
         private val objectMapper = ObjectMapper()
     }
-    val latestConversations = mutableListOf<Message>()
 
     init {
         setInitMessage(initMessage)

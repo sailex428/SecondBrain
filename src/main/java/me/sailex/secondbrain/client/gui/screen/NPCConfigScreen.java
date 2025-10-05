@@ -43,21 +43,8 @@ public class NPCConfigScreen extends ConfigScreen<NPCConfig> {
             panel.childById(FlowLayout.class, "npcName").child(npcName);
         }
 
-        panel.childById(LabelComponent.class, "llmType-label").text(Text.of(NPCConfig.LLM_TYPE));
-        DropdownComponent llmTypeDropDown = panel.childById(DropdownComponent.class, "llmType");
-        if (isEdit) {
-            llmTypeDropDown.button(
-                    Text.of(config.getLlmType().toString()), button -> {});
-        } else {
-//        LLMType.getEntries().forEach(type ->
-            llmTypeDropDown.button(
-                    Text.of(LLMType.OLLAMA.toString()),
-                    button -> {
-                        config.setLlmType(LLMType.OLLAMA);
-                        drawLlmInfo(panel);
-                    });
-//        );
-        }
+        drawLLMTypeDropDown(panel);
+        drawLLMModelInput(panel);
 
         //draw without any dropdown click the fields of active llmType
         drawLlmInfo(panel);
@@ -77,7 +64,7 @@ public class NPCConfigScreen extends ConfigScreen<NPCConfig> {
         FlowLayout llmInfo = panel.childById(FlowLayout.class, "llmInfo");
         llmInfo.clearChildren();
 
-        //either show ollamaUrl or openai api key
+        //either show ollamaUrl or openai api key or isTTS checkbox
         TextAreaComponent llmInfoTextArea = Components.textArea(Sizing.fill(35), Sizing.fill(7));
         switch (config.getLlmType()) {
             case OLLAMA -> {
@@ -87,15 +74,6 @@ public class NPCConfigScreen extends ConfigScreen<NPCConfig> {
                         .onChanged()
                         .subscribe(config::setOllamaUrl);
                 llmInfo.child(llmInfoTextArea);
-
-                //system prompt
-                llmInfo.child(Components.label(Text.of(NPCConfig.LLM_CHARACTER)).shadow(true).margins(Insets.top(7)));
-                TextAreaComponent llmCharacter = Components.textArea(Sizing.fill(35), Sizing.fill(25));
-                llmCharacter.text(config.getLlmCharacter())
-                        .onChanged()
-                        .subscribe(config::setLlmCharacter);
-                llmInfo.child(llmCharacter);
-
             }
             case PLAYER2 -> {
                 CheckboxComponent isTTS = Components.checkbox(Text.of(NPCConfig.IS_TTS))
@@ -103,13 +81,54 @@ public class NPCConfigScreen extends ConfigScreen<NPCConfig> {
                         .onChanged(listener -> config.setTTS(!config.isTTS()));
                 llmInfo.child(isTTS);
             }
-//            case OPENAI -> {
-//                llmInfo.child(Components.label(Text.of(NPCConfig.OPENAI_API_KEY)).shadow(true));
-//                llmInfoTextArea.text(config.getOpenaiApiKey())
-//                        .onChanged()
-//                        .subscribe(config::setOpenaiApiKey);
-//                llmInfo.child(llmInfoTextArea);
-//            }
+            case OPENAI -> {
+                llmInfo.child(Components.label(Text.of(NPCConfig.OPENAI_API_KEY)).shadow(true));
+                llmInfoTextArea.text(config.getOpenaiApiKey())
+                        .onChanged()
+                        .subscribe(config::setOpenaiApiKey);
+                llmInfo.child(llmInfoTextArea);
+            }
+        }
+        //system prompt
+        llmInfo.child(Components.label(Text.of(NPCConfig.LLM_CHARACTER)).shadow(true).margins(Insets.top(7)));
+        TextAreaComponent llmCharacter = Components.textArea(Sizing.fill(35), Sizing.fill(25));
+        llmCharacter.text(config.getLlmCharacter())
+                .onChanged()
+                .subscribe(config::setLlmCharacter);
+        llmInfo.child(llmCharacter);
+    }
+
+    private void drawLLMTypeDropDown(FlowLayout panel) {
+        panel.childById(LabelComponent.class, "llmType-label").text(Text.of(NPCConfig.LLM_TYPE));
+        DropdownComponent llmTypeDropDown = panel.childById(DropdownComponent.class, "llmType");
+        if (isEdit) {
+            llmTypeDropDown.button(
+                    Text.of(config.getLlmType().toString()), button -> {});
+        } else {
+            llmTypeDropDown.button(
+                    Text.of(LLMType.OLLAMA.toString()),
+                    button -> {
+                        config.setLlmType(LLMType.OLLAMA);
+                        drawLlmInfo(panel);
+                    });
+            llmTypeDropDown.button(
+                    Text.of(LLMType.OPENAI.toString()),
+                    button -> {
+                        config.setLlmType(LLMType.OPENAI);
+                        drawLlmInfo(panel);
+                    });
+        }
+    }
+
+    private void drawLLMModelInput(FlowLayout panel) {
+        panel.childById(LabelComponent.class, "llmModel-label").text(Text.of(NPCConfig.LLM_MODEL));
+        switch (config.getLlmType()) {
+            case OLLAMA, OPENAI -> {
+                TextAreaComponent llmModel = Components.textArea(Sizing.fill(17), Sizing.fill(7))
+                        .text(config.getLlmModel());
+                llmModel.onChanged().subscribe(config::setLlmModel);
+                panel.childById(FlowLayout.class, "llmModel").child(llmModel);
+            }
         }
     }
 }

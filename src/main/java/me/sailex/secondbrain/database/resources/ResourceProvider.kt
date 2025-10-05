@@ -13,21 +13,22 @@ import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 class ResourceProvider(
-    private val conversationRepository: ConversationRepository
+    val conversationRepository: ConversationRepository
 ) {
-    private var executorService: ExecutorService = initExecutorPool()
-    private val loadedConversations = hashMapOf<UUID, List<Conversation>>()
+    private lateinit var executorService: ExecutorService
+    val loadedConversations = hashMapOf<UUID, List<Conversation>>()
 
     /**
      * Loads conversations recipes from db/mc into memory
      */
     fun loadResources(uuids: List<UUID>) {
+        executorService = initExecutorPool()
         runAsync {
             LogUtil.info("Loading conversations into memory...")
             uuids.forEach {
                 this.loadedConversations[it] = conversationRepository.selectByUuid(it)
             }
-            executorService.shutdown()
+            executorService.shutdownNow()
         }
     }
 

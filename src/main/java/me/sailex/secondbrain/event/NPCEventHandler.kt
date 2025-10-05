@@ -68,7 +68,7 @@ class NPCEventHandler(
             }
         }, executorService)
             .exceptionally {
-                LogUtil.debugInChat("Error occurred while handling prompt: ${it.cause?.message}")
+                LogUtil.debugInChat("Could not generate a response for prompt: $prompt")
                 LogUtil.error("Error occurred handling event: $prompt", it.cause)
                 null
             }
@@ -79,7 +79,7 @@ class NPCEventHandler(
     }
 
     override fun stopService() {
-        executorService.shutdown()
+        executorService.shutdownNow()
     }
 
     override fun queueIsEmpty(): Boolean {
@@ -101,9 +101,9 @@ class NPCEventHandler(
         }
         cmdExecutor.execute(commandWithPrefix, {
             controller.runUserTask(LookAtOwnerTask())
-            if (queueIsEmpty()) {
-                //this.onEvent(Instructions.COMMAND_FINISHED_PROMPT.format(commandWithPrefix))
-            }
+//            if (queueIsEmpty()) {
+//                //this.onEvent(Instructions.COMMAND_FINISHED_PROMPT.format(commandWithPrefix))
+//            }
         }, {
             this.onEvent(Instructions.COMMAND_ERROR_PROMPT.format(commandWithPrefix, it.message))
             LogUtil.error("Error executing command: $commandWithPrefix", it)

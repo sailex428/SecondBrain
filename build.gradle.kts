@@ -1,12 +1,12 @@
 import me.modmuss50.mpp.ReleaseType
 import net.fabricmc.loom.task.RemapJarTask
+import net.fabricmc.loom.task.prod.ClientProductionRunTask
+import net.fabricmc.loom.task.prod.ServerProductionRunTask
 import org.gradle.kotlin.dsl.named
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import net.fabricmc.loom.task.prod.ServerProductionRunTask
-import net.fabricmc.loom.task.prod.ClientProductionRunTask
 
 plugins {
-    id("fabric-loom") version "1.10-SNAPSHOT"
+    id("fabric-loom") version "1.11-SNAPSHOT"
     kotlin("jvm") version "2.1.0"
     id("maven-publish")
     id("me.modmuss50.mod-publish-plugin") version "0.8.1"
@@ -77,26 +77,6 @@ dependencies {
 
     include(modImplementation("me.sailex:secondbrainengine:${property("deps.engine")}")!!)
     include(modImplementation("maven.modrinth:carpet:${project.property("carpet_version")}")!!)
-}
-
-tasks.register<ServerProductionRunTask>("prodServer") {
-    mods.from(file("build/libs/" + jarName))
-
-    installerVersion.set("1.0.1")
-    loaderVersion.set("0.16.10")
-    minecraftVersion.set("1.21.1")
-
-    runDir.set(file("prod-server-run"))
-}
-
-tasks.register<ClientProductionRunTask>("prodClient") {
-    mods.from(file("build/libs/" + jarName))
-
-
-    runDir.set(file("prod-client-run"))
-
-    // Use XVFB on Linux CI for headless client runs (optional)
-    useXVFB.set(true)
 }
 
 loom {
@@ -181,7 +161,6 @@ publishMods {
     discord {
         webhookUrl.set(providers.environmentVariable("DISCORD_WEBHOOK"))
         username.set("Update Bot")
-        avatarUrl.set("https://www.sailex.me/img/sailex_head.png")
         content.set(changelog.map { "## New version of SecondBrain is out! [$modVersion] \n$it" })
     }
 
@@ -193,4 +172,22 @@ publishMods {
     }
 }
 
+val jarPath = "versions/$mcVersion/build/libs"
 
+tasks.register<ServerProductionRunTask>("prodServer") {
+    group = "testing"
+    mods.from(file(jarPath))
+
+    installerVersion.set("1.0.1")
+    loaderVersion.set(fabricLoaderVersion)
+
+    runDir.set(file("prod-server-run"))
+}
+
+tasks.register<ClientProductionRunTask>("prodClient") {
+    group = "testing"
+    mods.from(file(jarPath))
+    // Use XVFB on Linux CI for headless client runs (optional)
+    useXVFB.set(false)
+    runDir.set(file("prod-client-run"))
+}

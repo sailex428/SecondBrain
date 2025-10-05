@@ -22,8 +22,8 @@ public class OpenAiClient implements LLMClient {
 	 *
 	 * @param apiKey  the api key
 	 */
-	public OpenAiClient(String apiKey, int timeout) {
-		this.openAiModel = "gpt-4o-mini";
+	public OpenAiClient(String model, String apiKey, int timeout) {
+		this.openAiModel = model;
 		this.openAiService = SimpleOpenAI.builder().apiKey(apiKey).build();
 		this.timeout = timeout;
 	}
@@ -50,12 +50,12 @@ public class OpenAiClient implements LLMClient {
 
     @Override
     public void checkServiceIsReachable() {
-        throw new UnsupportedOperationException("Not Implemented");
+        //i guess its always reachable?
     }
 
     @Override
     public void stopService() {
-        throw new UnsupportedOperationException("Not Implemented");
+        //theres also nothing to stop
 	}
 
 }

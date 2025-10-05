@@ -7,7 +7,7 @@ A Fabric mod that brings intelligent NPCs to your minecraft world. Create player
 
 ## Requirements
       
-- **Minecraft Version**: 1.21.1
+- **Minecraft Version**: 1.20.1/1.21.1/1.21.8
 - **Dependencies**: [fapi](https://github.com/FabricMC/fabric), [owo-lib](https://modrinth.com/mod/owo-lib) on client and serverside
 - **Running Ollama server OR Player2 App**
 
@@ -76,7 +76,7 @@ This project is licensed under the [LGPL-3.0](https://github.com/sailex428/Secon
 ## Credits
 This project utilizes components from the following projects:
 - [fabric-carpet](https://github.com/gnembon/fabric-carpet)
-- [automatone](https://github.com/Ladysnake/Automatone)
+- [secondbrain-engine](https://github.com/sailex428/SecondBrainEngine)
 - [player2](https://player2.game)
 
 Thank you to the developers of these projects for their amazing work!
