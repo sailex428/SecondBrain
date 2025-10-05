@@ -3,11 +3,11 @@ plugins {
 }
 stonecutter active "1.20.1"
 
-for (version in stonecutter.versions.map { it.version }.distinct())
-
-tasks.register("publish$version") {
-    group = "publishing"
-    dependsOn(stonecutter.tasks.named("publishMods")
-        { metadata.version == version }
-    )
+for (version in stonecutter.versions.map { it.version }.distinct()) {
+    tasks.register("publish$version") {
+        group = "publishing"
+        dependsOn(stonecutter.tasks.named("publishMods")
+            { metadata.version == version }
+        )
+    }
 }
