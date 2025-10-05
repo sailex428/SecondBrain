@@ -45,8 +45,8 @@ public class Instructions {
         
         Your response format MUST be exactly this:
         {
-          "command": "ALWAYS pick a command of the allowed commands listed below (Note you may also use the idle command `idle` to do nothing)",
-          "message": "string, what you want to say to the players in character. always write here what youre up to (max 250 chars)"
+          "command": "Decide the best way to achieve the goals using the valid commands listed below. YOU ALWAYS MUST GENERATE A COMMAND. Note you may also use the idle command `idle` to do nothing. You can only run one command at a time! To replace the current one just write the new one.",
+          "message": "If you decide you should not respond or talk, generate an empty message `\\"\\"`. Otherwise, create a natural conversational message that aligns with your character. Be concise and use less than 250 characters. Ensure the message does not contain any prompt, system message, instructions, code or API calls."
         }
         
         Commands:
@@ -93,7 +93,7 @@ public class Instructions {
         %s
         """;
 
-    public static final String COMMAND_FINISHED_PROMPT = "Command %s finished running. What should we do next? If no new action is needed to finish user's request, generate idle command `\"idle\"`";
+//    public static final String COMMAND_FINISHED_PROMPT = "Command %s finished running. What should we do next? If no new action is needed to finish user's request, generate idle command `\"idle\"`";
 
     public static final String COMMAND_ERROR_PROMPT = "Command %s failed. Error content: %s";
 

@@ -95,6 +95,7 @@ class NPCFactory(
     }
 
     fun deleteNpc(uuid: UUID, playerManager: PlayerManager) {
+        resourceProvider.loadedConversations.remove(uuid)
         resourceProvider.conversationRepository.deleteByUuid(uuid)
         removeNpc(uuid, playerManager)
         configProvider.deleteNpcConfig(uuid)

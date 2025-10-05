@@ -4,6 +4,7 @@ import com.google.gson.GsonBuilder
 import me.sailex.altoclef.AltoClefController
 import me.sailex.altoclef.tasks.LookAtOwnerTask
 import me.sailex.secondbrain.config.NPCConfig
+import me.sailex.secondbrain.constant.Instructions
 import me.sailex.secondbrain.context.ContextProvider
 import me.sailex.secondbrain.history.ConversationHistory
 import me.sailex.secondbrain.history.Message
@@ -100,11 +101,11 @@ class NPCEventHandler(
         }
         cmdExecutor.execute(commandWithPrefix, {
             controller.runUserTask(LookAtOwnerTask())
-            if (queueIsEmpty()) {
-                //this.onEvent(Instructions.COMMAND_FINISHED_PROMPT.format(commandWithPrefix))
-            }
+//            if (queueIsEmpty()) {
+//                //this.onEvent(Instructions.COMMAND_FINISHED_PROMPT.format(commandWithPrefix))
+//            }
         }, {
-            //this.onEvent(Instructions.COMMAND_ERROR_PROMPT.format(commandWithPrefix, it.message))
+            this.onEvent(Instructions.COMMAND_ERROR_PROMPT.format(commandWithPrefix, it.message))
             LogUtil.error("Error executing command: $commandWithPrefix", it)
         })
     }
