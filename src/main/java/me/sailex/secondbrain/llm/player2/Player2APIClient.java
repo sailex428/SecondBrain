@@ -79,7 +79,7 @@ public class Player2APIClient implements LLMClient {
             Player2ResponseMessage result = sendChatRequest(request);
             return MessageConverter.toMessage(result);
         } catch (Exception e) {
-            throw new LLMServiceException("Could not generate Response for prompt: " + messages.getLast().getMessage(), e);
+            throw new LLMServiceException("Could not generate Response for prompt: " + messages.get(messages.size() - 1).getMessage(), e);
         }
     }
 

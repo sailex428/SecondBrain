@@ -58,14 +58,14 @@ public class OllamaClient implements LLMClient {
 	@Override
 	public Message chat(List<Message> messages) {
 		try {
-			OllamaChatResult response = ollamaAPI.chat(model,
+			List<OllamaChatMessage> response = ollamaAPI.chat(model,
                     messages.stream()
                     .map(MessageConverter::toOllamaChatMessage)
                     .collect(Collectors.toList())
-            );
-            return MessageConverter.toMessage(response.getChatHistory().getLast());
+            ).getChatHistory();
+            return MessageConverter.toMessage(response.get(response.size() - 1));
 		} catch (Exception e) {
-            throw new LLMServiceException("Could not generate Response for last prompt: " + messages.getLast().getMessage(), e);
+            throw new LLMServiceException("Could not generate Response for last prompt: " + messages.get(messages.size() - 1).getMessage(), e);
 		}
 	}
 

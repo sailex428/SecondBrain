@@ -21,7 +21,7 @@ val jarName = ("secondbrain-$mcVersion-v$version-$stage")
 val owoLib = properties["owo_version"].toString()
 val fabricLangKotlin = properties["fabric_lang_kotlin"].toString()
 
-val javaVersion = if (stonecutter.eval(mcVersion, ">=1.20.6")) JavaVersion.VERSION_21 else JavaVersion.VERSION_17
+val stringJavaVersion = if (stonecutter.eval(mcVersion, ">=1.20.6")) "21" else "17"
 
 repositories {
     gradlePluginPortal()
@@ -88,15 +88,16 @@ loom {
 
 java {
     withSourcesJar()
+    val javaVersion = JavaVersion.toVersion(stringJavaVersion)
     targetCompatibility = javaVersion
     sourceCompatibility = javaVersion
 }
 
 kotlin {
     compilerOptions {
-        jvmTarget = if (stonecutter.eval(mcVersion, ">=1.20.6")) JvmTarget.JVM_21 else JvmTarget.JVM_17
+        jvmTarget = JvmTarget.fromTarget(stringJavaVersion)
     }
-    jvmToolchain(21)
+    jvmToolchain(stringJavaVersion.toInt())
 }
 
 tasks.jar {
