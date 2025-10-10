@@ -8,7 +8,7 @@ import java.util.List;
 public record Chat(List<Choice> choices) {
 
     public Player2ResponseMessage firstMessage() {
-        return choices.getFirst().message();
+        return choices.get(0).message();
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)

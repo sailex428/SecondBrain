@@ -64,7 +64,7 @@ public class Player2NpcSynchronizer {
                         .uuid(entry.getKey())
                         .llmDefaultPrompt(character.description())
                         .llmType(LLMType.PLAYER2)
-                        .voiceId(character.voice_ids().getFirst())
+                        .voiceId(character.voice_ids().get(0))
                         .skinUrl(character.meta().skin_url())
                         .build();
                 npcFactory.createNpc(config, server, spawnPos, owner);

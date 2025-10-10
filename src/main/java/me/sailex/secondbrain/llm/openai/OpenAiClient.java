@@ -44,7 +44,7 @@ public class OpenAiClient implements LLMClient {
                     .firstMessage();
             return MessageConverter.toMessage(responseMessage);
         } catch (Exception e) {
-            throw new LLMServiceException("Could not generate Response for prompt: " + messages.getLast(), e);
+            throw new LLMServiceException("Could not generate Response for prompt: " + messages.get(messages.size() - 1).getMessage(), e);
         }
     }
 
