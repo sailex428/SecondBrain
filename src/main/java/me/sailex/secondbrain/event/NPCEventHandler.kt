@@ -61,10 +61,13 @@ class NPCEventHandler(
             val parsedMessage = parse(response.message)
             execute(parsedMessage.command)
 
-            if (llmClient is Player2APIClient && config.isTTS) {
-                llmClient.startTextToSpeech(parsedMessage.message)
-            } else {
-                controller.controllerExtras.chat(parsedMessage.message)
+            //prevent printing multiple times the same when llm is running in command syntax errors
+            if (parsedMessage.message != history.getLastMessage()) {
+                if (llmClient is Player2APIClient && config.isTTS) {
+                    llmClient.startTextToSpeech(parsedMessage.message)
+                } else {
+                    controller.controllerExtras.chat(parsedMessage.message)
+                }
             }
         }, executorService)
             .exceptionally {
@@ -86,7 +89,7 @@ class NPCEventHandler(
         return executorService.queue.isEmpty()
     }
 
-    //TODO: refactor this
+    //TODO: refactor this into own class
     fun parse(content: String): CommandMessage {
         val message = gson.fromJson(content, CommandMessage::class.java)
         return message

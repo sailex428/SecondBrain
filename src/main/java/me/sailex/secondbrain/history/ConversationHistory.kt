@@ -45,4 +45,8 @@ class ConversationHistory(
     private fun setInitMessage(initMessage: String) {
         latestConversations.add(0, Message(initMessage, "system"))
     }
+
+    fun getLastMessage(): String {
+        return latestConversations.last().message
+    }
 }
