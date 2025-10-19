@@ -162,7 +162,9 @@ publishMods {
     discord {
         webhookUrl.set(providers.environmentVariable("DISCORD_WEBHOOK"))
         username.set("Update Bot")
-        content.set(changelog.map { "## New version of SecondBrain is out! [$modVersion] \n$it" })
+        val dcMessage = changelog.map { "## New version of SecondBrain is out! [$modVersion] \n$it" }.get()
+        val shortenedMessage = if (dcMessage.length > 1900) dcMessage.take(1900) + " ...\n\nCheck the full changelog on Github or Modrinth." else dcMessage
+        content.set(shortenedMessage)
     }
 
     modrinth {
