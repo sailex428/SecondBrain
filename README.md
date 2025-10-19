@@ -7,12 +7,9 @@ A Fabric mod that brings intelligent NPCs to your minecraft world. Create player
 
 > **State of Development**: (19.10.25) Fixing issues executing NPC tasks, Updating it to 1.21.1 and the latest mc version
 
-![Main Screen](https://cdn.modrinth.com/data/CfgaDAdq/images/17da8eff5694c73a3735eaaaaae3e3e2e6c7a5e5.png)
-
-
 ## Requirements
       
-- **Minecraft Version**: 1.20.1 (the latest version of this mod only supports 1.20.1 currenly)
+- **Minecraft Version**: 1.20.1 (the latest version of this mod only supports 1.20.1 currently)
 - **Running Ollama server OR Player2 App OR an OpenAi Key**
 
 ## Mod Installation
