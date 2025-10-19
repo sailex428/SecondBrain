@@ -28,7 +28,7 @@ jobs:
           echo "set Release Version to: $VERSION"
 
       - name: Generate Changelog
-        uses: orhun/git-cliff-action@v3
+        uses: orhun/git-cliff-action@v4
         with:
           config: cliff.toml
           args: --verbose --unreleased --tag ${{ steps.get_version.outputs.MOD_VERSION }}
