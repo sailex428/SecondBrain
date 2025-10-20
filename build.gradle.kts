@@ -84,6 +84,9 @@ loom {
         ideConfigGenerated(true)
         runDir = "../../server"
     }
+    mixin {
+        defaultRefmapName = "${project.property("mod_name").toString()}-$mcVersion-refmap.json"
+    }
 }
 
 java {
