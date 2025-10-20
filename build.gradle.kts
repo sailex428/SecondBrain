@@ -17,7 +17,8 @@ val modVersion = version as String
 val mcVersion = property("mc.version").toString()
 val fabricLoaderVersion = property("deps.fabric_loader").toString()
 val stage = rootProject.extra["deps.stage"].toString()
-val jarName = ("secondbrain-$mcVersion-v$version-$stage")
+val modName = rootProject.extra["mod.name"].toString()
+val jarName = ("$modName-$mcVersion-v$version-$stage")
 val owoLib = properties["owo_version"].toString()
 val fabricLangKotlin = properties["fabric_lang_kotlin"].toString()
 
@@ -85,7 +86,7 @@ loom {
         runDir = "../../server"
     }
     mixin {
-        defaultRefmapName = "${project.property("mod_name").toString()}-$mcVersion-refmap.json"
+        defaultRefmapName = "$modName-$mcVersion-refmap.json"
     }
 }
 
