@@ -177,6 +177,13 @@ publishMods {
         projectId.set(property("publish.modrinth").toString())
         minecraftVersions.add(mcVersion)
     }
+
+    curseforge {
+        displayName.set("v$modVersion [$mcVersion] SecondBrain")
+        accessToken.set(providers.environmentVariable("CURSEFORGE_API_KEY"))
+        projectId.set(property("publish.curseforge").toString())
+        minecraftVersions.add(mcVersion)
+    }
 }
 
 val jarPath = "versions/$mcVersion/build/libs"
