@@ -31,7 +31,7 @@ repositories {
     maven("https://maven.shedaniel.me/")
     maven("https://maven.terraformersmc.com/releases/")
     maven("https://maven.wispforest.io")
-    maven("https://api.modrinth.com/maven")
+    maven { url = uri("https://jitpack.io") }
 }
 
 dependencies {
@@ -77,7 +77,7 @@ dependencies {
     include(modImplementation("org.apache.httpcomponents:httpcore:4.4")!!)
 
     include(modImplementation("me.sailex:secondbrainengine:${property("deps.engine")}")!!)
-    include(modImplementation("maven.modrinth:carpet:${project.property("carpet_version")}")!!)
+    modImplementation("com.github.gnembon:fabric-carpet:${project.property("carpet_version")}")
 }
 
 loom {
