@@ -47,12 +47,10 @@ dependencies {
 
     include(modImplementation("io.wispforest:owo-lib:$owoLib")!!)
 
-    if (stonecutter.eval(mcVersion, "<=1.20.1")) {
-        include(modImplementation("io.wispforest:endec:0.1.12")!!)
-        include(modImplementation("io.wispforest.endec:gson:0.1.7")!!)
-        include(modImplementation("io.wispforest.endec:netty:0.1.6")!!)
-        include(modImplementation("io.wispforest.endec:jankson:0.1.7")!!)
-    }
+    include(modImplementation("io.wispforest:endec:0.1.12")!!)
+    include(modImplementation("io.wispforest.endec:gson:0.1.7")!!)
+    include(modImplementation("io.wispforest.endec:netty:0.1.6")!!)
+    include(modImplementation("io.wispforest.endec:jankson:0.1.7")!!)
 
     compileOnly("org.projectlombok:lombok:1.18.34")
     annotationProcessor("org.projectlombok:lombok:1.18.34")
