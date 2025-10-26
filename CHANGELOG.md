@@ -31,10 +31,12 @@ Clarified Minecraft version support in README.
 - Add config for publishing to curseforge
 - Change carpet repo
 - Update to mc 1.21.8 -> main
+- Add projectSlug to curseforge publish config
 
 ### 📚 Documentation
 
 - Update changelog for version 3.0.0
+- Update changelog for version 3.0.1
 - Update changelog for version 3.0.1
 
 ### ⚙️ Miscellaneous Tasks
