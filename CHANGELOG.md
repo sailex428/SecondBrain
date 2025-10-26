@@ -35,6 +35,7 @@ Clarified Minecraft version support in README.
 ### 📚 Documentation
 
 - Update changelog for version 3.0.0
+- Update changelog for version 3.0.1
 
 ### ⚙️ Miscellaneous Tasks
 
@@ -43,5 +44,7 @@ Clarified Minecraft version support in README.
 - Bump engin
 - Bump engine version
 - Bump version
+- Add CURSEFORGE_API_KEY to publish workflow
+- Use publishMods task in publish workflow
 
 Download the new release on [Modrinth](https://modrinth.com/mod/secondbrain/versions).
