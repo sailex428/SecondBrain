@@ -182,6 +182,7 @@ publishMods {
         accessToken.set(providers.environmentVariable("CURSEFORGE_API_KEY"))
         projectId.set(property("publish.curseforge").toString())
         minecraftVersions.add(mcVersion)
+        projectSlug.set(modName)
     }
 }
 
