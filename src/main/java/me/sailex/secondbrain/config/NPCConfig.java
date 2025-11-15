@@ -19,7 +19,7 @@ public class NPCConfig implements Configurable {
     private String llmModel = "";
 	private String openaiApiKey = "";
 	private String voiceId = "not set";
-	private String skinUrl = "not set";
+	private String skinUrl = "";
 
 	private boolean isTTS = false;
 
