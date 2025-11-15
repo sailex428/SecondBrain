@@ -3,7 +3,13 @@ package me.sailex.secondbrain.common;
 import carpet.patches.EntityPlayerMPFake;
 import carpet.patches.FakeClientConnection;
 import com.mojang.authlib.GameProfile;
+import com.mojang.authlib.properties.Property;
+import me.sailex.secondbrain.config.NPCConfig;
+import me.sailex.secondbrain.mineskin.MineSkinProxyClient;
+import me.sailex.secondbrain.mineskin.MineSkinProxyClientException;
+import me.sailex.secondbrain.mineskin.SkinResponse;
 import me.sailex.secondbrain.mixin.PlayerEntityAccessor;
+import me.sailex.secondbrain.util.LogUtil;
 import net.minecraft.block.entity.SkullBlockEntity;
 import net.minecraft.network.NetworkSide;
 import net.minecraft.network.packet.s2c.play.EntitySetHeadYawS2CPacket;
@@ -43,6 +49,9 @@ import net.minecraft.block.entity.SkullBlockEntity;
 
 public class NPCSpawner {
 
+    public static final String TEXTURES = "textures";
+    public static final MineSkinProxyClient skinClient = new MineSkinProxyClient();
+
     private NPCSpawner() {}
 
     /**
@@ -51,14 +60,25 @@ public class NPCSpawner {
      * Fetches skin of the provided player name from mojang api and uses it on the NPC.
      */
     public static void spawn(
-        GameProfile profile,
+        NPCConfig config,
         MinecraftServer server,
         BlockPos spawnPos,
         Consumer<ServerPlayerEntity> npcConsumer
     ) {
+        GameProfile profile = new GameProfile(config.getUuid(), config.getNpcName());
+        String skinUrl = config.getSkinUrl();
+        if (!skinUrl.isEmpty()) {
+            Property property = fetchSkin(config.getSkinUrl());
+            if (property != null) {
+                profile.getProperties().put(TEXTURES, property);
+                spawnEntity(server, profile, spawnPos, npcConsumer);
+                return;
+            }
+        }
+
         fetchGameProfile(profile).thenAcceptAsync(p -> {
             GameProfile current = profile;
-            if (p.isPresent() && p.get().getName().equals(profile.getName())) {
+            if (p.isPresent() && p.get().getName().equals(config.getNpcName())) {
                 current = p.get();
             }
             spawnEntity(server, current, spawnPos, npcConsumer);
@@ -117,7 +137,6 @@ public class NPCSpawner {
         //? >=1.21.1 {
         /*return SkullBlockEntity.fetchProfileByName(profile.getName());
         *///?} else {
-        
         CompletableFuture<Optional<GameProfile>> future = new CompletableFuture<>();
         SkullBlockEntity.loadProperties(profile, gp -> {
             if (gp != null) {
@@ -128,6 +147,18 @@ public class NPCSpawner {
         });
         return future;
         //?}
+    }
+
+    private static Property fetchSkin(String skinUrl) {
+        try {
+            if (skinUrl != null) {
+                SkinResponse response = skinClient.getSkin(skinUrl);
+                return new Property(TEXTURES, response.texture(), response.signature());
+            }
+        } catch (MineSkinProxyClientException e) {
+            LogUtil.error(e);
+        }
+        return null;
     }
 
     public static void remove(UUID uuid, PlayerManager playerManager) {

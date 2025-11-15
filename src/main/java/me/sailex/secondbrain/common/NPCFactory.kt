@@ -1,6 +1,5 @@
 package me.sailex.secondbrain.common
 
-import com.mojang.authlib.GameProfile
 import me.sailex.altoclef.AltoClefController
 import me.sailex.automatone.api.BaritoneAPI
 import me.sailex.secondbrain.callback.NPCEvents
@@ -55,7 +54,7 @@ class NPCFactory(
             val config = updateConfig(newConfig)
             val llmClient = initLLMClient(config)
 
-            NPCSpawner.spawn(GameProfile(config.uuid, name), server, spawnPos) { npcEntity ->
+            NPCSpawner.spawn(config, server, spawnPos) { npcEntity ->
                 config.uuid = npcEntity.uuid
                 val npc = createNpcInstance(npcEntity, config, llmClient)
                 npc.controller.owner = owner
