@@ -158,7 +158,7 @@ publishMods {
     github {
         accessToken.set(providers.environmentVariable("GITHUB_TOKEN"))
         repository.set(providers.gradleProperty("github.repo"))
-        tagName.set("v$modVersion")
+        tagName.set("v$modVersion-$mcVersion")
         commitish.set("main")
     }
 
