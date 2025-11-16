@@ -1,6 +1,7 @@
 package me.sailex.secondbrain.event
 
 import com.google.gson.GsonBuilder
+import com.google.gson.JsonParseException
 import me.sailex.altoclef.AltoClefController
 import me.sailex.altoclef.tasks.LookAtOwnerTask
 import me.sailex.secondbrain.config.NPCConfig
@@ -59,7 +60,10 @@ class NPCEventHandler(
             history.add(response)
 
             val parsedMessage = parse(response.message)
-            execute(parsedMessage.command)
+            val succeeded = execute(parsedMessage.command)
+            if (!succeeded) {
+                return@runAsync
+            }
 
             //prevent printing multiple times the same when llm is running in command syntax errors
             if (parsedMessage.message != history.getLastMessage()) {
@@ -71,8 +75,7 @@ class NPCEventHandler(
             }
         }, executorService)
             .exceptionally {
-                val root = generateSequence(it) { e -> e.cause }.last()
-                LogUtil.debugInChat("Could not generate a response: " + root.message)
+                LogUtil.debugInChat("Could not generate a response: " + buildErrorMessage(it))
                 LogUtil.error("Error occurred handling event: $prompt", it)
                 null
             }
@@ -91,12 +94,28 @@ class NPCEventHandler(
     }
 
     //TODO: refactor this into own class
-    fun parse(content: String): CommandMessage {
-        val message = gson.fromJson(content, CommandMessage::class.java)
-        return message
+    private fun parse(content: String): CommandMessage {
+        return try {
+            parseContent(content)
+        } catch (_: JsonParseException) {
+            val cleanedContent = content
+                .replace("```json", "")
+                .replace("```", "")
+            try {
+                parseContent(cleanedContent)
+            } catch (e: JsonParseException) {
+                throw CustomEventException("The selected model may be too small to understand the context or to reliably produce valid JSON. " +
+                        "Please switch to a larger or more capable LLM model.", e)
+            }
+        }
     }
 
-    fun execute(command: String) {
+    private fun parseContent(content: String): CommandMessage {
+        return gson.fromJson(content, CommandMessage::class.java)
+    }
+
+    fun execute(command: String): Boolean {
+        var successful = true
         val cmdExecutor = controller.commandExecutor
         val commandWithPrefix = if (cmdExecutor.isClientCommand(command)) {
             command
@@ -109,14 +128,25 @@ class NPCEventHandler(
 //                //this.onEvent(Instructions.COMMAND_FINISHED_PROMPT.format(commandWithPrefix))
 //            }
         }, {
+            successful = false
             this.onEvent(Instructions.COMMAND_ERROR_PROMPT.format(commandWithPrefix, it.message))
             LogUtil.error("Error executing command: $commandWithPrefix", it)
         })
+        return successful
     }
 
     data class CommandMessage(
         val command: String,
         val message: String
     )
+
+    private fun buildErrorMessage(exception: Throwable): String? {
+        val chain = generateSequence(exception) { it.cause }
+        val custom = chain.filterIsInstance<CustomEventException>().firstOrNull()
+        if (custom != null) {
+            return custom.message
+        }
+        return generateSequence(exception) { it.cause }.last().message
+    }
 
 }
