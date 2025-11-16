@@ -71,8 +71,9 @@ class NPCEventHandler(
             }
         }, executorService)
             .exceptionally {
-                LogUtil.debugInChat("Could not generate a response for prompt: $prompt")
-                LogUtil.error("Error occurred handling event: $prompt", it.cause)
+                val root = generateSequence(it) { e -> e.cause }.last()
+                LogUtil.debugInChat("Could not generate a response: " + root.message)
+                LogUtil.error("Error occurred handling event: $prompt", it)
                 null
             }
     }
