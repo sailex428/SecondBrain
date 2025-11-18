@@ -3,7 +3,7 @@ package me.sailex.secondbrain.networking;
 import io.wispforest.owo.network.OwoNetChannel;
 import me.sailex.secondbrain.auth.PlayerAuthorizer;
 import me.sailex.secondbrain.callback.STTCallback;
-import me.sailex.secondbrain.common.NPCFactory;
+import me.sailex.secondbrain.common.NPCService;
 import me.sailex.secondbrain.config.BaseConfig;
 import me.sailex.secondbrain.config.ConfigProvider;
 import me.sailex.secondbrain.config.NPCConfig;
@@ -30,12 +30,12 @@ public class NetworkHandler {
     public static final Identifier CONFIG_CHANNEL_ID = Identifier.of(MOD_ID, "config-channel");
     public static final OwoNetChannel CHANNEL = OwoNetChannel.create(CONFIG_CHANNEL_ID);
     private final ConfigProvider configProvider;
-    private final NPCFactory npcFactory;
+    private final NPCService npcService;
     private final PlayerAuthorizer authorizer;
 
-    public NetworkHandler(ConfigProvider configProvider, NPCFactory npcFactory, PlayerAuthorizer authorizer) {
+    public NetworkHandler(ConfigProvider configProvider, NPCService npcService, PlayerAuthorizer authorizer) {
         this.configProvider = configProvider;
-        this.npcFactory = npcFactory;
+        this.npcService = npcService;
         this.authorizer = authorizer;
     }
 
@@ -85,7 +85,7 @@ public class NetworkHandler {
     private void registerAddNpc() {
         CHANNEL.registerServerbound(CreateNpcPacket.class, (createNpcPacket, serverAccess) -> {
             if (authorizer.isAuthorized(serverAccess)) {
-                npcFactory.createNpc(createNpcPacket.npcConfig(), serverAccess.runtime(),
+                npcService.createNpc(createNpcPacket.npcConfig(), serverAccess.runtime(),
                         serverAccess.player().getBlockPos(), serverAccess.player());
             }
         });
@@ -98,9 +98,9 @@ public class NetworkHandler {
                 UUID uuid = UUID.fromString(configPacket.uuid());
 
                 if (configPacket.isDelete()) {
-                    npcFactory.deleteNpc(uuid, playerManager);
+                    npcService.deleteNpc(uuid, playerManager);
                 } else {
-                    npcFactory.removeNpc(uuid, playerManager);
+                    npcService.removeNpc(uuid, playerManager);
                 }
             }
         });

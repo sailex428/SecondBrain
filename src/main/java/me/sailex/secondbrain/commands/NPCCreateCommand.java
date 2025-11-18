@@ -7,9 +7,9 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import lombok.AllArgsConstructor;
+import me.sailex.secondbrain.common.NPCService;
 import me.sailex.secondbrain.config.NPCConfig;
 import me.sailex.secondbrain.llm.LLMType;
-import me.sailex.secondbrain.common.NPCFactory;
 import me.sailex.secondbrain.util.LogUtil;
 
 import net.minecraft.server.command.ServerCommandSource;
@@ -20,7 +20,7 @@ public class NPCCreateCommand {
 
 	private static final String LLM_TYPE = "llm-type";
 
-	private final NPCFactory npcFactory;
+	private final NPCService npcService;
 
 	public LiteralArgumentBuilder<ServerCommandSource> getCommand() {
 		return literal("add")
@@ -46,7 +46,7 @@ public class NPCCreateCommand {
 		LLMType llmType = LLMType.valueOf(StringArgumentType.getString(context, LLM_TYPE));
 
 		NPCConfig config = NPCConfig.builder(name).llmType(llmType).build();
-		npcFactory.createNpc(config, source.getServer(), source.getBlockPos(), source);
+		npcService.createNpc(config, source.getServer(), source.getBlockPos(), source);
 		return 1;
 	}
 

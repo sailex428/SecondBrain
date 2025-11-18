@@ -6,10 +6,10 @@ import static net.minecraft.server.command.CommandManager.literal;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
-import me.sailex.secondbrain.common.NPCFactory;
 
 import lombok.AllArgsConstructor;
 
+import me.sailex.secondbrain.common.NPCService;
 import me.sailex.secondbrain.config.ConfigProvider;
 import me.sailex.secondbrain.config.NPCConfig;
 import me.sailex.secondbrain.util.LogUtil;
@@ -20,7 +20,7 @@ import java.util.Optional;
 @AllArgsConstructor
 public class NPCRemoveCommand {
 
-	private final NPCFactory npcFactory;
+	private final NPCService npcService;
 	private final ConfigProvider configProvider;
 
 	public LiteralArgumentBuilder<ServerCommandSource> getCommand() {
@@ -38,7 +38,7 @@ public class NPCRemoveCommand {
 
 		Optional<NPCConfig> config = configProvider.getNpcConfigByName(name);
 		if (config.isPresent()) {
-			npcFactory.deleteNpc(config.get().getUuid(), context.getSource().getServer().getPlayerManager());
+            npcService.deleteNpc(config.get().getUuid(), context.getSource().getServer().getPlayerManager());
 			return 1;
 		} else {
 			context.getSource().sendFeedback(() ->
