@@ -21,13 +21,13 @@ public class Player2NpcSynchronizer {
 
     private static final int MAX_NPC_COUNT = 8;
 
-    private final NPCFactory npcFactory;
+    private final NPCService npcService;
     private final ConfigProvider configProvider;
     private final Player2APIClient player2APIClient;
     private final ScheduledExecutorService executor;
 
-    public Player2NpcSynchronizer(NPCFactory npcFactory, ConfigProvider configProvider) {
-        this.npcFactory = npcFactory;
+    public Player2NpcSynchronizer(NPCService npcService, ConfigProvider configProvider) {
+        this.npcService = npcService;
         this.configProvider = configProvider;
         this.player2APIClient = new Player2APIClient();
         this.executor = Executors.newSingleThreadScheduledExecutor();
@@ -54,7 +54,7 @@ public class Player2NpcSynchronizer {
             List<UUID> currentNpcUuids = getNpcUuidsPlayer2();
 
             for (UUID uuid : currentNpcUuids) {
-                npcFactory.deleteNpc(uuid, server.getPlayerManager());
+                npcService.deleteNpc(uuid, server.getPlayerManager());
             }
             configProvider.deleteByType(LLMType.PLAYER2);
 
@@ -67,7 +67,7 @@ public class Player2NpcSynchronizer {
                         .voiceId(character.voice_ids().get(0))
                         .skinUrl(character.meta().skin_url())
                         .build();
-                npcFactory.createNpc(config, server, spawnPos, owner);
+                npcService.createNpc(config, server, spawnPos, owner);
             }
         } catch (Exception e) {
             LogUtil.errorInChat(e.getMessage());
@@ -105,7 +105,7 @@ public class Player2NpcSynchronizer {
      * Gets the NPC uuids that uses Player2 as LLM.
      */
     private List<UUID> getNpcUuidsPlayer2() {
-        return npcFactory.getUuidToNpc()
+        return npcService.getUuidToNpc()
                 .entrySet().stream()
                 .filter(e -> e.getValue().getConfig().getLlmType() == LLMType.PLAYER2)
                 .map(Map.Entry::getKey)
