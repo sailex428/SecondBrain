@@ -236,8 +236,6 @@ public class NPCConfig implements Configurable {
 				",voiceId=" + voiceId + "}";
 	}
 
-
-
 	//name for fields for npc config screen
 	public static final String NPC_NAME = "Name of the NPC";
 	public static final String EDIT_NPC = "Edit '%s'";

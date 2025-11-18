@@ -7,9 +7,11 @@ class RepositoryFactory(
     val sqliteClient: SqliteClient
 ) {
     val conversationRepository = ConversationRepository(sqliteClient)
+    val npcRepository = NPCRepository(sqliteClient)
 
     fun initRepositories() {
         sqliteClient.initDatabase(SecondBrain.MOD_ID)
         conversationRepository.init()
+        npcRepository.init()
     }
 }
