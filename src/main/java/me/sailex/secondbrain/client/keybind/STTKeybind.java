@@ -9,11 +9,15 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
+import net.minecraft.util.Identifier;
 import org.lwjgl.glfw.GLFW;
 
 @Getter
 public class STTKeybind {
 
+    /*? >=1.21.10 {*/
+    /*private static final KeyBinding.Category CATEGORY = KeyBinding.Category.create(Identifier.of("SecondBrain", "main"));
+    *//*?}*/
     private final ClientNetworkManager networkManager;
     private final STTHudElement sttHudElement;
     private KeyBinding keyBinding;
@@ -29,7 +33,7 @@ public class STTKeybind {
                 "keybinding.tts",
                 InputUtil.Type.KEYSYM,
                 GLFW.GLFW_KEY_LEFT_ALT,
-                "SecondBrain"
+                /*? >=1.21.10 {*/ /*CATEGORY *//*?} else {*/ "SecondBrain" /*?}*/
         ));
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             boolean isCurrentlyPressed = keyBinding.isPressed();
