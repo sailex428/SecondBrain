@@ -2,18 +2,26 @@
 
 All notable changes to this project will be documented in this file.
 
-## [3.1.2] - 2025-11-16
+## [3.1.2] - 2025-11-22
 
 ### 🚀 Features
 
-- Update error handling -> log only rootcause into chat
+- Clean jsonresponse before parsing
+- Add translations for keybind category
 
-### 📚 Documentation
+### 💼 Other
 
-- Update changelog for version 3.1.1
+- Bump engine dependencies and add support for mc 1.21.10
+- Update to 1.21.10 -> main
+
+### 🚜 Refactor
+
+- NpcFactory
+- Refactor npcFactory -> main
+- Integrate EntityVer for cross-version world access and update npc spawning logic
 
 ### ⚙️ Miscellaneous Tasks
 
-- Bump version
+- Remove footer content from cliff.toml
 
-Download the new release on [Modrinth](https://modrinth.com/mod/secondbrain/versions).
+
