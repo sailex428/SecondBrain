@@ -16,7 +16,7 @@ import org.lwjgl.glfw.GLFW;
 public class STTKeybind {
 
     /*? >=1.21.10 {*/
-    /*private static final KeyBinding.Category CATEGORY = KeyBinding.Category.create(Identifier.of("SecondBrain", "main"));
+    /*private static final KeyBinding.Category CATEGORY = KeyBinding.Category.create(Identifier.of("secondbrain", "main"));
     *//*?}*/
     private final ClientNetworkManager networkManager;
     private final STTHudElement sttHudElement;

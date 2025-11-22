@@ -1,4 +1,5 @@
 {
   "keybinding.tts": "SpeechToText start/stop",
-  "hud.element.stt": "is listening..."
+  "hud.element.stt": "is listening...",
+  "key.category.secondbrain.main": "SecondBrain"
 }
