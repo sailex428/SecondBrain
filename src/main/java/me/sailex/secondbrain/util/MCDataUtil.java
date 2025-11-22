@@ -1,5 +1,6 @@
 package me.sailex.secondbrain.util;
 
+import me.sailex.altoclef.multiversion.EntityVer;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -16,7 +17,7 @@ public class MCDataUtil {
 	private MCDataUtil() {}
 
 	public static PlayerEntity getClosestPlayer(PlayerEntity player) {
-		return player.getWorld()
+		return EntityVer.getWorld(player)
 				.getClosestPlayer(player.getX(), player.getY(), player.getZ(), 10, entity -> !entity.equals(player));
 	}
 
@@ -48,7 +49,7 @@ public class MCDataUtil {
 
 	public static String getBiome(Entity entity) {
 		Optional<RegistryKey<Biome>> biomeKey =
-				entity.getWorld().getBiome(entity.getBlockPos()).getKey();
+				EntityVer.getWorld(entity).getBiome(entity.getBlockPos()).getKey();
 		return biomeKey.map(biomeRegistryKey -> biomeRegistryKey.getValue().getPath())
 				.orElse("");
 	}
@@ -69,7 +70,7 @@ public class MCDataUtil {
 	}
 
 	public static List<Entity> getNearbyEntities(ServerPlayerEntity npcEntity) {
-		return npcEntity.getWorld().getOtherEntities(
+		return EntityVer.getWorld(npcEntity).getOtherEntities(
 				npcEntity,
 				npcEntity.getBoundingBox().expand(50),
 				entity -> true
@@ -77,7 +78,7 @@ public class MCDataUtil {
 	}
 
 	public static String getBlockNameByPos(Entity entity) {
-		return entity.getWorld().getBlockState(entity.getBlockPos()).getBlock().getName().getString().toLowerCase();
+		return EntityVer.getWorld(entity).getBlockState(entity.getBlockPos()).getBlock().getName().getString().toLowerCase();
 	}
 
 }

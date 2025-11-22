@@ -1,5 +1,6 @@
 package me.sailex.secondbrain.common
 
+import me.sailex.altoclef.multiversion.EntityVer
 import me.sailex.secondbrain.callback.NPCEvents
 import me.sailex.secondbrain.config.ConfigProvider
 import me.sailex.secondbrain.config.NPCConfig
@@ -53,7 +54,7 @@ class NPCService(
             }
 
             NPCEvents.ON_DEATH.register {
-                removeNpc(it.uuid, it.server!!.playerManager)
+                removeNpc(it.uuid, EntityVer.getWorld(it).server!!.playerManager)
             }
         }, executorService).exceptionally {
             LogUtil.errorInChat(it.message)

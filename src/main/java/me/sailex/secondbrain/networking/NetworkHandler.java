@@ -1,6 +1,7 @@
 package me.sailex.secondbrain.networking;
 
 import io.wispforest.owo.network.OwoNetChannel;
+import me.sailex.altoclef.multiversion.EntityVer;
 import me.sailex.secondbrain.auth.PlayerAuthorizer;
 import me.sailex.secondbrain.callback.STTCallback;
 import me.sailex.secondbrain.common.NPCService;
@@ -94,7 +95,7 @@ public class NetworkHandler {
     private void registerDeleteNpc() {
         CHANNEL.registerServerbound(DeleteNpcPacket.class, (configPacket, serverAccess) -> {
             if (authorizer.isAuthorized(serverAccess)) {
-                PlayerManager playerManager = serverAccess.player().getServer().getPlayerManager();
+                PlayerManager playerManager = EntityVer.getWorld(serverAccess.player()).getServer().getPlayerManager();
                 UUID uuid = UUID.fromString(configPacket.uuid());
 
                 if (configPacket.isDelete()) {

@@ -1,6 +1,7 @@
 package me.sailex.secondbrain.context;
 
 import lombok.Getter;
+import me.sailex.altoclef.multiversion.EntityVer;
 import me.sailex.secondbrain.config.BaseConfig;
 import me.sailex.secondbrain.model.context.BlockData;
 import me.sailex.secondbrain.util.LogUtil;
@@ -87,7 +88,7 @@ public class ChunkManager {
      */
     private void updateAllBlocks() {
         currentLoadedBlocks.clear();
-        World world = npcEntity.getWorld();
+        World world = EntityVer.getWorld(npcEntity);
         ChunkPos centerChunk = npcEntity.getChunkPos();
 
         for (int x = -chunkRadius; x <= chunkRadius; x++) {
@@ -104,7 +105,7 @@ public class ChunkManager {
     }
 
     private List<BlockData> scanChunk(ChunkPos chunk) {
-        World world = npcEntity.getWorld();
+        World world = EntityVer.getWorld(npcEntity);
         BlockPos.Mutable pos = new BlockPos.Mutable();
         int baseY = Math.max(0, npcEntity.getBlockPos().getY() - verticalScanRange);
         int maxY = Math.min(world.getHeight(), npcEntity.getBlockPos().getY() + verticalScanRange);
