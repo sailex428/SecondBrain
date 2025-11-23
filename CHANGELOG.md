@@ -2,26 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
-## [3.1.2] - 2025-11-22
+## [3.1.4] - 2025-11-23
 
 ### 🚀 Features
 
-- Clean jsonresponse before parsing
-- Add translations for keybind category
+- Update mineskin resolving to mc 1.21.10
+- Add npc name validation
 
-### 💼 Other
+### 🐛 Bug Fixes
 
-- Bump engine dependencies and add support for mc 1.21.10
-- Update to 1.21.10 -> main
-
-### 🚜 Refactor
-
-- NpcFactory
-- Refactor npcFactory -> main
-- Integrate EntityVer for cross-version world access and update npc spawning logic
+- Prevent currentModificationException of playerList when removing npcs
+- NoSuchElement exception thrown if npcConfig not present
+- Fix couple runtime issues
 
 ### ⚙️ Miscellaneous Tasks
 
-- Remove footer content from cliff.toml
+- Bump version
 
 
