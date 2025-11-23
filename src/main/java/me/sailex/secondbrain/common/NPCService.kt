@@ -1,6 +1,7 @@
 package me.sailex.secondbrain.common
 
 import me.sailex.altoclef.multiversion.EntityVer
+import me.sailex.secondbrain.auth.UsernameValidator
 import me.sailex.secondbrain.callback.NPCEvents
 import me.sailex.secondbrain.config.ConfigProvider
 import me.sailex.secondbrain.config.NPCConfig
@@ -73,12 +74,15 @@ class NPCService(
             resourceProvider.addConversations(uuid,npcToRemove.history.latestConversations)
             uuidToNpc.remove(uuid)
 
-            val config = configProvider.getNpcConfig(uuid).get()
-            config.isActive = false
-
             NPCSpawner.remove(npcToRemove.entity.uuid, playerManager)
 
-            LogUtil.infoInChat("Removed NPC with name ${config.npcName}")
+            val config = configProvider.getNpcConfig(uuid)
+            if (config.isPresent) {
+                config.get().isActive = false
+                LogUtil.infoInChat("Removed NPC with name ${config.get().npcName}")
+            } else {
+                LogUtil.infoInChat("Removed NPC with uuid $uuid")
+            }
         }
     }
 
@@ -107,7 +111,9 @@ class NPCService(
     }
 
     private fun checkNpcName(npcName: String) {
-        if (uuidToNpc.values.any { it.entity.name.string == npcName }) {
+        if (!UsernameValidator.isValid(npcName)) {
+            throw NPCCreationException("NPC name is not valid. Use 3–16 characters: letters, numbers, or underscores only.")
+        } else if (uuidToNpc.values.any { it.entity.name.string == npcName }) {
             throw NPCCreationException("A NPC with the name '$npcName' already exists.")
         }
     }

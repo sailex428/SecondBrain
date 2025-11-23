@@ -44,18 +44,13 @@ class NPCEventHandler(
      *
      * @param prompt prompt of a user or system e.g. chatmessage of a player
      */
-    override fun onEvent(role: Player2ChatRole, prompt: String) {
+    override fun onEvent(prompt: String) {
         CompletableFuture.runAsync({
             LogUtil.info("onEvent: $prompt")
 
-            var formattedPrompt: String
-            if (role == Player2ChatRole.USER) {
-                formattedPrompt = PromptFormatter.format(prompt,contextProvider.buildContext())
-            } else {
-                formattedPrompt = "system prompt: $prompt"
-            }
+            val formattedPrompt: String = PromptFormatter.format(prompt,contextProvider.buildContext())
 
-            history.add(Message(formattedPrompt, role.toString().lowercase()))
+            history.add(Message(formattedPrompt, Player2ChatRole.USER.toString().lowercase()))
             val response = llmClient.chat(history.latestConversations)
             history.add(response)
 
@@ -79,10 +74,6 @@ class NPCEventHandler(
                 LogUtil.error("Error occurred handling event: $prompt", it)
                 null
             }
-    }
-
-    override fun onEvent(prompt: String) {
-        this.onEvent(Player2ChatRole.USER, prompt)
     }
 
     override fun stopService() {

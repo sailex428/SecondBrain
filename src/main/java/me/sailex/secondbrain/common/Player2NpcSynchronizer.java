@@ -1,5 +1,6 @@
 package me.sailex.secondbrain.common;
 
+import me.sailex.secondbrain.auth.UsernameValidator;
 import me.sailex.secondbrain.config.ConfigProvider;
 import me.sailex.secondbrain.config.NPCConfig;
 import me.sailex.secondbrain.exception.LLMServiceException;
@@ -60,7 +61,8 @@ public class Player2NpcSynchronizer {
 
             for (Map.Entry<UUID, Characters.Character> entry : uuidToChar.entrySet()) {
                 Characters.Character character = entry.getValue();
-                NPCConfig config = NPCConfig.builder(character.short_name())
+                String normalizedName = UsernameValidator.normalizeUsername(character.short_name());
+                NPCConfig config = NPCConfig.builder(normalizedName)
                         .uuid(entry.getKey())
                         .llmDefaultPrompt(character.description())
                         .llmType(LLMType.PLAYER2)
