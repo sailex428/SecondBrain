@@ -2,9 +2,17 @@ package me.sailex.secondbrain.common;
 
 import carpet.patches.EntityPlayerMPFake;
 import carpet.patches.FakeClientConnection;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 import com.mojang.authlib.GameProfile;
+import com.mojang.authlib.properties.Property;
+import com.mojang.authlib.properties.PropertyMap;
 import me.sailex.secondbrain.config.NPCConfig;
+import me.sailex.secondbrain.mineskin.MineSkinProxyClient;
+import me.sailex.secondbrain.mineskin.MineSkinProxyClientException;
+import me.sailex.secondbrain.mineskin.SkinResponse;
 import me.sailex.secondbrain.mixin.PlayerEntityAccessor;
+import me.sailex.secondbrain.util.LogUtil;
 import net.minecraft.network.NetworkSide;
 import net.minecraft.network.packet.s2c.play.EntitySetHeadYawS2CPacket;
 import net.minecraft.registry.RegistryKey;
@@ -52,6 +60,9 @@ import net.minecraft.network.packet.s2c.play.EntityPositionS2CPacket;
 
 public class NPCSpawner {
 
+    private static final String TEXTURES = "textures";
+    private static final MineSkinProxyClient skinClient = new MineSkinProxyClient();
+
     private NPCSpawner() {}
 
     /**
@@ -66,6 +77,22 @@ public class NPCSpawner {
         Consumer<ServerPlayerEntity> npcConsumer
     ) {
         GameProfile profile = new GameProfile(config.getUuid(), config.getNpcName());
+        String skinUrl = config.getSkinUrl();
+        if (!skinUrl.isEmpty()) {
+            Property property = fetchSkin(config.getSkinUrl());
+            if (property != null) {
+                //? >=1.21.10 {
+                /*Multimap<String, Property> properties = HashMultimap.create();
+                properties.put(TEXTURES, property);
+                spawnEntity(server, new GameProfile(config.getUuid(), config.getNpcName(), new PropertyMap(properties)), spawnPos, npcConsumer);
+                *///?} else {
+                profile.getProperties().put(TEXTURES, property);
+                spawnEntity(server, profile, spawnPos, npcConsumer);
+                //?}
+                return;
+            }
+        }
+
         //? >=1.21.10 {
         /*fetchGameProfile(server, config.getNpcName()).thenAcceptAsync(p -> {
             GameProfile current = profile;
@@ -183,6 +210,18 @@ public class NPCSpawner {
         return future;
     }
     //?}
+
+    private static Property fetchSkin(String skinUrl) {
+        try {
+            if (skinUrl != null) {
+                SkinResponse response = skinClient.getSkin(skinUrl);
+                return new Property(TEXTURES, response.texture(), response.signature());
+            }
+        } catch (MineSkinProxyClientException e) {
+            LogUtil.error(e);
+        }
+        return null;
+    }
 
     public static void remove(UUID uuid, PlayerManager playerManager) {
         ServerPlayerEntity player = playerManager.getPlayer(uuid);
