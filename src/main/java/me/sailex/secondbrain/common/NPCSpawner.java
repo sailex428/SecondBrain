@@ -2,11 +2,8 @@ package me.sailex.secondbrain.common;
 
 import carpet.patches.EntityPlayerMPFake;
 import carpet.patches.FakeClientConnection;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
-import com.mojang.authlib.properties.PropertyMap;
 import me.sailex.secondbrain.config.NPCConfig;
 import me.sailex.secondbrain.mineskin.MineSkinProxyClient;
 import me.sailex.secondbrain.mineskin.MineSkinProxyClientException;
@@ -36,6 +33,9 @@ import net.minecraft.server.network.ConnectedClientData;
 import net.minecraft.network.packet.c2s.common.SyncedClientOptions;
 import net.minecraft.entity.attribute.EntityAttributes;
 import java.util.Set;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
+import com.mojang.authlib.properties.PropertyMap;
 *///?} elif >=1.21.8 {
 
 /*import net.minecraft.network.packet.s2c.play.EntityPositionSyncS2CPacket;
@@ -226,7 +226,7 @@ public class NPCSpawner {
     public static void remove(UUID uuid, PlayerManager playerManager) {
         ServerPlayerEntity player = playerManager.getPlayer(uuid);
         if (player != null) {
-            playerManager.remove(player);
+            playerManager.getServer().execute(() -> playerManager.remove(player));
         }
     }
 
