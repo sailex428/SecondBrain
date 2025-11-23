@@ -73,12 +73,15 @@ class NPCService(
             resourceProvider.addConversations(uuid,npcToRemove.history.latestConversations)
             uuidToNpc.remove(uuid)
 
-            val config = configProvider.getNpcConfig(uuid).get()
-            config.isActive = false
-
             NPCSpawner.remove(npcToRemove.entity.uuid, playerManager)
 
-            LogUtil.infoInChat("Removed NPC with name ${config.npcName}")
+            val config = configProvider.getNpcConfig(uuid)
+            if (config.isPresent) {
+                config.get().isActive = false
+                LogUtil.infoInChat("Removed NPC with name ${config.get().npcName}")
+            } else {
+                LogUtil.infoInChat("Removed NPC with uuid $uuid")
+            }
         }
     }
 
