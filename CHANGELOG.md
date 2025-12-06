@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [3.1.4] - 2025-12-06
+## [3.1.5] - 2025-12-06
 
 ### 🚀 Features
 
@@ -17,5 +17,13 @@ All notable changes to this project will be documented in this file.
 
 - Add mcVersion to display name of gh release
 - Optimizations for small models
+
+### 📚 Documentation
+
+- Update changelog for version 3.1.4
+
+### ⚙️ Miscellaneous Tasks
+
+- Bump version
 
 
