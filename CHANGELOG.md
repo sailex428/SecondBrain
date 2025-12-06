@@ -2,21 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
-## [3.1.4] - 2025-11-23
+## [3.1.4] - 2025-12-06
 
 ### 🚀 Features
 
-- Update mineskin resolving to mc 1.21.10
-- Add npc name validation
+- Use llama3.2 as default model
 
 ### 🐛 Bug Fixes
 
-- Prevent currentModificationException of playerList when removing npcs
-- NoSuchElement exception thrown if npcConfig not present
-- Fix couple runtime issues
+- Query does not returns results error
+- Parsing error using smaller models
 
-### ⚙️ Miscellaneous Tasks
+### 💼 Other
 
-- Bump version
+- Add mcVersion to display name of gh release
+- Optimizations for small models
 
 
