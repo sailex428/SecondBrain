@@ -16,7 +16,7 @@ public class SqliteClient {
 	private Connection connection;
 
 	/**
-	 * Create the database and tables.
+	 * Create the database.
 	 */
 	public void initDatabase(String databaseName) {
 		String databasePath = initDataBaseDir();
@@ -41,7 +41,7 @@ public class SqliteClient {
 	}
 
 	/**
-	 * Query the db.
+	 * Select entries from db.
 	 * @param sql the SQL query
 	 */
 	public ResultSet query(String sql) {
@@ -50,7 +50,7 @@ public class SqliteClient {
 			statement.closeOnCompletion();
 			return statement.executeQuery(sql);
 		} catch (SQLException e) {
-			LOGGER.error("Error selecting rule: {}", e.getMessage());
+			LOGGER.error("Error selecting rule: ", e);
 			return null;
 		}
 	}
@@ -59,7 +59,7 @@ public class SqliteClient {
 	 * Execute prepared statement.
 	 * @param statement the prepared statement
 	 */
-	public void insert(PreparedStatement statement) {
+	public void update(PreparedStatement statement) {
 		try {
 			statement.executeUpdate();
 		} catch (SQLException e) {
@@ -80,7 +80,7 @@ public class SqliteClient {
 	 * Create a table in the database.
 	 * @param sql the SQL query to create a table
 	 */
-	public void create(String sql) {
+	public void update(String sql) {
 		try (Statement statement = connection.createStatement()) {
 			statement.execute(sql);
 		} catch (SQLException e) {
