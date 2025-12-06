@@ -21,6 +21,7 @@ All notable changes to this project will be documented in this file.
 ### 📚 Documentation
 
 - Update changelog for version 3.1.4
+- Update changelog for version 3.1.5
 
 ### ⚙️ Miscellaneous Tasks
 
