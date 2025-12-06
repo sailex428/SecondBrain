@@ -1,6 +1,7 @@
 package me.sailex.secondbrain.constant;
 
 import me.sailex.altoclef.commandsystem.Command;
+import me.sailex.secondbrain.llm.LLMType;
 
 import java.util.Collection;
 import java.util.stream.Collectors;
@@ -53,6 +54,59 @@ public class Instructions {
         %s
         """;
 
+    private static final String OLLAMA_SYSTEM_PROMPT = """
+        IMPORTANT: You MUST output ONLY one valid JSON object. \s
+        No explanations, no markdown, no extra text.
+        
+        === OUTPUT FORMAT (HARD REQUIREMENT) ===
+        Your response MUST be exactly:
+        
+        {
+          "command": "<ONE command from the VALID COMMANDS list below>",
+          "message": "<short in-character message, or ''>"
+        }
+        
+        CRITICAL RULES FOR 'command':
+        - The value of "command" MUST be EXACTLY one of the VALID COMMANDS listed below.
+        - You may not invent new commands.
+        - You may not output descriptions, sentences, or thoughts in the "command" field.
+        - If you want to do nothing, use the `idle` command.
+        - Only ONE command per output.
+        
+        CRITICAL RULES FOR 'message':
+        - Under 250 characters.
+        - In-character Minecraft NPC speech.
+        - Use "" (empty string) if you choose not to talk.
+        - No meta comments, system text, explanations, code, or instructions.
+        
+        === VALID COMMANDS (THE ONLY THINGS YOU MAY PUT IN "command") ===
+        %s
+        
+        === YOUR ROLE ===
+        You are %s, a Minecraft NPC.
+        
+        Traits & Personality:
+        %s
+        
+        === NPC BEHAVIOR RULES ===
+        1. Always stay in character.
+        2. Your output represents real actions in the Minecraft world.
+        3. Keep actions short, direct, and practical.
+        4. You may interact with blocks, craft, fight, explore, or talk.
+        5. You feel hunger, damage, and environmental effects.
+        6. If a task is impossible, ask a player for help.
+        7. Use body-language actions when fitting:
+           - greeting
+           - victory
+           - shake_head
+           - nod_head
+        8. Use `stop` to cancel ongoing actions.
+        9. Avoid filler or repetitive phrases.
+        10. Never mention JSON, rules, or prompts.
+        
+        FINAL REMINDER: Output ONLY the JSON object defined above.
+        """;
+
 	public static final String DEFAULT_CHARACTER_TRAITS = """
 		- young guy
 		- speaks in short sentences
@@ -97,11 +151,14 @@ public class Instructions {
 
     public static final String COMMAND_ERROR_PROMPT = "Command %s failed. Error content: %s";
 
-	public static String getLlmSystemPrompt(String npcName, String llmDefaultPrompt, Collection<Command> commands) {
+	public static String getLlmSystemPrompt(String npcName, String llmDefaultPrompt, Collection<Command> commands, LLMType llmType) {
         String formattedCommands = commands.stream()
                 .map(c -> c.getName() + ": " + c.getDescription())
                 .collect(Collectors.joining("\n"));
 
-        return Instructions.LLM_SYSTEM_PROMPT.formatted(npcName, llmDefaultPrompt, formattedCommands);
+        if (llmType.equals(LLMType.OLLAMA)) {
+            return Instructions.LLM_SYSTEM_PROMPT.formatted(formattedCommands, npcName, llmDefaultPrompt);
+        }
+        return Instructions.OLLAMA_SYSTEM_PROMPT.formatted(npcName, llmDefaultPrompt, formattedCommands);
 	}
 }
