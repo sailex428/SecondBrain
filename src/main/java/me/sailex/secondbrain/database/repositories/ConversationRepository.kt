@@ -20,7 +20,7 @@ class ConversationRepository(
                 message TEXT NOT NULL
             );
         """
-        sqliteClient.create(sql)
+        sqliteClient.update(sql)
     }
 
     fun insert(conversation: Conversation) {
@@ -31,7 +31,7 @@ class ConversationRepository(
         statement.setString(1, conversation.uuid.toString())
         statement.setString(2, conversation.role)
         statement.setString(3, conversation.message)
-        sqliteClient.insert(statement)
+        sqliteClient.update(statement)
     }
 
     /**
@@ -47,7 +47,7 @@ class ConversationRepository(
      */
     fun deleteByUuid(uuid: UUID) {
         val sql = "DELETE FROM conversations WHERE uuid = '%s'".format(uuid.toString())
-        sqliteClient.query(sql)
+        sqliteClient.update(sql)
     }
 
     private fun executeAndProcessConversations(sql: String): List<Conversation> {

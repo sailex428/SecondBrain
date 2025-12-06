@@ -29,7 +29,10 @@ class NPCFactory(
         val llmClient = initLLMClient(config)
 
         val controller = initController(npcEntity)
-        val defaultPrompt = Instructions.getLlmSystemPrompt(config.npcName, config.llmCharacter, controller.commandExecutor.allCommands())
+        val defaultPrompt = Instructions.getLlmSystemPrompt(config.npcName,
+            config.llmCharacter,
+            controller.commandExecutor.allCommands(),
+            config.llmType)
 
         val messages = loadedConversation
             ?.map { Message(it.message, it.role) }

@@ -16,7 +16,7 @@ public class NPCConfig implements Configurable {
 	private String llmCharacter = Instructions.DEFAULT_CHARACTER_TRAITS;
 	private LLMType llmType = LLMType.OLLAMA;
 	private String ollamaUrl = "http://localhost:11434";
-    private String llmModel = "";
+    private String llmModel = "llama3.2";
 	private String openaiApiKey = "";
 	private String voiceId = "not set";
 	private String skinUrl = "";
@@ -235,8 +235,6 @@ public class NPCConfig implements Configurable {
 				",llmCharacter=" + llmCharacter +
 				",voiceId=" + voiceId + "}";
 	}
-
-
 
 	//name for fields for npc config screen
 	public static final String NPC_NAME = "Name of the NPC";
