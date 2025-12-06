@@ -25,6 +25,11 @@
                             </children>
                         </flow-layout>
 
+                        <flow-layout direction="horizontal" id="npc">
+                            <children>
+                            </children>
+                        </flow-layout>
+
                         <flow-layout direction="horizontal">
                             <children>
                                 <button id="add_npc">
@@ -39,22 +44,17 @@
                                 <all>10</all>
                             </padding>
 
-                            <gap>10</gap>
+                            <gap>6</gap>
+
+                            <sizing>
+                                <horizontal method="fixed">135</horizontal>
+                                <vertical method="content">0</vertical>
+                            </sizing>
 
                             <surface>
                                 <panel dark="true"/>
                             </surface>
                         </flow-layout>
-
-                        <scroll direction="vertical">
-                            <flow-layout direction="vertical" id="npc">
-                                <children>
-                                </children>
-                            </flow-layout>
-                            <sizing>
-                                <vertical method="fill">25</vertical>
-                            </sizing>
-                        </scroll>
 
                     </children>
 
