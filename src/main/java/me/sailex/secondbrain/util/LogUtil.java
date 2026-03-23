@@ -1,6 +1,7 @@
 package me.sailex.secondbrain.util;
 
 import me.sailex.secondbrain.config.ConfigProvider;
+import me.sailex.secondbrain.version.ServerPlayerEntityVersion;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Style;
@@ -75,7 +76,7 @@ public class LogUtil {
 	private static void log(MutableText formattedMessage) {
 		if (server != null) {
 			server.getPlayerManager().getPlayerList().stream()
-					.filter(player -> player.hasPermissionLevel(2))
+					.filter(player -> ServerPlayerEntityVersion.hasPermissionLevel(player, 2))
 					.forEach(player -> player.sendMessage(formattedMessage, false));
 		} else {
 			LOGGER.error("{}server is null - cant log to ingame chat!", PREFIX.getString());

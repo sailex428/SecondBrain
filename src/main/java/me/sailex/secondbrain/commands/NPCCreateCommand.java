@@ -25,7 +25,6 @@ public class NPCCreateCommand {
 
 	public LiteralArgumentBuilder<ServerCommandSource> getCommand() {
 		return literal("add")
-				.requires(source -> source.hasPermissionLevel(2))
 				.then(argument("name", StringArgumentType.string())
 						.then(argument(LLM_TYPE, StringArgumentType.string())
 								.suggests((context, builder) -> {

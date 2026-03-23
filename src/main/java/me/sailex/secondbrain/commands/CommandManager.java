@@ -3,11 +3,11 @@ package me.sailex.secondbrain.commands;
 import static net.minecraft.server.command.CommandManager.literal;
 
 import lombok.AllArgsConstructor;
-import me.sailex.secondbrain.common.NPCFactory;
 import me.sailex.secondbrain.common.NPCService;
 import me.sailex.secondbrain.common.Player2NpcSynchronizer;
 import me.sailex.secondbrain.config.ConfigProvider;
 import me.sailex.secondbrain.networking.NetworkHandler;
+import me.sailex.secondbrain.version.CommandSourceVersion;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 
 /**
@@ -24,7 +24,7 @@ public class CommandManager {
 	public void registerAll() {
 		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) ->
 			dispatcher.register(literal("secondbrain")
-					.requires(source -> source.hasPermissionLevel(2))
+					.requires(source -> CommandSourceVersion.hasPermissionLevel(source, 2))
 					.then(new NPCCreateCommand(npcService).getCommand())
 					.then(new NPCRemoveCommand(npcService, configProvider).getCommand())
 					.then(new Player2ActionCommand(synchronizer).getCommand())
