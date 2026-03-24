@@ -6,7 +6,7 @@ import net.minecraft.command.permission.PermissionLevel;
 *///?}
 import net.minecraft.server.network.ServerPlayerEntity;
 
-public class ServerPlayerEntityVersion {
+public final class ServerPlayerEntityVersion {
 
     private ServerPlayerEntityVersion() {}
 

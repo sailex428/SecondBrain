@@ -7,7 +7,7 @@ import net.minecraft.command.permission.PermissionLevel;
 import net.minecraft.server.command.ServerCommandSource;
 
 
-public class CommandSourceVersion {
+public final class CommandSourceVersion {
 
     private CommandSourceVersion() {}
 

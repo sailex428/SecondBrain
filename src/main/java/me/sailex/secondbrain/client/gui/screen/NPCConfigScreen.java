@@ -1,6 +1,9 @@
 package me.sailex.secondbrain.client.gui.screen;
 
-import io.wispforest.owo.ui.component.*;
+import io.wispforest.owo.ui.component.CheckboxComponent;
+import io.wispforest.owo.ui.component.DropdownComponent;
+import io.wispforest.owo.ui.component.LabelComponent;
+import io.wispforest.owo.ui.component.TextAreaComponent;
 import io.wispforest.owo.ui.container.FlowLayout;
 
 import io.wispforest.owo.ui.core.Insets;
@@ -11,6 +14,7 @@ import me.sailex.secondbrain.llm.LLMType;
 import me.sailex.secondbrain.networking.packet.CreateNpcPacket;
 import me.sailex.secondbrain.networking.packet.UpdateNpcConfigPacket;
 
+import me.sailex.secondbrain.version.ComponentsVersion;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
@@ -37,7 +41,7 @@ public class NPCConfigScreen extends ConfigScreen<NPCConfig> {
             npcNameLabel.text(Text.of(NPCConfig.EDIT_NPC.formatted(config.getNpcName())));
         } else {
             npcNameLabel.text(Text.of(NPCConfig.NPC_NAME));
-            TextAreaComponent npcName = Components.textArea(Sizing.fill(35), Sizing.fill(7))
+            TextAreaComponent npcName = ComponentsVersion.textArea(Sizing.fill(35), Sizing.fill(7))
                     .text(config.getNpcName());
             npcName.onChanged().subscribe(config::setNpcName);
             panel.childById(FlowLayout.class, "npcName").child(npcName);
@@ -65,24 +69,24 @@ public class NPCConfigScreen extends ConfigScreen<NPCConfig> {
         llmInfo.clearChildren();
 
         //either show ollamaUrl or openai api key or isTTS checkbox
-        TextAreaComponent llmInfoTextArea = Components.textArea(Sizing.fill(35), Sizing.fill(7));
+        TextAreaComponent llmInfoTextArea = ComponentsVersion.textArea(Sizing.fill(35), Sizing.fill(7));
         switch (config.getLlmType()) {
             case OLLAMA -> {
                 //ollama url
-                llmInfo.child(Components.label(Text.of(NPCConfig.OLLAMA_URL)).shadow(true));
+                llmInfo.child(ComponentsVersion.label(Text.of(NPCConfig.OLLAMA_URL)).shadow(true));
                 llmInfoTextArea.text(config.getOllamaUrl())
                         .onChanged()
                         .subscribe(config::setOllamaUrl);
                 llmInfo.child(llmInfoTextArea);
             }
             case PLAYER2 -> {
-                CheckboxComponent isTTS = Components.checkbox(Text.of(NPCConfig.IS_TTS))
+                CheckboxComponent isTTS = ComponentsVersion.checkbox(Text.of(NPCConfig.IS_TTS))
                         .checked(config.isTTS())
                         .onChanged(listener -> config.setTTS(!config.isTTS()));
                 llmInfo.child(isTTS);
             }
             case OPENAI -> {
-                llmInfo.child(Components.label(Text.of(NPCConfig.OPENAI_API_KEY)).shadow(true));
+                llmInfo.child(ComponentsVersion.label(Text.of(NPCConfig.OPENAI_API_KEY)).shadow(true));
                 llmInfoTextArea.text(config.getOpenaiApiKey())
                         .onChanged()
                         .subscribe(config::setOpenaiApiKey);
@@ -90,8 +94,8 @@ public class NPCConfigScreen extends ConfigScreen<NPCConfig> {
             }
         }
         //system prompt
-        llmInfo.child(Components.label(Text.of(NPCConfig.LLM_CHARACTER)).shadow(true).margins(Insets.top(7)));
-        TextAreaComponent llmCharacter = Components.textArea(Sizing.fill(35), Sizing.fill(25));
+        llmInfo.child(ComponentsVersion.label(Text.of(NPCConfig.LLM_CHARACTER)).shadow(true).margins(Insets.top(7)));
+        TextAreaComponent llmCharacter = ComponentsVersion.textArea(Sizing.fill(35), Sizing.fill(25));
         llmCharacter.text(config.getLlmCharacter())
                 .onChanged()
                 .subscribe(config::setLlmCharacter);
@@ -124,7 +128,7 @@ public class NPCConfigScreen extends ConfigScreen<NPCConfig> {
         panel.childById(LabelComponent.class, "llmModel-label").text(Text.of(NPCConfig.LLM_MODEL));
         switch (config.getLlmType()) {
             case OLLAMA, OPENAI -> {
-                TextAreaComponent llmModel = Components.textArea(Sizing.fill(17), Sizing.fill(7))
+                TextAreaComponent llmModel = ComponentsVersion.textArea(Sizing.fill(17), Sizing.fill(7))
                         .text(config.getLlmModel());
                 llmModel.onChanged().subscribe(config::setLlmModel);
                 panel.childById(FlowLayout.class, "llmModel").child(llmModel);
