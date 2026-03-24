@@ -1,6 +1,7 @@
 package me.sailex.secondbrain.auth;
 
 import io.wispforest.owo.network.ServerAccess;
+import me.sailex.secondbrain.version.ServerPlayerEntityVersion;
 
 public class PlayerAuthorizer {
 
@@ -11,7 +12,7 @@ public class PlayerAuthorizer {
      * @return true if the player is authorized, otherwise false
      */
     public boolean isAuthorized(ServerAccess serverAccess) {
-        return serverAccess.player().hasPermissionLevel(2);
+        return ServerPlayerEntityVersion.hasPermissionLevel(serverAccess.player(), 2);
     }
 
     public boolean isLocalConnection(ServerAccess serverAccess) {
