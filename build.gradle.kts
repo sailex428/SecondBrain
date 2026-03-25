@@ -159,7 +159,7 @@ publishMods {
         displayName.set("v$modVersion [$mcVersion] SecondBrain")
         accessToken.set(providers.environmentVariable("GITHUB_TOKEN"))
         repository.set(providers.gradleProperty("github.repo"))
-        tagName.set("v$modVersion-$mcVersion")
+        tagName.set("v$modVersion")
         commitish.set("main")
     }
 
