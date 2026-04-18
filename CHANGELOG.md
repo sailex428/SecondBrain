@@ -20,5 +20,10 @@ All notable changes to this project will be documented in this file.
 
 - Update changelog for version 3.1.6
 - Update changelog for version 3.1.6
+- Update changelog for version 3.1.7
+
+### ⚙️ Miscellaneous Tasks
+
+- Update release task name
 
 
