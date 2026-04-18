@@ -3,19 +3,12 @@ plugins {
 }
 stonecutter active "1.20.1"
 
-val allMcVersions = stonecutter.versions.map { it.version }.distinct()
-
-for (version in allMcVersions) {
-    tasks.register("publish$version") {
-        group = "publishing"
-        dependsOn(stonecutter.tasks.named("publishMods")
-            { metadata.version == version }
-        )
-    }
+stonecutter registerChiseled tasks.register("chiseledBuild", stonecutter.chiseled) {
+    group = "project"
+    ofTask("build")
 }
 
-tasks.register("publishAllVersions") {
+stonecutter registerChiseled tasks.register("chiseledPublishMod", stonecutter.chiseled) {
     group = "publishing"
-    description = "Publishes all Stonecutter versions in one run."
-    dependsOn(allMcVersions.map { "publish$it" })
+    ofTask("publishMods")
 }

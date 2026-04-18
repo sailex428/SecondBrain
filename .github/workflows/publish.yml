@@ -57,4 +57,4 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Release Mods
-        run: ./gradlew publishAllVersions
+        run: ./gradlew chiseledPublishMod
