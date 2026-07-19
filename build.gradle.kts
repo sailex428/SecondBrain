@@ -156,19 +156,8 @@ publishMods {
     file.set(tasks.named<RemapJarTask>("remapJar").get().archiveFile)
 
     github {
-        displayName.set("v$modVersion [$mcVersion] SecondBrain")
         accessToken.set(providers.environmentVariable("GITHUB_TOKEN"))
-        repository.set(providers.gradleProperty("github.repo"))
-        tagName.set("v$modVersion")
-        commitish.set("main")
-    }
-
-    discord {
-        webhookUrl.set(providers.environmentVariable("DISCORD_WEBHOOK"))
-        username.set("Update Bot")
-        val dcMessage = changelog.map { "## New version of SecondBrain is out! [$modVersion] \n$it" }.get()
-        val shortenedMessage = if (dcMessage.length > 1900) dcMessage.take(1900) + " ...\n\nCheck the full changelog on Github or Modrinth." else dcMessage
-        content.set(shortenedMessage)
+        parent(rootProject.tasks.named("publishGithub"))
     }
 
     modrinth {
