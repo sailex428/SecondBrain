@@ -102,7 +102,7 @@ class NPCService(
     }
 
     private fun updateConfig(newConfig: NPCConfig): NPCConfig {
-        val config = configProvider.getNpcConfigByName(newConfig.npcName)
+        val config = configProvider.getNpcConfig(newConfig.uuid)
         if (config == null) {
             return configProvider.addNpcConfig(newConfig)
         } else {
@@ -115,7 +115,7 @@ class NPCService(
     private fun checkNpcName(npcName: String) {
         if (!UsernameValidator.isValid(npcName)) {
             throw NPCCreationException("NPC name is not valid. Use 3–16 characters: letters, numbers, or underscores only.")
-        } else if (uuidToNpc.values.any { it.entity.name.string == npcName } || configProvider.getNpcConfigByName(npcName) != null) {
+        } else if (uuidToNpc.values.any { it.entity.name.string == npcName }) {
             throw NPCCreationException("A NPC with the name '$npcName' already exists.")
         }
     }
