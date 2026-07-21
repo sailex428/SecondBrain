@@ -77,9 +77,10 @@ class NPCService(
             NPCSpawner.remove(npcToRemove.entity.uuid, playerManager)
 
             val config = configProvider.getNpcConfig(uuid)
-            if (config.isPresent) {
-                config.get().isActive = false
-                LogUtil.infoInChat("Removed NPC with name ${config.get().npcName}")
+            if (config != null) {
+                config.isActive = false
+                configProvider.updateNpcConfig(config)
+                LogUtil.infoInChat("Removed NPC with name ${config.npcName}")
             } else {
                 LogUtil.infoInChat("Removed NPC with uuid $uuid")
             }
@@ -102,18 +103,19 @@ class NPCService(
 
     private fun updateConfig(newConfig: NPCConfig): NPCConfig {
         val config = configProvider.getNpcConfigByName(newConfig.npcName)
-        if (config.isEmpty) {
+        if (config == null) {
             return configProvider.addNpcConfig(newConfig)
         } else {
-            config.get().isActive = true
-            return config.get()
+            config.isActive = true
+            configProvider.updateNpcConfig(config)
+            return config
         }
     }
 
     private fun checkNpcName(npcName: String) {
         if (!UsernameValidator.isValid(npcName)) {
             throw NPCCreationException("NPC name is not valid. Use 3–16 characters: letters, numbers, or underscores only.")
-        } else if (uuidToNpc.values.any { it.entity.name.string == npcName }) {
+        } else if (uuidToNpc.values.any { it.entity.name.string == npcName } || configProvider.getNpcConfigByName(npcName) != null) {
             throw NPCCreationException("A NPC with the name '$npcName' already exists.")
         }
     }

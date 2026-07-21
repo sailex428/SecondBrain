@@ -4,6 +4,7 @@ import io.wispforest.endec.StructEndec;
 import io.wispforest.endec.impl.StructEndecBuilder;
 import me.sailex.secondbrain.config.BaseConfig;
 import me.sailex.secondbrain.config.NPCConfig;
+import me.sailex.secondbrain.config.OpenAiConfig;
 
 import java.util.List;
 
@@ -19,7 +20,11 @@ public record ConfigPacket(BaseConfig baseConfig, List<NPCConfig> npcConfigs) {
      * Removes llm secret from the npcConfigs.
      */
     public void hideSecret() {
-        npcConfigs.forEach(config -> config.setOpenaiApiKey(""));
+        npcConfigs.forEach(config -> {
+            if (config.getLlm() instanceof OpenAiConfig openAiConfig) {
+                openAiConfig.setApiKey("");
+            }
+        });
     }
 
     @Override

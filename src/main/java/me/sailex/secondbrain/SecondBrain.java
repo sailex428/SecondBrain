@@ -7,6 +7,7 @@ import lombok.Getter;
 import me.sailex.secondbrain.common.NPCService;
 import me.sailex.secondbrain.common.Player2NpcSynchronizer;
 import me.sailex.secondbrain.config.ConfigProvider;
+import me.sailex.secondbrain.config.NPCConfig;
 import me.sailex.secondbrain.database.SqliteClient;
 import me.sailex.secondbrain.database.repositories.RepositoryFactory;
 import me.sailex.secondbrain.database.resources.ResourceProvider;
@@ -55,12 +56,15 @@ public class SecondBrain implements ModInitializer {
         ServerLifecycleEvents.SERVER_STARTED.register(server -> {
             LogUtil.initialize(server, configProvider);
             repositoryFactory.initRepositories();
-            resourceProvider.loadResources(configProvider.getUuidsOfNpcs());
+            resourceProvider.loadResources(
+                    configProvider.getNpcConfigs()
+                        .stream()
+                        .map(NPCConfig::getUuid).toList());
             npcService.init();
         });
 
         syncOnPlayerLoad(synchronizer);
-        onStop(npcService, configProvider, sqlite, synchronizer, resourceProvider);
+        onStop(npcService, sqlite, synchronizer, resourceProvider);
     }
 
     private void syncOnPlayerLoad(Player2NpcSynchronizer synchronizer) {
@@ -74,7 +78,6 @@ public class SecondBrain implements ModInitializer {
 
 	private void onStop(
         NPCService npcService,
-        ConfigProvider configProvider,
         SqliteClient sqlite,
         Player2NpcSynchronizer synchronizer,
         ResourceProvider resourceProvider
@@ -84,7 +87,6 @@ public class SecondBrain implements ModInitializer {
             npcService.shutdownNPCs(server);
             resourceProvider.saveResources();
             sqlite.closeConnection();
-            configProvider.saveAll();
             isFirstPlayerJoins = true;
         });
 	}

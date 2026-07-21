@@ -3,7 +3,11 @@ package me.sailex.secondbrain.common
 import me.sailex.altoclef.AltoClefController
 import me.sailex.automatone.api.BaritoneAPI
 import me.sailex.secondbrain.config.ConfigProvider
+import me.sailex.secondbrain.config.LLMConfig
 import me.sailex.secondbrain.config.NPCConfig
+import me.sailex.secondbrain.config.OllamaConfig
+import me.sailex.secondbrain.config.OpenAiConfig
+import me.sailex.secondbrain.config.Player2Config
 import me.sailex.secondbrain.constant.Instructions
 import me.sailex.secondbrain.context.ContextProvider
 import me.sailex.secondbrain.event.NPCEventHandler
@@ -11,7 +15,6 @@ import me.sailex.secondbrain.exception.NPCCreationException
 import me.sailex.secondbrain.history.ConversationHistory
 import me.sailex.secondbrain.history.Message
 import me.sailex.secondbrain.llm.LLMClient
-import me.sailex.secondbrain.llm.LLMType
 import me.sailex.secondbrain.llm.ollama.OllamaClient
 import me.sailex.secondbrain.llm.openai.OpenAiClient
 import me.sailex.secondbrain.llm.player2.Player2APIClient
@@ -26,13 +29,13 @@ class NPCFactory(
         val baseConfig = configProvider.baseConfig
         val contextProvider = ContextProvider(npcEntity, baseConfig)
 
-        val llmClient = initLLMClient(config)
+        val llmClient = initLLMClient(config.npcName, config.llm)
 
         val controller = initController(npcEntity)
         val defaultPrompt = Instructions.getLlmSystemPrompt(config.npcName,
             config.llmCharacter,
             controller.commandExecutor.allCommands(),
-            config.llmType)
+            config.llm.type)
 
         val messages = loadedConversation
             ?.map { Message(it.message, it.role) }
@@ -47,13 +50,13 @@ class NPCFactory(
         return AltoClefController(automatone)
     }
 
-    private fun initLLMClient(config: NPCConfig): LLMClient {
+    private fun initLLMClient(npcName: String, llm: LLMConfig): LLMClient {
         val baseConfig = configProvider.baseConfig
-        val llmClient = when (config.llmType) {
-            LLMType.OLLAMA -> OllamaClient(config.llmModel, config.ollamaUrl, baseConfig.llmTimeout, baseConfig.isVerbose)
-            LLMType.OPENAI -> OpenAiClient(config.llmModel, config.openaiApiKey, baseConfig.llmTimeout)
-            LLMType.PLAYER2 -> Player2APIClient(config.voiceId, config.npcName, baseConfig.llmTimeout)
-            else -> throw NPCCreationException("Invalid LLM type: ${config.llmType}")
+        val llmClient = when (llm) {
+            is OllamaConfig -> OllamaClient(llm.model, llm.url, baseConfig.llmTimeout, baseConfig.isVerbose)
+            is OpenAiConfig -> OpenAiClient(llm.model, llm.apiKey, baseConfig.llmTimeout)
+            is Player2Config -> Player2APIClient(llm.voiceId, npcName, baseConfig.llmTimeout)
+            else -> throw NPCCreationException("Invalid LLM type: ${llm.type}")
         }
         llmClient.checkServiceIsReachable()
         return llmClient

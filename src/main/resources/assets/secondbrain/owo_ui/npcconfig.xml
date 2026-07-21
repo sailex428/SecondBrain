@@ -27,7 +27,7 @@
                                                 </label>
                                                 <dropdown id="llmType">
                                                     <sizing>
-                                                        <horizontal method="fill">18</horizontal>
+                                                        <horizontal method="fill">14</horizontal>
                                                     </sizing>
                                                 </dropdown>
                                             </children>

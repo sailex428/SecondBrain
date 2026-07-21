@@ -10,6 +10,8 @@ import lombok.AllArgsConstructor;
 import me.sailex.altoclef.multiversion.EntityVer;
 import me.sailex.secondbrain.common.NPCService;
 import me.sailex.secondbrain.config.NPCConfig;
+import me.sailex.secondbrain.config.OllamaConfig;
+import me.sailex.secondbrain.config.OpenAiConfig;
 import me.sailex.secondbrain.llm.LLMType;
 import me.sailex.secondbrain.util.LogUtil;
 
@@ -28,7 +30,7 @@ public class NPCCreateCommand {
 				.then(argument("name", StringArgumentType.string())
 						.then(argument(LLM_TYPE, StringArgumentType.string())
 								.suggests((context, builder) -> {
-									for (LLMType llmType : LLMType.getEntries()) {
+									for (LLMType llmType : LLMType.getEntries().subList(0, 2)) { //exclude player2
 										builder.suggest(llmType.toString());
 									}
 									return builder.buildFuture();
@@ -43,11 +45,30 @@ public class NPCCreateCommand {
 		}
 
 		String name = StringArgumentType.getString(context, "name");
-		LLMType llmType = LLMType.valueOf(StringArgumentType.getString(context, LLM_TYPE));
 
-		NPCConfig config = NPCConfig.builder(name).llmType(llmType).build();
-		npcService.createNpc(config, EntityVer.getWorld(source).getServer(), source.getBlockPos(), source);
-		return 1;
+		try {
+			LLMType llmType = LLMType.valueOf(StringArgumentType.getString(context, LLM_TYPE));
+			NPCConfig config = switch (llmType) {
+				case OPENAI -> NPCConfig.builder(name).llmConfig(new OpenAiConfig()).build();
+				case OLLAMA -> NPCConfig.builder(name).llmConfig(new OllamaConfig()).build();
+				default -> null;
+			};
+
+			if (config == null) {
+				invalidLLM(context);
+				return 0;
+			}
+
+			npcService.createNpc(config, EntityVer.getWorld(source).getServer(), source.getBlockPos(), source);
+			return 1;
+		} catch (IllegalArgumentException e) {
+			invalidLLM(context);
+			return 0;
+		}
+	}
+
+	private void invalidLLM(CommandContext<ServerCommandSource> context) {
+		context.getSource().sendFeedback(() -> LogUtil.formatError("Invalid LLM type!"), false);
 	}
 
 }
