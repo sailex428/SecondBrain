@@ -54,7 +54,9 @@ public class SecondBrain implements ModInitializer {
         commandManager.registerAll();
 
         ServerLifecycleEvents.SERVER_STARTED.register(server -> {
+            configProvider.loadBaseConfig();
             LogUtil.initialize(server, configProvider);
+            configProvider.loadNpcConfig();
             repositoryFactory.initRepositories();
             resourceProvider.loadResources(
                     configProvider.getNpcConfigs()

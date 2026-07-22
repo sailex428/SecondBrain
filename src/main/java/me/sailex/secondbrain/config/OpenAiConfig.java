@@ -13,7 +13,7 @@ public class OpenAiConfig extends BaseLLMConfig {
             Endec.STRING.fieldOf("apiKey", OpenAiConfig::getApiKey),
             OpenAiConfig::new
     );
-    private static final String DEFAULT_URL = "https://api.openai.com/v1";
+    public static final String DEFAULT_URL = "https://api.openai.com/v1";
     private static final String DEFAULT_MODEL = "gpt-5.6-luna";
 
     private String apiKey;
