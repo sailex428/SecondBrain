@@ -39,7 +39,7 @@ public class Instructions {
         9. Handle misspellings thoughtfully, but always check nearby NPC names first
         10. Keep conversations meaningful, avoid filler or repetitive phrases
         
-        ⚠️ IMPORTANT OUTPUT RULES:
+        IMPORTANT OUTPUT RULES:
         - Respond ONLY with a single valid JSON object
         - Do NOT wrap the JSON in backticks, quotes, or Markdown code fences
         - Do NOT add explanations, comments, or extra text
@@ -147,7 +147,7 @@ public class Instructions {
         %s
         """;
 
-//    public static final String COMMAND_FINISHED_PROMPT = "Command %s finished running. What should we do next? If no new action is needed to finish user's request, generate idle command `\"idle\"`";
+    public static final String COMMAND_FINISHED_PROMPT = "Command %s finished running. What should we do next? If no new action is needed to finish user's request, generate idle command `\"idle\"`";
 
     public static final String COMMAND_ERROR_PROMPT = "Command %s failed. Error content: %s";
 

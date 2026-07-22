@@ -21,7 +21,7 @@ fun Message.toPlayer2ChatMessage(): Player2ChatMessage = Player2ChatMessage(
 
 // ollama
 fun OllamaChatMessage.toMessage(): Message = Message(
-    this.content,
+    this.response,
     this.role.toString().lowercase()
 )
 

@@ -1,10 +1,13 @@
 package me.sailex.secondbrain.llm.ollama;
 
-import io.github.ollama4j.OllamaAPI;
+import io.github.ollama4j.Ollama;
 import io.github.ollama4j.models.chat.*;
+import io.github.ollama4j.models.response.Model;
 import me.sailex.secondbrain.exception.LLMServiceException;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import lombok.Setter;
@@ -16,9 +19,10 @@ import me.sailex.secondbrain.util.LogUtil;
 public class OllamaClient implements LLMClient {
 
 	@Setter
-	private OllamaAPI ollamaAPI;
+	private Ollama ollama;
 	private final String model;
 	private final String url;
+	private final boolean verbose;
 
 	public OllamaClient(
         String model,
@@ -27,12 +31,11 @@ public class OllamaClient implements LLMClient {
 		boolean verbose
 	) {
 		this.url = url;
-		this.ollamaAPI = new OllamaAPI(url);
+		this.ollama = new Ollama(url);
 		this.model = model;
-		ollamaAPI.setVerbose(verbose);
-		ollamaAPI.setMaxChatToolCallRetries(1);
-		ollamaAPI.setRequestTimeoutSeconds(timeout);
-//		initModels(defaultPrompt);
+		this.verbose = verbose;
+		ollama.setRequestTimeoutSeconds(timeout);
+		pullRequiredModel(model);
 	}
 
 	/**
@@ -42,7 +45,7 @@ public class OllamaClient implements LLMClient {
 	@Override
 	public void checkServiceIsReachable() {
 		try {
-			boolean isOllamaServerReachable = ollamaAPI.ping();
+			boolean isOllamaServerReachable = ollama.ping();
 			if (!isOllamaServerReachable) {
                 throw new LLMServiceException("Ollama server is not reachable at: " +  url);
             }
@@ -58,72 +61,38 @@ public class OllamaClient implements LLMClient {
 	@Override
 	public Message chat(List<Message> messages) {
 		try {
-			List<OllamaChatMessage> response = ollamaAPI.chat(model,
-                    messages.stream()
-                    .map(MessageConverter::toOllamaChatMessage)
-                    .collect(Collectors.toList())
-            ).getChatHistory();
-            return MessageConverter.toMessage(response.get(response.size() - 1));
+			OllamaChatRequest request = OllamaChatRequest.builder()
+					.withModel(model)
+					.withMessages(messages.stream()
+							.map(MessageConverter::toOllamaChatMessage)
+							.collect(Collectors.toCollection(ArrayList::new)))
+					.build();
+
+			OllamaChatResult result = ollama.chat(request, null);
+			if (verbose) LogUtil.info("Ollama response: " + result.toString());
+			return MessageConverter.toMessage(result.getResponseModel().getMessage());
 		} catch (Exception e) {
             throw new LLMServiceException("Could not generate Response for last prompt: " + messages.get(messages.size() - 1).getMessage(), e);
 		}
 	}
 
-//    private void initModels(String defaultPrompt) {
-//        pullRequiredModels();
-//        createModelWithPrompt(defaultPrompt);
-//    }
-//
-//    private void pullRequiredModels() {
-//        try {
-//            Set<String> modelNames = ollamaAPI.listModels().stream()
-//                    .map(Model::getModelName).collect(Collectors.toSet());
-//            boolean requiredModelsExist = modelNames.containsAll(REQUIRED_MODELS);
-//            if (!requiredModelsExist) {
-//                for (String requiredModel : REQUIRED_MODELS) {
-//                    LogUtil.debugInChat("Pulling model: " + requiredModel);
-//                    ollamaAPI.pullModel(requiredModel);
-//                }
-//            }
-//        } catch (Exception e) {
-//            throw new LLMServiceException("Could not required models: " + REQUIRED_MODELS,  e);
-//        }
-//    }
-//
-//    private void createModelWithPrompt(String defaultPrompt) {
-//        try {
-//            LogUtil.debugInChat("Init model: " + model);
-//            ollamaAPI.createModel(CustomModelRequest.builder()
-//                    .from(LLAMA_MODEL_NAME)
-//                    .model(model)
-//                    .system(defaultPrompt)
-//                    .license("MIT")
-//                    .build());
-//        } catch (Exception e) {
-//            throw new LLMServiceException("Could not create model: " + model, e);
-//        }
-//    }
-//
-//    /**
-//     * Removes current model.
-//     */
-//    public void removeModel() {
-//        try {
-//            LogUtil.debugInChat("Removing model: " + model);
-//            ollamaAPI.deleteModel(model, true);
-//        } catch (Exception e) {
-//            Thread.currentThread().interrupt();
-//            throw new LLMServiceException("Could not remove model: " + model, e);
-//        }
-//    }
+	/**
+	 * Pulls the required ollama model if it is not already present.
+	 */
+    private void pullRequiredModel(String model) {
+        try {
+            Set<String> models = ollama.listModels().stream()
+                    .map(Model::getModelName).collect(Collectors.toSet());
+            boolean requiredModelsExist = models.contains(model);
+            if (!requiredModelsExist) {
+				LogUtil.debugInChat("Pulling model: " + model);
+				ollama.pullModel(model);
+            }
+        } catch (Exception e) {
+            throw new LLMServiceException("Could not pull required model: " + model,  e);
+        }
+    }
 
 	@Override
-	public void stopService() {
-        try {
-            //removeModel();
-        } catch (Exception e) {
-            LogUtil.error("Could not delete model: " + e.getMessage());
-        }
-		//this.service.shutdown();
-	}
+	public void stopService() {}
 }

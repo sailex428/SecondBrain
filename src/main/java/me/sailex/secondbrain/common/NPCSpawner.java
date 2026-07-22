@@ -102,7 +102,10 @@ public class NPCSpawner {
                 current = p;
             }
             spawnEntity(server, current, spawnPos, npcConsumer);
-        }, server);
+        }, server).exceptionally(e -> {
+            LogUtil.error("Failed to spawn NPC: " + e.getMessage());
+            return null;
+        });
         *///?} else {
         
         fetchGameProfile(profile).thenAcceptAsync(p -> {
@@ -111,7 +114,10 @@ public class NPCSpawner {
                 current = p.get();
             }
             spawnEntity(server, current, spawnPos, npcConsumer);
-        }, server);
+        }, server).exceptionally(e -> {
+            LogUtil.error("Failed to spawn NPC: " + e.getMessage());
+            return null;
+        });
         //?}
     }
 
