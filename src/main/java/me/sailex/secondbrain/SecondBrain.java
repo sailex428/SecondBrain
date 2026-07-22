@@ -18,6 +18,7 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.server.network.ServerPlayerEntity;
 
 /**
  * Main class for the SecondBrain mod.
@@ -54,23 +55,25 @@ public class SecondBrain implements ModInitializer {
         commandManager.registerAll();
 
         ServerLifecycleEvents.SERVER_STARTED.register(server -> {
+            configProvider.loadBaseConfig();
             LogUtil.initialize(server, configProvider);
+            configProvider.loadNpcConfig();
             repositoryFactory.initRepositories();
             resourceProvider.loadResources(
                     configProvider.getNpcConfigs()
                         .stream()
                         .map(NPCConfig::getUuid).toList());
-            npcService.init();
         });
 
-        syncOnPlayerLoad(synchronizer);
+        syncOnPlayerLoad(synchronizer, npcService);
         onStop(npcService, sqlite, synchronizer, resourceProvider);
     }
 
-    private void syncOnPlayerLoad(Player2NpcSynchronizer synchronizer) {
+    private void syncOnPlayerLoad(Player2NpcSynchronizer synchronizer, NPCService npcService) {
         ServerEntityEvents.ENTITY_LOAD.register((entity, world) -> {
             if (entity.isPlayer() && isFirstPlayerJoins) {
                 synchronizer.syncCharacters(world.getServer(), (PlayerEntity) entity);
+                npcService.init(world.getServer(), (ServerPlayerEntity) entity);
                 isFirstPlayerJoins = false;
             }
         });

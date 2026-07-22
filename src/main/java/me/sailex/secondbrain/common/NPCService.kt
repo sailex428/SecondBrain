@@ -8,11 +8,13 @@ import me.sailex.secondbrain.config.NPCConfig
 import me.sailex.secondbrain.constant.Instructions
 import me.sailex.secondbrain.database.resources.ResourceProvider
 import me.sailex.secondbrain.exception.NPCCreationException
+import me.sailex.secondbrain.llm.LLMType
 import me.sailex.secondbrain.model.NPC
 import me.sailex.secondbrain.util.LogUtil
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.PlayerManager
+import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.math.BlockPos
 import java.util.UUID
 import java.util.concurrent.CompletableFuture
@@ -32,8 +34,11 @@ class NPCService(
     private lateinit var executorService: ExecutorService
     val uuidToNpc = ConcurrentHashMap<UUID, NPC>()
 
-    fun init() {
+    fun init(server: MinecraftServer, player: ServerPlayerEntity) {
         executorService = Executors.newSingleThreadExecutor()
+        configProvider.npcConfigs.filter { it.isActive && it.llm.type != LLMType.PLAYER2 }.forEach {
+            createNpc(it, server, player.blockPos, player)
+        }
     }
 
     fun createNpc(newConfig: NPCConfig, server: MinecraftServer, spawnPos: BlockPos?, owner: PlayerEntity?) {
@@ -55,7 +60,7 @@ class NPCService(
             }
 
             NPCEvents.ON_DEATH.register {
-                removeNpc(it.uuid, EntityVer.getWorld(it).server!!.playerManager)
+                removeNpc(it.uuid, EntityVer.getWorld(it).server!!.playerManager, false)
             }
         }, executorService).exceptionally {
             LogUtil.errorInChat(it.message)
@@ -64,7 +69,7 @@ class NPCService(
         }
     }
 
-    fun removeNpc(uuid: UUID, playerManager: PlayerManager) {
+    fun removeNpc(uuid: UUID, playerManager: PlayerManager, deactivate: Boolean) {
         val npcToRemove = uuidToNpc[uuid]
         if (npcToRemove != null) {
             npcToRemove.controller.stop()
@@ -78,11 +83,11 @@ class NPCService(
 
             val config = configProvider.getNpcConfig(uuid)
             if (config != null) {
-                config.isActive = false
+                if (deactivate) {
+                    config.isActive = false
+                }
                 configProvider.updateNpcConfig(config)
                 LogUtil.infoInChat("Removed NPC with name ${config.npcName}")
-            } else {
-                LogUtil.infoInChat("Removed NPC with uuid $uuid")
             }
         }
     }
@@ -90,19 +95,19 @@ class NPCService(
     fun deleteNpc(uuid: UUID, playerManager: PlayerManager) {
         resourceProvider.loadedConversations.remove(uuid)
         resourceProvider.conversationRepository.deleteByUuid(uuid)
-        removeNpc(uuid, playerManager)
+        removeNpc(uuid, playerManager, true)
         configProvider.deleteNpcConfig(uuid)
     }
 
     fun shutdownNPCs(server: MinecraftServer) {
         uuidToNpc.keys.forEach {
-            removeNpc(it, server.playerManager)
+            removeNpc(it, server.playerManager, false)
         }
         executorService.shutdownNow()
     }
 
     private fun updateConfig(newConfig: NPCConfig): NPCConfig {
-        val config = configProvider.getNpcConfigByName(newConfig.npcName)
+        val config = configProvider.getNpcConfig(newConfig.uuid)
         if (config == null) {
             return configProvider.addNpcConfig(newConfig)
         } else {
@@ -115,7 +120,7 @@ class NPCService(
     private fun checkNpcName(npcName: String) {
         if (!UsernameValidator.isValid(npcName)) {
             throw NPCCreationException("NPC name is not valid. Use 3–16 characters: letters, numbers, or underscores only.")
-        } else if (uuidToNpc.values.any { it.entity.name.string == npcName } || configProvider.getNpcConfigByName(npcName) != null) {
+        } else if (uuidToNpc.values.any { it.entity.name.string == npcName }) {
             throw NPCCreationException("A NPC with the name '$npcName' already exists.")
         }
     }

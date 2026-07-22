@@ -3,6 +3,7 @@ package me.sailex.secondbrain.config;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import io.wispforest.endec.Endec;
 import io.wispforest.endec.format.gson.GsonDeserializer;
@@ -26,8 +27,8 @@ import static me.sailex.secondbrain.SecondBrain.MOD_ID;
 public class ConfigProvider {
 
     private static final Path CONFIG_DIR = FabricLoader.getInstance().getConfigDir().resolve(MOD_ID);
-    private static final Path NPC_CONFIG_DIR = CONFIG_DIR.resolve("npc");
     private static final Path BASE_CONFIG_DIR = CONFIG_DIR.resolve("base");
+    static final Path NPC_CONFIG_DIR = CONFIG_DIR.resolve("npc");
 
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static final String JSON_EXTENSION = ".json";
@@ -35,17 +36,27 @@ public class ConfigProvider {
     private List<NPCConfig> npcConfigs = Collections.synchronizedList(new ArrayList<>());
     private BaseConfig baseConfig = new BaseConfig();
 
-    public ConfigProvider() {
+    public void loadBaseConfig() {
         try {
-            Files.createDirectories(NPC_CONFIG_DIR);
             Files.createDirectories(BASE_CONFIG_DIR);
-
-            this.npcConfigs = readAll(NPC_CONFIG_DIR, NPCConfig.ENDEC);
             this.baseConfig = readAll(BASE_CONFIG_DIR, BaseConfig.ENDEC).stream()
                     .findFirst()
                     .orElseGet(BaseConfig::new);
         } catch (IOException e) {
             LogUtil.error("Failed to load config: " + e.getMessage());
+        }
+    }
+
+    public void loadNpcConfig() {
+        try {
+            Files.createDirectories(NPC_CONFIG_DIR);
+            this.npcConfigs = readAll(NPC_CONFIG_DIR, NPCConfig.ENDEC);
+        } catch (IOException e) {
+            LogUtil.error("Failed to load config: " + e.getMessage());
+        } catch (IllegalStateException e) {
+            LogUtil.info("Detected old config format, migrating to new format...");
+            migrateToNewConfigFormat();
+            LogUtil.info("Migration complete!");
         }
     }
 
@@ -158,5 +169,49 @@ public class ConfigProvider {
 
     public BaseConfig getBaseConfig() {
         return baseConfig;
+    }
+
+    private void migrateToNewConfigFormat() {
+        try (Stream<Path> filenameStream = Files.list(NPC_CONFIG_DIR)) {
+            for (Path file : filenameStream.toList()) {
+                Reader reader = Files.newBufferedReader(file);
+                JsonObject json = JsonParser.parseReader(reader).getAsJsonObject();
+                NPCConfig config = convertOldToNewConfig(json);
+                reader.close();
+                Files.delete(file);
+                addNpcConfig(config);
+            }
+        } catch (Exception e) {
+            LogUtil.error("Failed to migrate to new config format: " + e.getMessage());
+        }
+    }
+
+    private NPCConfig convertOldToNewConfig(JsonObject json) {
+        String npcName = json.get("npcName").getAsString();
+        String uuid = json.get("uuid").getAsString();
+        boolean isActive = json.get("isActive").getAsBoolean();
+        String llmCharacter = json.get("llmCharacter").getAsString();
+        LLMType type = LLMType.valueOf(json.get("llmType").getAsString());
+
+        String model = json.get("llmModel").getAsString();
+        switch (type) {
+            case OLLAMA -> {
+                String url = json.get("ollamaUrl").getAsString();
+                return new NPCConfig(npcName, uuid, isActive, llmCharacter, new OllamaConfig(url, model));
+            }
+            case OPENAI -> {
+                String apiKey = json.get("openaiApiKey").getAsString();
+                return new NPCConfig(npcName, uuid, isActive, llmCharacter,
+                        new OpenAiConfig(OpenAiConfig.DEFAULT_URL, model, apiKey));
+            }
+            case PLAYER2 -> {
+                boolean isTTS = json.get("isTTS").getAsBoolean();
+                String voiceId = json.get("voiceId").getAsString();
+                String skinUrl = json.get("skinUrl").getAsString();
+                return new NPCConfig(npcName, uuid, isActive, llmCharacter,
+                        new Player2Config(voiceId, skinUrl, isTTS));
+            }
+            default -> throw new IllegalStateException("Unknown LLM type: " + type);
+        }
     }
 }
