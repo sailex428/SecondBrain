@@ -19,7 +19,7 @@ class ResourceProvider(
     val loadedConversations = hashMapOf<UUID, List<Conversation>>()
 
     /**
-     * Loads conversations recipes from db/mc into memory
+     * Loads conversations from db/mc into memory
      */
     fun loadResources(uuids: List<UUID>) {
         executorService = initExecutorPool()
@@ -37,7 +37,7 @@ class ResourceProvider(
     }
 
     /**
-     * Saves recipes and conversations to local db. (called on server stop)
+     * Saves conversations to local db.
      *
      * Stops initial resources indexing if not finished by shutting down executor
      */

@@ -35,9 +35,9 @@ public class NPCRemoveCommand {
 	private int removeNPC(CommandContext<ServerCommandSource> context) {
 		String name = StringArgumentType.getString(context, "name");
 
-		Optional<NPCConfig> config = configProvider.getNpcConfigByName(name);
-		if (config.isPresent()) {
-            npcService.deleteNpc(config.get().getUuid(), context.getSource().getServer().getPlayerManager());
+		NPCConfig config = configProvider.getNpcConfigByName(name);
+		if (config != null) {
+            npcService.deleteNpc(config.getUuid(), context.getSource().getServer().getPlayerManager());
 			return 1;
 		} else {
 			context.getSource().sendFeedback(() ->

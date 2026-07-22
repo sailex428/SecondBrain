@@ -7,6 +7,7 @@ import lombok.Getter;
 import me.sailex.secondbrain.common.NPCService;
 import me.sailex.secondbrain.common.Player2NpcSynchronizer;
 import me.sailex.secondbrain.config.ConfigProvider;
+import me.sailex.secondbrain.config.NPCConfig;
 import me.sailex.secondbrain.database.SqliteClient;
 import me.sailex.secondbrain.database.repositories.RepositoryFactory;
 import me.sailex.secondbrain.database.resources.ResourceProvider;
@@ -17,6 +18,7 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.server.network.ServerPlayerEntity;
 
 /**
  * Main class for the SecondBrain mod.
@@ -53,20 +55,25 @@ public class SecondBrain implements ModInitializer {
         commandManager.registerAll();
 
         ServerLifecycleEvents.SERVER_STARTED.register(server -> {
+            configProvider.loadBaseConfig();
             LogUtil.initialize(server, configProvider);
+            configProvider.loadNpcConfig();
             repositoryFactory.initRepositories();
-            resourceProvider.loadResources(configProvider.getUuidsOfNpcs());
-            npcService.init();
+            resourceProvider.loadResources(
+                    configProvider.getNpcConfigs()
+                        .stream()
+                        .map(NPCConfig::getUuid).toList());
         });
 
-        syncOnPlayerLoad(synchronizer);
-        onStop(npcService, configProvider, sqlite, synchronizer, resourceProvider);
+        syncOnPlayerLoad(synchronizer, npcService);
+        onStop(npcService, sqlite, synchronizer, resourceProvider);
     }
 
-    private void syncOnPlayerLoad(Player2NpcSynchronizer synchronizer) {
+    private void syncOnPlayerLoad(Player2NpcSynchronizer synchronizer, NPCService npcService) {
         ServerEntityEvents.ENTITY_LOAD.register((entity, world) -> {
             if (entity.isPlayer() && isFirstPlayerJoins) {
                 synchronizer.syncCharacters(world.getServer(), (PlayerEntity) entity);
+                npcService.init(world.getServer(), (ServerPlayerEntity) entity);
                 isFirstPlayerJoins = false;
             }
         });
@@ -74,7 +81,6 @@ public class SecondBrain implements ModInitializer {
 
 	private void onStop(
         NPCService npcService,
-        ConfigProvider configProvider,
         SqliteClient sqlite,
         Player2NpcSynchronizer synchronizer,
         ResourceProvider resourceProvider
@@ -84,7 +90,6 @@ public class SecondBrain implements ModInitializer {
             npcService.shutdownNPCs(server);
             resourceProvider.saveResources();
             sqlite.closeConnection();
-            configProvider.saveAll();
             isFirstPlayerJoins = true;
         });
 	}

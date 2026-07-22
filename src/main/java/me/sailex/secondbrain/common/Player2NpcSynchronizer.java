@@ -3,6 +3,7 @@ package me.sailex.secondbrain.common;
 import me.sailex.secondbrain.auth.UsernameValidator;
 import me.sailex.secondbrain.config.ConfigProvider;
 import me.sailex.secondbrain.config.NPCConfig;
+import me.sailex.secondbrain.config.Player2Config;
 import me.sailex.secondbrain.exception.LLMServiceException;
 import me.sailex.secondbrain.llm.LLMType;
 import me.sailex.secondbrain.llm.player2.Player2APIClient;
@@ -65,9 +66,7 @@ public class Player2NpcSynchronizer {
                 NPCConfig config = NPCConfig.builder(normalizedName)
                         .uuid(entry.getKey())
                         .llmDefaultPrompt(character.description())
-                        .llmType(LLMType.PLAYER2)
-                        .voiceId(character.voice_ids().get(0))
-                        .skinUrl(character.meta().skin_url())
+                        .llmConfig(new Player2Config(character.voice_ids().get(0), character.meta().skin_url(), false))
                         .build();
                 npcService.createNpc(config, server, spawnPos, owner);
             }
@@ -109,7 +108,7 @@ public class Player2NpcSynchronizer {
     private List<UUID> getNpcUuidsPlayer2() {
         return npcService.getUuidToNpc()
                 .entrySet().stream()
-                .filter(e -> e.getValue().getConfig().getLlmType() == LLMType.PLAYER2)
+                .filter(e -> e.getValue().getConfig().getLlm().getType() == LLMType.PLAYER2)
                 .map(Map.Entry::getKey)
                 .toList();
     }

@@ -101,7 +101,7 @@ public class NetworkHandler {
                 if (configPacket.isDelete()) {
                     npcService.deleteNpc(uuid, playerManager);
                 } else {
-                    npcService.removeNpc(uuid, playerManager);
+                    npcService.removeNpc(uuid, playerManager, true);
                 }
             }
         });

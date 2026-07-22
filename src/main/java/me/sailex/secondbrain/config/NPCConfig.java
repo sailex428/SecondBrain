@@ -1,7 +1,6 @@
 package me.sailex.secondbrain.config;
 
 import me.sailex.secondbrain.constant.Instructions;
-import me.sailex.secondbrain.llm.LLMType;
 import java.util.UUID;
 
 import io.wispforest.endec.Endec;
@@ -14,19 +13,14 @@ public class NPCConfig implements Configurable {
 	private UUID uuid = UUID.randomUUID();
 	private boolean isActive = true;
 	private String llmCharacter = Instructions.DEFAULT_CHARACTER_TRAITS;
-	private LLMType llmType = LLMType.OLLAMA;
-	private String ollamaUrl = "http://localhost:11434";
-    private String llmModel = "llama3.2";
-	private String openaiApiKey = "";
-	private String voiceId = "not set";
-	private String skinUrl = "";
-
-	private boolean isTTS = false;
-
-	public NPCConfig() {}
+	private LLMConfig llm;
 
 	public NPCConfig(String npcName) {
 		this.npcName = npcName;
+	}
+
+	public NPCConfig(LLMConfig llm) {
+		this.llm = llm;
 	}
 
     public NPCConfig(
@@ -34,25 +28,13 @@ public class NPCConfig implements Configurable {
 		String uuid,
 		boolean isActive,
 		String llmCharacter,
-		LLMType llmType,
-        String llmModel,
-		String ollamaUrl,
-		String openaiApiKey,
-		boolean isTTS,
-		String voiceId,
-		String skinUrl
+		LLMConfig llm
 	) {
 		this.npcName = npcName;
 		this.uuid = UUID.fromString(uuid);
 		this.isActive = isActive;
 		this.llmCharacter = llmCharacter;
-		this.llmType = llmType;
-        this.llmModel = llmModel;
-		this.ollamaUrl = ollamaUrl;
-		this.openaiApiKey = openaiApiKey;
-		this.isTTS = isTTS;
-		this.voiceId = voiceId;
-		this.skinUrl = skinUrl;
+		this.llm = llm;
 	}
 
 	public static class Builder {
@@ -73,18 +55,8 @@ public class NPCConfig implements Configurable {
 			return this;
 		}
 
-		public Builder llmType(LLMType llmType) {
-			npcConfig.setLlmType(llmType);
-			return this;
-		}
-
-		public Builder voiceId(String voiceId) {
-			npcConfig.setVoiceId(voiceId);
-			return this;
-		}
-
-		public Builder skinUrl(String skinUrl) {
-			npcConfig.setSkinUrl(skinUrl);
+		public Builder llmConfig(LLMConfig llmConfig) {
+			npcConfig.setLlm(llmConfig);
 			return this;
 		}
 
@@ -110,41 +82,8 @@ public class NPCConfig implements Configurable {
 		return llmCharacter;
 	}
 
-	public LLMType getLlmType() {
-		return llmType;
-	}
-
-    public String getLlmModel() {
-        return llmModel;
-    }
-
-    public void setLlmModel(String llmModel) {
-        this.llmModel = llmModel;
-    }
-
-
-    public String getOllamaUrl() {
-		return ollamaUrl;
-	}
-
-	public String getOpenaiApiKey() {
-		return openaiApiKey;
-	}
-
 	public void setLlmCharacter(String llmCharacter) {
 		this.llmCharacter = llmCharacter;
-	}
-
-	public void setLlmType(LLMType llmType) {
-		this.llmType = llmType;
-	}
-
-	public void setOllamaUrl(String ollamaUrl) {
-		this.ollamaUrl = ollamaUrl;
-	}
-
-	public void setOpenaiApiKey(String openaiApiKey) {
-		this.openaiApiKey = openaiApiKey;
 	}
 
 	public void setActive(boolean active) {
@@ -163,28 +102,12 @@ public class NPCConfig implements Configurable {
 		this.uuid = uuid;
 	}
 
-	public String getVoiceId() {
-		return voiceId;
+	public LLMConfig getLlm() {
+		return llm;
 	}
 
-	public void setVoiceId(String voiceId) {
-		this.voiceId = voiceId;
-	}
-
-	public boolean isTTS() {
-		return isTTS;
-	}
-
-	public void setTTS(boolean TTS) {
-		isTTS = TTS;
-	}
-
-	public String getSkinUrl() {
-		return skinUrl;
-	}
-
-	public void setSkinUrl(String skinUrl) {
-		this.skinUrl = skinUrl;
+	public void setLlm(LLMConfig llm) {
+		this.llm = llm;
 	}
 
 	@Override
@@ -192,19 +115,12 @@ public class NPCConfig implements Configurable {
 		return npcName.toLowerCase();
 	}
 
-
     public static final StructEndec<NPCConfig> ENDEC = StructEndecBuilder.of(
 			Endec.STRING.fieldOf("npcName", NPCConfig::getNpcName),
 			Endec.STRING.fieldOf("uuid", config -> config.getUuid().toString()),
 			Endec.BOOLEAN.fieldOf("isActive", NPCConfig::isActive),
-			Endec.STRING.fieldOf("llmDefaultPrompt", NPCConfig::getLlmCharacter),
-			Endec.forEnum(LLMType.class).fieldOf("llmType", NPCConfig::getLlmType),
-            Endec.STRING.fieldOf("llmModel", NPCConfig::getLlmModel),
-			Endec.STRING.fieldOf("ollamaUrl", NPCConfig::getOllamaUrl),
-			Endec.STRING.fieldOf("openaiApiKey", NPCConfig::getOpenaiApiKey),
-			Endec.BOOLEAN.fieldOf("isTTS", NPCConfig::isTTS),
-			Endec.STRING.fieldOf("voiceId", NPCConfig::getVoiceId),
-			Endec.STRING.fieldOf("skinUrl", NPCConfig::getSkinUrl),
+			Endec.STRING.fieldOf("llmCharacter", NPCConfig::getLlmCharacter),
+			LLMConfig.ENDEC.fieldOf("llm", NPCConfig::getLlm),
 			NPCConfig::new
 	);
 
@@ -214,13 +130,7 @@ public class NPCConfig implements Configurable {
                 config.uuid.toString(),
                 config.isActive,
                 config.llmCharacter,
-                config.llmType,
-                config.llmModel,
-                config.ollamaUrl,
-                config.openaiApiKey,
-                config.isTTS,
-                config.voiceId,
-                config.skinUrl
+                config.llm
         );
     }
 
@@ -229,11 +139,8 @@ public class NPCConfig implements Configurable {
 		return "NPCConfig{npcName=" + npcName +
 				",uuid=" + uuid +
 				",isActive=" + isActive +
-				",llmType=" + llmType +
-				",ollamaUrl=" + ollamaUrl +
-				",openaiApiKey=***" +
 				",llmCharacter=" + llmCharacter +
-				",voiceId=" + voiceId + "}";
+				",llmConfig=" + llm + "}";
 	}
 
 	//name for fields for npc config screen
@@ -242,7 +149,7 @@ public class NPCConfig implements Configurable {
 	public static final String LLM_CHARACTER = "Characteristics";
 	public static final String LLM_TYPE = "Type";
     public static final String LLM_MODEL = "LLM Model";
-	public static final String OLLAMA_URL = "Ollama URL";
+	public static final String URL = "URL";
 	public static final String OPENAI_API_KEY = "OpenAI API Key";
 	public static final String IS_TTS = "Text to Speech";
 }

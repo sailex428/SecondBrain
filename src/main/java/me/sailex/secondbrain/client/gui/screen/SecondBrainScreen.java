@@ -10,6 +10,7 @@ import io.wispforest.owo.ui.core.Surface;
 import me.sailex.secondbrain.client.networking.ClientNetworkManager;
 import me.sailex.secondbrain.config.BaseConfig;
 import me.sailex.secondbrain.config.NPCConfig;
+import me.sailex.secondbrain.config.OllamaConfig;
 import me.sailex.secondbrain.llm.LLMType;
 import me.sailex.secondbrain.networking.packet.CreateNpcPacket;
 import me.sailex.secondbrain.networking.packet.DeleteNpcPacket;
@@ -46,7 +47,7 @@ public class SecondBrainScreen extends BaseUIModelScreen<FlowLayout> {
         npcConfig.forEach(config -> addNpcComponent(panelComponent, config));
 
         rootComponent.childById(ButtonComponent.class, "add_npc").onPress(button ->
-            client.setScreen(new NPCConfigScreen(networkManager, new NPCConfig(), false))
+            client.setScreen(new NPCConfigScreen(networkManager, new NPCConfig(new OllamaConfig()), false))
         );
 
         rootComponent.childById(ButtonComponent.class, "edit_base").onPress(button ->
@@ -78,7 +79,7 @@ public class SecondBrainScreen extends BaseUIModelScreen<FlowLayout> {
 
     private void addTypeSpecificLabelTexture(FlowLayout npcLabelContainer, NPCConfig config) {
         String iconPath;
-        switch (config.getLlmType()) {
+        switch (config.getLlm().getType()) {
             case OLLAMA -> iconPath = "ollama-icon.png";
             case PLAYER2 -> iconPath = "player2-icon.png";
             default -> iconPath = "icon.png";
@@ -99,7 +100,7 @@ public class SecondBrainScreen extends BaseUIModelScreen<FlowLayout> {
     }
 
     private void addNpcEditButton(FlowLayout npcButtonContainer, NPCConfig config) {
-        if (!config.isActive() || config.getLlmType() == LLMType.PLAYER2) {
+        if (!config.isActive() || config.getLlm().getType() == LLMType.PLAYER2) {
             npcButtonContainer.child(ComponentsVersion.button(Text.of("Edit"), button ->
                     client.setScreen(new NPCConfigScreen(networkManager, config, true))
             ));

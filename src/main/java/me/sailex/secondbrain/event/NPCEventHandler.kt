@@ -5,6 +5,7 @@ import com.google.gson.JsonParseException
 import me.sailex.altoclef.AltoClefController
 import me.sailex.altoclef.tasks.LookAtOwnerTask
 import me.sailex.secondbrain.config.NPCConfig
+import me.sailex.secondbrain.config.Player2Config
 import me.sailex.secondbrain.constant.Instructions
 import me.sailex.secondbrain.context.ContextProvider
 import me.sailex.secondbrain.history.ConversationHistory
@@ -39,7 +40,7 @@ class NPCEventHandler(
     )
 
     /**
-     * Processes an event asynchronously by allowing call actions from llm using the specified prompt.
+     * Processes an event asynchronously by allowing executing actions on the controller from llm using the specified prompt.
      * Saves the prompt and responses in conversation history.
      *
      * @param prompt prompt of a user or system e.g. chatmessage of a player
@@ -60,9 +61,10 @@ class NPCEventHandler(
                 return@runAsync
             }
 
-            //prevent printing multiple times the same when llm is running in command syntax errors
+            //prevent outputting multiple times the same when llm runs in command syntax errors
             if (parsedMessage.message != history.getLastMessage()) {
-                if (llmClient is Player2APIClient && config.isTTS) {
+                val llmConfig = config.llm
+                if (llmClient is Player2APIClient && llmConfig is Player2Config && llmConfig.isTTS) {
                     llmClient.startTextToSpeech(parsedMessage.message)
                 } else {
                     controller.controllerExtras.chat(parsedMessage.message)

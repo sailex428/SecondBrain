@@ -4,7 +4,9 @@ import carpet.patches.EntityPlayerMPFake;
 import carpet.patches.FakeClientConnection;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
+import me.sailex.secondbrain.config.LLMConfig;
 import me.sailex.secondbrain.config.NPCConfig;
+import me.sailex.secondbrain.config.Player2Config;
 import me.sailex.secondbrain.mineskin.MineSkinProxyClient;
 import me.sailex.secondbrain.mineskin.MineSkinProxyClientException;
 import me.sailex.secondbrain.mineskin.SkinResponse;
@@ -77,9 +79,9 @@ public class NPCSpawner {
         Consumer<ServerPlayerEntity> npcConsumer
     ) {
         GameProfile profile = new GameProfile(config.getUuid(), config.getNpcName());
-        String skinUrl = config.getSkinUrl();
-        if (!skinUrl.isEmpty()) {
-            Property property = fetchSkin(config.getSkinUrl());
+        LLMConfig llmConfig = config.getLlm();
+        if (llmConfig instanceof Player2Config player2Config && !player2Config.getSkinUrl().isEmpty()) {
+            Property property = fetchSkin(player2Config.getSkinUrl());
             if (property != null) {
                 //? >=1.21.10 {
                 /*Multimap<String, Property> properties = HashMultimap.create();
