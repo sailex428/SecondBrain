@@ -148,7 +148,7 @@ public class NPCConfig implements Configurable {
 	public static final String EDIT_NPC = "Edit '%s'";
 	public static final String LLM_CHARACTER = "Characteristics";
 	public static final String LLM_TYPE = "Type";
-    public static final String LLM_MODEL = "LLM Model";
+    public static final String LLM_MODEL = "Model";
 	public static final String URL = "URL";
 	public static final String OPENAI_API_KEY = "OpenAI API Key";
 	public static final String IS_TTS = "Text to Speech";
