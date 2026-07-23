@@ -34,6 +34,12 @@ repositories {
     maven { url = uri("https://jitpack.io") }
 }
 
+val includeTransitive by configurations.creating {
+    isCanBeConsumed = false
+    isCanBeResolved = true
+    isTransitive = true
+}
+
 dependencies {
     configurations.all {
         exclude(group = "org.slf4j", module = "slf4j-simple")
@@ -59,7 +65,7 @@ dependencies {
     include(modImplementation("org.xerial:sqlite-jdbc:3.46.1.3")!!)
     include(modRuntimeOnly("dev_babbaj:nether-pathfinder:1.4.1")!!)
 
-    include(modImplementation("io.github.ollama4j:ollama4j:1.1.7")!!)
+    includeTransitive(modImplementation("io.github.ollama4j:ollama4j:1.1.7")!!)
 
     //needed deps for openai communication
     include(modRuntimeOnly("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.18.2")!!)
@@ -77,6 +83,12 @@ dependencies {
 
     include(modImplementation("me.sailex:secondbrainengine:${property("deps.engine")}")!!)
     include(modImplementation("com.github.gnembon:fabric-carpet:${project.property("carpet_version")}")!!)
+}
+
+afterEvaluate {
+    configurations.getByName("includeTransitive").resolvedConfiguration.resolvedArtifacts.forEach {
+        dependencies.add("include", it.id.componentIdentifier.displayName)
+    }
 }
 
 loom {
